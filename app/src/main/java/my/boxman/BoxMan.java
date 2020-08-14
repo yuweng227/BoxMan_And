@@ -367,7 +367,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 								if (input.equals("")) {
 									MyToast.showToast(BoxMan.this, "无效的名称！" + input, Toast.LENGTH_SHORT);
 								} else {
-									if (mySQLite.m_SQL.find_Set(input, myMaps.mSets3.get(childPos).id) > 0) {
+									if (mySQLite.m_SQL.find_Set(input, myMaps.mSets3.get(0).id) > 0) {
 										MyToast.showToast(BoxMan.this, "此名称已经存在！\n" + input, Toast.LENGTH_SHORT);
 										et.setText(input);
 										et.setSelection(input.length());
@@ -404,7 +404,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 							if (input.equals("")) {
 								MyToast.showToast(BoxMan.this, "无效的名称！\n" + input, Toast.LENGTH_SHORT);
 							} else {
-								if (myMaps.mSets3.size() > 0 && mySQLite.m_SQL.find_Set(input, myMaps.mSets3.get(childPos).id) > 0) {
+								if (myMaps.mSets3.size() > 0 && mySQLite.m_SQL.find_Set(input, myMaps.mSets3.get(0).id) > 0) {
 									MyToast.showToast(BoxMan.this, "此名称已经存在！\n" + input, Toast.LENGTH_SHORT);
 									et.setText(input);
 									et.setSelection(input.length());
@@ -1651,6 +1651,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
                 break;
 			case 10:  // 详细 == 关卡集的“关于...”
 				long m_id = -1;
+				String msg;
 				switch (groupPos){
 					case 0:
 						m_id = myMaps.mSets0.get(childPos).id;
@@ -1669,8 +1670,15 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 						myMaps.sFile = myMaps.mSets3.get(childPos).title;
 				}
 				mySQLite.m_SQL.get_Set(m_id);
+				msg = mySQLite.m_SQL.count_Sovled(m_id) + "/" + mySQLite.m_SQL.count_Level(m_id);
 				//关卡集描述
 				Intent intent1 = new Intent();
+
+				//用Bundle携带数据
+				Bundle bundle = new Bundle();
+				bundle.putString("mMessage", msg);              //关卡数量
+				intent1.putExtras(bundle);
+
 				intent1.setClass(this, myAbout1.class);
 				startActivity(intent1);
 				break;

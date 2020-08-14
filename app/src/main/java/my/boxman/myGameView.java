@@ -4411,6 +4411,7 @@ public class myGameView extends Activity {
             {"d", "r", "u", "l", "D", "R", "U", "L"},
             {"l", "d", "r", "u", "L", "D", "R", "U"},
             {"u", "l", "d", "r", "U", "L", "D", "R"}};
+
     private void doACT(String myACT){
         if (myMaps.m_ActionIsTrun) {  //根据关卡的旋转状态，转换动作串
 
@@ -5523,6 +5524,8 @@ public class myGameView extends Activity {
         private final WeakReference<myGameView> mViewReference2;
         private long myTime, myTime0;  //计算两次刷新时间间隔及总耗时
         private final int[] mySpeed = {0, 200, 300, 500, 1000};
+        private final String[] msg = {"", "正推通关！", "正逆相合！", "逆推通关！"};
+        private int type;
 
         public RunMicroTask(myGameView mView) {
             super();
@@ -5534,6 +5537,7 @@ public class myGameView extends Activity {
             super.onPreExecute();
             myTime0 = System.currentTimeMillis();  //开始时间
             myTime  = myTime0;
+            type = 0;
         }
 
         @SuppressLint("WrongThread")
@@ -5586,6 +5590,30 @@ public class myGameView extends Activity {
                         publishProgress();
                     }
                 }
+                if (myMaps.curMap.Level_id > 0) {  // 常规推关卡时，导入动作后检查是否解关
+                    if (bt_BK.isChecked()) {  // 逆推
+                        if (myClearance2()) {  // 逆推通关
+                            zhengniHE2();  // 逆推答案转为正推答案并保存
+                            saveAns2();
+                            type = 3;
+                        } else if (myMeet()) {  // 正逆相合
+                            zhengniHE();  // 合并正逆合答案并保存
+                            saveAns2();
+                            type = 2;
+                        }
+                    } else {
+                        if (myClearance()) {
+                            if (myMaps.curMap.Level_id > 0) {
+                                saveAns(1);  // 解关答案的保存
+                                type = 1;
+                            }
+                        } else if (myMeet()) {  // 正逆相合
+                            zhengniHE();  // 合并正逆合答案并保存
+                            saveAns2();
+                            type = 2;
+                        }
+                    }
+                }
                 return null;
             } catch (ArrayIndexOutOfBoundsException ex) {
             } catch (OutOfMemoryError ex) {
@@ -5606,7 +5634,7 @@ public class myGameView extends Activity {
                 mMap.invalidate();
                 m_bBusing = false;
                 myMaps.m_ActionIsRedy = false;
-                MyToast.showToast(myGameView.this, "耗时 " + ((myTime - myTime0) / 1000) + " 秒", Toast.LENGTH_SHORT);
+                MyToast.showToast(myGameView.this, msg[type] + "耗时 " + ((myTime - myTime0) / 1000) + " 秒", Toast.LENGTH_SHORT);
                 if (!m_lstMovReDo.isEmpty()) {  //仅正推
                     m_lstMovReDo.clear();
                 }

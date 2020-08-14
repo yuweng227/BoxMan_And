@@ -18,7 +18,9 @@ import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedList;
+import java.util.TimeZone;
 
 public class myGameViewMap extends View {
 
@@ -1005,6 +1007,10 @@ public class myGameViewMap extends View {
             {0, 1, 4, 3, 2},
             {0, 2, 1, 4, 3}};
 
+//    String[] myWeek = {
+//            "","日","一","二","三","四","五","六"
+//    };
+
     @Override
     public void onDraw(Canvas canvas) {
 
@@ -1012,6 +1018,7 @@ public class myGameViewMap extends View {
 
         if (myMaps.curMap == null) return;
 
+        // 显示背景色或背景图片
         if (myMaps.bk_Pic == null || myMaps.bk_Pic.length() <= 0 || myMaps.bk_Pic.equals("使用背景色")) {
             setBackgroundColor(myMaps.m_Sets[4]);  //设置背景色
         } else {
@@ -1022,6 +1029,32 @@ public class myGameViewMap extends View {
                 }
             }
         }
+
+        // 在背景上显示当前时间
+//        Calendar cal = Calendar.getInstance();
+//        cal.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+//
+//        String week = myWeek[cal.get(Calendar.DAY_OF_WEEK)];
+//        String hour;
+//        if (cal.get(Calendar.AM_PM) == 0)
+//            hour = String.valueOf(cal.get(Calendar.HOUR));
+//        else
+//            hour = String.valueOf(cal.get(Calendar.HOUR)+12);
+//        String minute = String.valueOf(cal.get(Calendar.MINUTE));
+//        String second = String.valueOf(cal.get(Calendar.SECOND));
+//
+//        String my_time = hour + ":" + minute + ":" + second + " 周" + week;
+//
+//        myPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+//        myPaint.setTextSize(30);
+//        myPaint.setStrokeWidth(3);
+//        myPaint.setARGB(255, 255, 255, 255);
+//        canvas.drawText(my_time, 10, 30, myPaint);
+//        myPaint.setStrokeWidth(1);
+//        myPaint.setARGB(255, 0, 0, 0);
+//        canvas.drawText(my_time, 10, 30, myPaint);
+
+        // 显示地图
         canvas.save();
         mCurrentMatrix.getValues(values);
         values[Matrix.MTRANS_Y] += m_nArenaTop;
