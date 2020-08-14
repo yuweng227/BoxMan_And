@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:keepScreenOn="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#334455"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="关卡集："/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right" >
+
+            <CheckBox
+                android:id="@+id/query_ans"
+                style="@style/CustomCheckboxTheme"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:checked="false"
+                android:text="答案库"/>
+
+            <CheckBox
+                android:id="@+id/query_all"
+                style="@style/CustomCheckboxTheme"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:checked="true"
+                android:text="全选"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/query_setname"
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
+        android:cacheColorHint="@null"
+        android:divider="#000000"
+        android:dividerHeight="4px"
+        android:fastScrollEnabled="false"
+        android:background="#363636"
+        android:textSize="16sp"
+        android:padding="4dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:background="#445566">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="关卡名称: "
+            android:padding="4dp"/>
+
+        <EditText
+            android:id="@+id/level_title"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:selectAllOnFocus="true"
+            android:background="#242424"
+            android:textColorHighlight="#000000"
+            android:padding="4dp"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="关卡作者: "
+            android:padding="4dp"/>
+
+        <EditText
+            android:id="@+id/level_author"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:selectAllOnFocus="true"
+            android:background="#242424"
+            android:textColorHighlight="#000000"
+            android:padding="4dp"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="箱子个数: "
+            android:padding="4dp"/>
+
+        <EditText
+            android:id="@+id/level_boxs"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:digits="0123456789"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:selectAllOnFocus="true"
+            android:background="#242424"
+            android:textColorHighlight="#000000"
+            android:padding="4dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text=" -- "
+            android:padding="4dp"/>
+
+        <EditText
+            android:id="@+id/level_boxs2"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:digits="0123456789"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:selectAllOnFocus="true"
+            android:background="#242424"
+            android:textColorHighlight="#000000"
+            android:padding="4dp"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="关卡列数: "
+            android:padding="4dp"/>
+
+        <EditText
+            android:id="@+id/level_cols"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:digits="0123456789"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:selectAllOnFocus="true"
+            android:background="#242424"
+            android:textColorHighlight="#000000"
+            android:padding="4dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text=" -- "
+            android:padding="4dp"/>
+
+        <EditText
+            android:id="@+id/level_cols2"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:digits="0123456789"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:selectAllOnFocus="true"
+            android:background="#242424"
+            android:textColorHighlight="#000000"
+            android:padding="4dp"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="关卡行数: "
+            android:padding="4dp"/>
+
+        <EditText
+            android:id="@+id/level_rows"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:digits="0123456789"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:selectAllOnFocus="true"
+            android:background="#242424"
+            android:textColorHighlight="#000000"
+            android:padding="4dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text=" -- "
+            android:padding="4dp"/>
+
+        <EditText
+            android:id="@+id/level_rows2"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:digits="0123456789"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:selectAllOnFocus="true"
+            android:background="#242424"
+            android:textColorHighlight="#000000"
+            android:padding="4dp"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636">
+    </View>
+
+
+</LinearLayout>

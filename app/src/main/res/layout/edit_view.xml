@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/edit_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#ffffffff"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TabHost
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0.0dp"
+                    android:layout_weight="1.0"/>
+
+                <TabWidget
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.0"
+                    android:visibility="gone"/>
+
+                <RadioGroup
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:background="#ff778899"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/bt_UnDo2"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/unbit2"
+                        android:text="撤销"/>
+
+                    <CheckBox
+                        android:id="@+id/bt_ReDo2"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/rebit2"
+                        android:text="重做"/>
+
+                   	<CheckBox
+                        android:id="@+id/bt_Cut"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/cutbit"
+                        android:text="剪切"/>
+
+                    <CheckBox
+                        android:id="@+id/bt_Copy"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+						android:drawableTop="@drawable/copybit"
+                        android:text="复制"/>
+
+                    <CheckBox
+                        android:id="@+id/bt_Paste"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/pastebit"
+                        android:text="粘贴"/>
+
+                    <CheckBox
+                        android:id="@+id/bt_tru2"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/trbtn"
+                        android:text="变换"/>
+
+                    <CheckBox
+                        android:id="@+id/bt_save"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/save"
+                        android:text="保存"/>
+
+                 	<CheckBox
+                        android:id="@+id/bt_More"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/chbtn"
+                        android:text="更多"/>
+
+                   	</RadioGroup>
+            </LinearLayout>
+        </TabHost>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/edit_bottom"
+		android:background="#FF000000">
+
+		<my.boxman.myEditViewMap
+			android:layout_width="match_parent"
+    		android:layout_height="match_parent"
+		    android:id="@+id/edMapView" />
+
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">推箱快手</string>
+    <string name="menu_settings">Settings</string>
+    <string name="get_scroll_position">getScrollPosition():</string>
+    <string name="get_zoomed_rect">getZoomedRect():</string>
+    <string name="get_current_zoom">getCurrentZoom():</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_map_brow">myMapBrow</string>
+    
+  	<item type="id" name="tag_g"></item>
+  	<item type="id" name="tag_c"></item>
+
+</resources>

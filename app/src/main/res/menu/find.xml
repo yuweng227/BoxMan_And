@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+	<item
+		android:id="@+id/find_pre"
+		android:title="上一关"
+		android:showAsAction="always"/>
+
+	<item
+		android:id="@+id/find_next"
+		android:title="下一关"
+		android:showAsAction="always"/>
+
+	<item
+		android:id="@+id/find_trun"
+		android:title="转动关卡"/>
+
+	<item
+		android:id="@+id/find_level"
+		android:title="似源切换"/>
+
+	<item
+		android:id="@+id/find_solution"
+		android:title="解关答案..."/>
+
+	<item
+		android:id="@+id/find_level_all"
+		android:checkable="true"
+		android:title="关卡全貌"/>
+
+	<item
+		android:id="@+id/find_about"
+		android:title="关于..."/>
+
+	<item
+		android:id="@+id/find_help"
+		android:title="操作说明"/>
+
+</menu>

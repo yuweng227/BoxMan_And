@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:keepScreenOn="true">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#334455"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="关卡集："/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right" >
+
+            <CheckBox
+                android:id="@+id/im_all"
+                style="@style/CustomCheckboxTheme"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:checked="true"
+                android:text="全选"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/im_sets"
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
+        android:cacheColorHint="@null"
+        android:divider="#000000"
+        android:dividerHeight="4px"
+        android:fastScrollEnabled="false"
+        android:background="#363636"
+        android:textSize="16sp"
+        android:padding="4dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:background="#445566">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:padding="4dp"
+            android:text="选项："/>
+
+        <View
+            android:layout_width="16dp"
+            android:layout_height="match_parent"
+            android:background="#363636">
+        </View>
+
+        <CheckBox
+            android:id="@+id/im_xsb"
+            style="@style/CustomCheckboxTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:checked="false"
+            android:text="XSB"/>
+
+        <View
+            android:layout_width="10dp"
+            android:layout_height="match_parent"
+            android:background="#363636">
+        </View>
+
+        <CheckBox
+            android:id="@+id/im_lurd"
+            style="@style/CustomCheckboxTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:checked="false"
+            android:text="Lurd"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636">
+    </View>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingLeft="12dp"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <RadioGroup
+            android:id="@+id/myCodeGroup3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:background="#363636">
+            </View>
+
+            <RadioButton
+                android:id="@+id/rb_code_auto3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="自动" />
+
+            <View
+                android:layout_width="16dp"
+                android:layout_height="match_parent"
+                android:background="#363636">
+            </View>
+
+            <RadioButton
+                android:id="@+id/rb_code_GBK3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GBK" />
+
+            <View
+                android:layout_width="16dp"
+                android:layout_height="match_parent"
+                android:background="#363636">
+            </View>
+
+            <RadioButton
+                android:id="@+id/rb_code_utf83"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="UTF-8" />
+
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="12dp"
+        android:background="#363636">
+    </View>
+
+</LinearLayout>

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:keepScreenOn="true">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:background="#363636">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="right"
+        android:paddingRight="16dp"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="国家/地区:"
+            android:padding="4dp"/>
+
+        <LinearLayout
+            android:layout_width="220dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center">
+
+        <Spinner
+            android:id="@+id/submit_country"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:typeface="monospace"
+            android:spinnerMode="dropdown"
+            android:background="#242424"
+            android:popupBackground="#363636"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="16dp"
+        android:background="#363636">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="right"
+        android:paddingRight="16dp"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="姓名:"
+            android:padding="4dp"/>
+
+        <EditText
+            android:id="@+id/submit_id"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:selectAllOnFocus="true"
+            android:background="#242424"
+            android:textColorHighlight="#000000"
+            android:padding="4dp"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="16dp"
+        android:background="#363636">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="right"
+        android:paddingRight="16dp"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="Email:"
+            android:padding="4dp"/>
+
+        <EditText
+            android:id="@+id/submit_email"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:selectAllOnFocus="true"
+            android:background="#242424"
+            android:textColorHighlight="#000000"
+            android:padding="4dp"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:background="#363636">
+    </View>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:background="#303030">
+    </View>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="16dp"
+        android:background="#363636">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="right"
+        android:paddingRight="16dp"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/submit_Cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="10pt"
+            android:paddingLeft="10dp"
+            android:paddingTop="5dp"
+            android:text="返回"
+            android:paddingBottom="5dp"/>
+
+        <View
+            android:layout_width="50dp"
+            android:layout_height="match_parent">
+        </View>
+
+        <Button
+            android:id="@+id/submit_OK"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="10pt"
+            android:paddingLeft="10dp"
+            android:paddingTop="5dp"
+            android:text="提交"
+            android:paddingBottom="5dp"/>
+
+        <View
+            android:layout_width="30dp"
+            android:layout_height="match_parent">
+        </View>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="16dp"
+        android:background="#363636">
+    </View>
+
+</LinearLayout>

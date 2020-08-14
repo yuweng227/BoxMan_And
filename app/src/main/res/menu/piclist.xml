@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+	<item
+		android:id="@+id/pic_path"
+		android:showAsAction="always"
+		android:title="位置"/>
+
+</menu>

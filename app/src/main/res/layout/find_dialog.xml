@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:keepScreenOn="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#334455"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="关卡集："/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right" >
+
+            <CheckBox
+                android:id="@+id/find_ans"
+                style="@style/CustomCheckboxTheme"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:checked="false"
+                android:text="答案库"/>
+
+            <CheckBox
+                android:id="@+id/find_all"
+                style="@style/CustomCheckboxTheme"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:checked="true"
+                android:text="全选"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/find_setname"
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
+        android:cacheColorHint="@null"
+        android:divider="#000000"
+        android:dividerHeight="4px"
+        android:fastScrollEnabled="false"
+        android:background="#363636"
+        android:textSize="16sp"
+        android:padding="4dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#334455"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="相似度："/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right" >
+
+            <CheckBox
+                android:id="@+id/find_sort"
+                style="@style/CustomCheckboxTheme"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:checked="false"
+                android:text="排序"/>
+
+            <CheckBox
+                android:id="@+id/find_ignore_box"
+                style="@style/CustomCheckboxTheme"
+                android:layout_width="145dp"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:checked="false"
+                android:text="忽略箱子和人"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/find_similarity"
+        android:layout_width="match_parent"
+        android:listSelector="#0088aa"
+        android:layout_height="210dp"
+        android:cacheColorHint="@null"
+        android:divider="#000000"
+        android:dividerHeight="4px"
+        android:fastScrollEnabled="false"
+        android:background="#363636"
+        android:textSize="16sp"
+        android:padding="4dp"/>
+
+</LinearLayout>

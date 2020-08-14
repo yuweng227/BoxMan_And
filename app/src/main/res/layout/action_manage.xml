@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:background="#363636"
+        android:layout_height="415dp">
+
+        <EditText
+            android:id="@+id/etAction"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:typeface="monospace"
+            android:background="#363636"
+            android:textSize="20sp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"/>
+
+    </ScrollView>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginLeft="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="执行: "
+            android:padding="4dp"/>
+
+        <CheckBox
+            android:id="@+id/cb_curPos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/CustomCheckboxTheme"
+            android:padding="4dp"
+            android:checked="true"
+            android:textSize="18sp"
+            android:text="从当前点"/>
+
+        <CheckBox
+            android:id="@+id/cb_curTrun"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/CustomCheckboxTheme"
+            android:paddingLeft="4dp"
+            android:checked="false"
+            android:textSize="18sp"
+            android:text="按关卡之旋转"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp">
+
+        <Button
+            android:id="@+id/btLoadAct"
+            android:layout_width="52dp"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:padding="2dp"
+            android:layout_margin="2dp"
+            android:text="加载" />
+
+        <View
+            android:layout_width="4dp"
+            android:layout_height="match_parent">
+        </View>
+
+        <Button
+            android:id="@+id/btSavedAct"
+            android:layout_width="52dp"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:padding="2dp"
+            android:layout_margin="2dp"
+            android:text="存入" />
+
+        <View
+            android:layout_width="4dp"
+            android:layout_height="match_parent">
+        </View>
+
+        <Button
+            android:id="@+id/btClear"
+            android:layout_width="48dp"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:padding="2dp"
+            android:layout_margin="2dp"
+            android:text="清空" />
+
+        <View
+            android:layout_width="4dp"
+            android:layout_height="match_parent">
+        </View>
+
+        <Button
+            android:id="@+id/btSave_t"
+            android:layout_width="48dp"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:padding="2dp"
+            android:layout_margin="2dp"
+            android:text="暂存" />
+
+        <View
+            android:layout_width="4dp"
+            android:layout_height="match_parent">
+        </View>
+
+        <CheckBox
+            android:id="@+id/cb_PreEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/CustomCheckboxTheme"
+            android:layout_gravity="center"
+            android:checked="false"
+            android:textSize="12sp"
+            android:text="恢\n复"/>
+
+        <View
+            android:layout_width="4dp"
+            android:layout_height="match_parent">
+        </View>
+
+        <Button
+            android:id="@+id/btDO"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:padding="2dp"
+            android:layout_margin="2dp"
+            android:text="执行" />
+
+    </LinearLayout>
+
+</LinearLayout>
+</ScrollView >

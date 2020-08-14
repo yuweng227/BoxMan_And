@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/main_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#ffffffff"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TabHost
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0.0dp"
+                    android:layout_weight="1.0"/>
+
+                <TabWidget
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.0"
+                    android:visibility="gone"/>
+
+                <RadioGroup
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:background="#ff778899"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/bt_UnDo"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/undobtn"
+                        android:text="后退"/>
+
+                    <CheckBox
+                        android:id="@+id/bt_ReDo"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/redobtn"
+                        android:text="前进"/>
+
+                   	<CheckBox
+                        android:id="@+id/cb_IM"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/imbtn"
+                        android:checked="false"
+                        android:text="瞬移"/>
+
+                    <CheckBox
+                        android:id="@+id/cb_BK"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+						android:drawableTop="@drawable/bkbtn"
+                        android:checked="false"
+                        android:text="逆推"/>
+
+                   	<CheckBox
+                        android:id="@+id/cb_Sel"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/selbtn"
+                        android:checked="false"
+                        android:text="计数"/>
+
+                   	<CheckBox
+                        android:id="@+id/cb_TR"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/trbtn"
+                        android:checked="false"
+                        android:text="转置"/>
+
+                 	<CheckBox
+                        android:id="@+id/cb_More"
+                        style="@style/tab_style"
+                        android:layout_marginTop="2.0dp"
+                        android:drawableTop="@drawable/chbtn"
+                        android:text="更多"/>
+
+                   	</RadioGroup>
+            </LinearLayout>
+        </TabHost>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/main_bottom"
+		android:background="#FF000000">
+
+		<my.boxman.myGameViewMap
+			android:layout_width="match_parent"
+    		android:layout_height="match_parent"
+		    android:id="@+id/mxMapView" />
+
+    </LinearLayout>
+
+</RelativeLayout>

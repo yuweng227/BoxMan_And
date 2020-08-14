@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+	<item
+		android:id="@+id/act_recording"
+		android:showAsAction="always"
+		android:title="录制动作"/>
+
+	<!--<item-->
+	<!--android:id="@+id/act_yass"-->
+	<!--android:title="YASS求解"/>-->
+
+	<item
+		android:id="@+id/act_L_90"
+		android:title="左旋90度（Lurd）"/>
+
+	<item
+		android:id="@+id/act_R_90"
+		android:title="右旋90度（Lurd）"/>
+
+	<item
+		android:id="@+id/act_180"
+		android:title="右旋180度（Lurd）"/>
+
+	<item
+		android:id="@+id/act_LR"
+		android:title="左右翻转（Lurd）"/>
+
+	<item
+		android:id="@+id/act_UD"
+		android:title="上下翻转（Lurd）"/>
+
+	<item
+		android:id="@+id/act_micro_about"
+		android:title="“宏”功能说明"/>
+
+	<item
+		android:id="@+id/act_about"
+		android:title="“导入”说明"/>
+
+</menu>

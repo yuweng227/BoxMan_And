@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+	<item
+		android:id="@+id/levels_add"
+		android:title="╋"
+		android:showAsAction="always" />
+
+	<item
+		android:id="@+id/levels_top"
+		android:title="顶"
+		android:showAsAction="always"/>
+
+	<item
+		android:id="@+id/levels_bottom"
+		android:title="底"
+		android:showAsAction="always"/>
+
+	<item
+		android:id="@+id/levels_goto"
+		android:title="定位..."/>
+
+	<item
+		android:id="@+id/levels_select"
+		android:checkable="true"
+		android:title="多选模式"/>
+
+	<item
+		android:id="@+id/levels_showtitle"
+		android:checkable="true"
+		android:title="显示标题"/>
+
+	<item
+		android:id="@+id/levels_showdup"
+		android:checkable="true"
+		android:title="标识重复关卡"/>
+
+	<item
+		android:id="@+id/levels_first_nosolved"
+		android:title="打开首个未解关卡"/>
+
+	<item
+		android:id="@+id/levels_recent"
+		android:title="打开上次推的关卡"/>
+
+	<item
+		android:id="@+id/levels_clear"
+		android:title="清空列表"/>
+
+	<item
+		android:id="@+id/levels_col_count"
+		android:title="每行图标个数..."/>
+
+	<item
+		android:id="@+id/levels_delete_more"
+		android:title="批量删除..."/>
+
+	<item
+		android:id="@+id/levels_about"
+		android:title="关于"/>
+
+</menu>

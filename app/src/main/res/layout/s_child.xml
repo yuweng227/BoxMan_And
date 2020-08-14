@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:keepScreenOn="true">
+    <TextView
+        android:id="@+id/s_expChild"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:textColor="#ffbbbbbb"
+        android:paddingLeft="20dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:textSize="16sp"
+        android:text="No Data" />
+    <TextView
+        android:id="@+id/s_expChild2"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:textColor="#ff888888"
+        android:paddingRight="20dp"
+        android:gravity="right"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:textSize="12sp"
+        android:text="No Data" />
+</LinearLayout>

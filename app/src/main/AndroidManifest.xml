@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="my.boxman" >
+
+    <!-- SDCard写数据权限 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:theme="@style/AppBaseTheme"
+        android:icon="@drawable/icon"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+		android:largeHeap="true">
+        <activity android:name="my.boxman.BoxMan"
+            android:screenOrientation="portrait"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="my.boxman.Help"
+            android:screenOrientation="portrait"
+            android:label="@string/app_name" >
+        </activity>
+        <activity android:name="my.boxman.myGridView"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name="my.boxman.myPicListView"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name="my.boxman.myGameView"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name="my.boxman.myFindView"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name="my.boxman.myEditView"
+            android:screenOrientation="portrait"><!--永远竖屏-->
+        </activity>
+        <activity android:name="my.boxman.myRecogView"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name="my.boxman.myAbout"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name="my.boxman.myAbout1"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name="my.boxman.myAbout2"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name="my.boxman.myActGMView"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name="my.boxman.myExport"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name="my.boxman.myStateBrow"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name="my.boxman.mySubmitList"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name="my.boxman.mySubmit"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name="my.boxman.mySolutionBrow"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name="my.boxman.myFileExplorerActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <service android:name="my.boxman.service.MyService"
+            android:priority="1000"
+            android:enabled="true"
+            android:exported="true">
+         </service>
+    </application>
+
+</manifest>

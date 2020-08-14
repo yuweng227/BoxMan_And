@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:keepScreenOn="true">
+     <TextView 
+        android:id="@+id/s_expGroup"   
+        android:layout_width="fill_parent"   
+        android:layout_height="fill_parent" 
+	    android:textColor="#ffdddddd"
+        android:paddingLeft="32dp"
+        android:layout_marginTop="6dp"   
+        android:layout_marginBottom="6dp"   
+        android:textSize="16sp"   
+        android:text="No data"   
+    >   
+    </TextView>
+</LinearLayout>

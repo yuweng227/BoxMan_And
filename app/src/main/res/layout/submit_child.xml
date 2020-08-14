@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:keepScreenOn="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FF000000">
+
+        <TextView
+            android:id="@+id/submit_expChild"
+            android:layout_width="30dp"
+            android:layout_height="fill_parent"
+            android:textColor="#ffbbbbbb"
+            android:padding="4dp"
+            android:gravity="center"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:textSize="11sp"
+            android:text="No Data" />
+        <TextView
+            android:id="@+id/submit_expChild2"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:textColor="#ffbbbbbb"
+            android:padding="4dp"
+            android:gravity="center"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:textSize="12sp"
+            android:text="No Data" />
+        <TextView
+            android:id="@+id/submit_expChild3"
+            android:layout_width="130dp"
+            android:layout_height="fill_parent"
+            android:textColor="#ffbbbbbb"
+            android:padding="4dp"
+            android:gravity="left"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:textSize="12sp"
+            android:text="No Data" />
+        <TextView
+            android:id="@+id/submit_expChild5"
+            android:layout_width="60dp"
+            android:layout_height="fill_parent"
+            android:textColor="#ffbbbbbb"
+            android:padding="4dp"
+            android:gravity="left"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:textSize="12sp"
+            android:text="No Data" />
+        <TextView
+            android:id="@+id/submit_expChild6"
+            android:layout_width="60dp"
+            android:layout_height="fill_parent"
+            android:textColor="#ffbbbbbb"
+            android:padding="4dp"
+            android:gravity="left"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:textSize="12sp"
+            android:text="No Data" />
+        <TextView
+            android:id="@+id/submit_expChild4"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:textColor="#ffbbbbbb"
+            android:padding="4dp"
+            android:gravity="center"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:textSize="12sp"
+            android:text="No Data" />
+
+    </LinearLayout>
+
+</LinearLayout>

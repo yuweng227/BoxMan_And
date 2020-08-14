@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+	<item
+		android:id="@+id/st_ex_all_ans_file"
+		android:title="导出全部答案到文档"/>
+
+	<item
+		android:id="@+id/st_ex_all_ans"
+		android:title="导出全部答案到剪切板"/>
+
+	<item
+		android:id="@+id/st_ex_ans_comment"
+		android:checkable="true"
+		android:title="导出答案的注释信息"/>
+
+	<item
+		android:id="@+id/st_ex_submit_list"
+		android:title="比赛答案提交列表"/>
+
+</menu>
