@@ -1756,6 +1756,11 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 				myMaps.m_lstMaps.add(new mapNode(level.get("level").toString(), level.get("title").toString(), level.get("author").toString(), ""));
 			}
 
+			level = (JSONObject)obj.get("extra2");
+			if (level != null) {
+				myMaps.m_lstMaps.add(new mapNode(level.get("level").toString(), level.get("title").toString(), level.get("author").toString(), ""));
+			}
+
 			if (myMaps.m_lstMaps.size() > 0) {
 				inf = "第" + m_no + "期比赛关卡加载成功！\n开始：" + m_begin + "\n结束：" + m_end;
 				for (int k = 0; k < myMaps.m_lstMaps.size(); k++) {

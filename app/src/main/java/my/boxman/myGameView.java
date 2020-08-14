@@ -4204,10 +4204,10 @@ public class myGameView extends Activity {
                             //保险起见，清理逆推地图中的仓管员
                             for (int i = 0; i < myMaps.curMap.Rows; i++) {
                                 for (int j = 0; j < myMaps.curMap.Cols; j++) {
-                                    if (bk_cArray[m_nRow2][m_nCol2] == '+')
-                                        bk_cArray[m_nRow2][m_nCol2] = '.';
-                                    else if (bk_cArray[m_nRow2][m_nCol2] == '@')
-                                        bk_cArray[m_nRow2][m_nCol2] = '-';
+                                    if (bk_cArray[i][j] == '+')
+                                        bk_cArray[i][j] = '.';
+                                    else if (bk_cArray[i][j] == '@')
+                                        bk_cArray[i][j] = '-';
                                 }
                             }
                             //此时一定能够放置仓管员，不能放置的情况，前面已经排除
@@ -4232,10 +4232,10 @@ public class myGameView extends Activity {
                         //保险起见，清理逆推地图中的仓管员
                         for (int i = 0; i < myMaps.curMap.Rows; i++) {
                             for (int j = 0; j < myMaps.curMap.Cols; j++) {
-                                if (bk_cArray[m_nRow2][m_nCol2] == '+')
-                                    bk_cArray[m_nRow2][m_nCol2] = '.';
-                                else if (bk_cArray[m_nRow2][m_nCol2] == '@')
-                                    bk_cArray[m_nRow2][m_nCol2] = '-';
+                                if (bk_cArray[i][j] == '+')
+                                    bk_cArray[i][j] = '.';
+                                else if (bk_cArray[i][j] == '@')
+                                    bk_cArray[i][j] = '-';
                             }
                         }
                         //此时一定能够放置仓管员，不能放置的情况，前面已经排除
