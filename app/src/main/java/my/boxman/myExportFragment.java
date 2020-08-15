@@ -121,9 +121,14 @@ public class myExportFragment extends DialogFragment {
 
             if (mySets == null) return "没有可导出的内容！";
 
-            mInf = new StringBuilder("共选择").append(mySets.length).append("个关卡集，导出到“推箱快手/”：");
+            int set_Count = 0;
+            for (int k = 0; k < mySets.length; k++) {  //计数选中的关卡集个数
+                if (mySets[k] > 0) set_Count++;
+            }
+            if (myAns) set_Count++;
+            mInf = new StringBuilder("共选择").append(set_Count).append("个关卡集:");
 
-            for (int k = 0; k < mySets.length; k++) {  //导入选中的关卡集
+            for (int k = 0; k < mySets.length; k++) {  //导出选中的关卡集
 
                 if (mySets[k] > 0) {
                     mySQLite.m_SQL.get_Set(mySets[k]);
@@ -135,7 +140,7 @@ public class myExportFragment extends DialogFragment {
                         publishProgress("导出...\n" + my_Name);
                         if (isCancelled()) return mInf.append("...Break！").toString();
 
-                        File file = new File(myMaps.sRoot + myMaps.sPath + my_Name);
+                        File file = new File(myMaps.sRoot + myMaps.sPath + "导出/" + my_Name);
                         if (!file.exists() || myReWrite) {  // 若没有同名文档或允许覆盖
                             exportSet(my_Name, file.exists());  // 导出
                         } else {  // 若若不允许覆盖同名文档，则跳过
@@ -147,8 +152,8 @@ public class myExportFragment extends DialogFragment {
 
             if (myAns) {  //导出仅有答案的关卡
                 my_Name = "仅有答案的关卡" + (myLurd ? ".txt" : ".xsb");
-                publishProgress("导出...\n" + myMaps.sPath + my_Name);
-                File file = new File(myMaps.sRoot + myMaps.sPath + my_Name);
+                publishProgress("导出...\n" + my_Name);
+                File file = new File(myMaps.sRoot + myMaps.sPath + "导出/" + my_Name);
                 mInf.append('\n').append(my_Name);
                 if (!file.exists() || myReWrite) {
                     if (isCancelled()) return mInf.append("...Break！").toString();
@@ -190,22 +195,31 @@ public class myExportFragment extends DialogFragment {
         try{
             final StringBuilder str = new StringBuilder();
 
-            if (myMaps.J_Author != null && myMaps.J_Author.length() > 0){
+            if (myMaps.J_Author != null && !myMaps.J_Author.trim().isEmpty()){
                 str.append("Author: ").append(myMaps.J_Author).append('\n');
             }
-            if (myMaps.J_Comment != null && myMaps.J_Comment.length() > 0){
+            if (myMaps.J_Comment != null && !myMaps.J_Comment.trim().isEmpty()){
                 str.append("Comment:\n").append(myMaps.J_Comment).append("\nComment-End:\n");
             }
 
             for(int k = 0; k < myMaps.m_lstMaps.size(); k++){
-                str.append("\n;Level "+ (k+1) + "\n").append(myMaps.m_lstMaps.get(k).Map).append('\n');
-                if (myMaps.m_lstMaps.get(k).Title != null && myMaps.m_lstMaps.get(k).Title.length() > 0){
+                str.append("\n;Level "+ (k+1) + "\n");
+                if (myMaps.m_lstMaps.get(k).Title != null && !myMaps.m_lstMaps.get(k).Title.equals("无效关卡")) {
+                    str.append(myMaps.m_lstMaps.get(k).Map).append('\n');
+                }
+                if (myMaps.m_lstMaps.get(k).Title != null && !myMaps.m_lstMaps.get(k).Title.trim().isEmpty()){
+                    if (myMaps.m_lstMaps.get(k).Title.equals("无效关卡")) {
+                        if (myMaps.m_lstMaps.get(k).Comment != null && !myMaps.m_lstMaps.get(k).Comment.trim().isEmpty()){
+                            str.append(myMaps.m_lstMaps.get(k).Comment).append('\n');
+                        }
+                        continue;
+                    }
                     str.append("Title: ").append(myMaps.m_lstMaps.get(k).Title).append('\n');
                 }
-                if (myMaps.m_lstMaps.get(k).Author != null && myMaps.m_lstMaps.get(k).Author.length() > 0){
+                if (myMaps.m_lstMaps.get(k).Author != null && !myMaps.m_lstMaps.get(k).Author.trim().isEmpty()){
                     str.append("Author: ").append(myMaps.m_lstMaps.get(k).Author).append('\n');
                 }
-                if (myMaps.m_lstMaps.get(k).Comment != null && myMaps.m_lstMaps.get(k).Comment.length() > 0){
+                if (myMaps.m_lstMaps.get(k).Comment != null && !myMaps.m_lstMaps.get(k).Comment.trim().isEmpty()){
                     str.append("Comment:\n").append(myMaps.m_lstMaps.get(k).Comment);
                     if (myMaps.m_lstMaps.get(k).Comment.charAt(myMaps.m_lstMaps.get(k).Comment.length()-1) != '\n') str.append('\n');
                     str.append("Comment-End:\n");
@@ -216,7 +230,7 @@ public class myExportFragment extends DialogFragment {
                 }
             }
 
-            FileOutputStream fout = new FileOutputStream(myMaps.sRoot + myMaps.sPath + my_Name);
+            FileOutputStream fout = new FileOutputStream(myMaps.sRoot + myMaps.sPath + "导出/" + my_Name);
             fout.write(str.toString().getBytes());
             fout.flush();
             fout.close();

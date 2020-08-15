@@ -2,14 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
 	<item
+		android:id="@+id/levels_add"
+		android:title="╋"
+		android:showAsAction="always" />
+
+	<item
 		android:id="@+id/levels_top"
 		android:title="顶"
-		android:showAsAction="ifRoom"/>
+		android:showAsAction="always"/>
 
 	<item
 		android:id="@+id/levels_bottom"
 		android:title="底"
-		android:showAsAction="ifRoom"/>
+		android:showAsAction="always"/>
 
 	<item
 		android:id="@+id/levels_goto"
@@ -43,19 +48,15 @@
 		android:title="清空列表"/>
 
 	<item
-		android:id="@+id/levels_builder"
-		android:title="【 新建关卡 】"/>
-
-	<item
 		android:id="@+id/levels_delete_more"
 		android:title="批量删除..."/>
 
 	<item
-		android:id="@+id/levels_to_newset"
-		android:title="保存到关卡集..."/>
-
+		android:id="@+id/levels_col_count"
+		android:title="每行图标个数..."/>
+  	
 	<item
 		android:id="@+id/levels_about"
 		android:title="关于"/>
-  	
+
 </menu>

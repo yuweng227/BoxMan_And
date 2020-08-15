@@ -3,7 +3,6 @@ package my.boxman;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -585,10 +584,6 @@ public class myEditViewMap extends View {
         m_fScale = values[Matrix.MSCALE_X];
         canvas.setMatrix(mMapMatrix);
 
-        if (myMaps.edPict != null) {
-            canvas.drawBitmap(myMaps.edPict, null, new Rect(0, 0, m_nPicWidth, m_nPicHeight), myPaint);
-        }
-
         for (int r = m_nMapTop, i, j; r <= m_nMapBottom; r++) {
             for (int c = m_nMapLeft; c <= m_nMapRight; c++) {
                 i = r - m_nMapTop;
@@ -600,12 +595,7 @@ public class myEditViewMap extends View {
                 myPaint.setARGB(255, 0, 0, 0);
                 //第一层显示————地板
                 if (ch != '#') {
-                    if (myMaps.edPict != null) {
-                        myPaint.setARGB(140, 0, 0, 0);
-                        canvas.drawBitmap(myMaps.skinBit, rtKF, rt, myPaint);
-                    } else {
-                        canvas.drawBitmap(myMaps.skinBit, rtKF, rt, myPaint);
-                    }
+                    canvas.drawBitmap(myMaps.skinBit, rtKF, rt, myPaint);
                 }
                 //第二层显示————目标点
                 if (ch == '.' || ch == '*' || ch == '+') {

@@ -155,6 +155,7 @@ public class myQueryFragment extends DialogFragment {
                 while (cursor.moveToNext()){
                     if (isCancelled()) return m_Map_List;
 
+                    int m = 0;  //统计箱子数
                     try {
                         p_id = cursor.getLong(cursor.getColumnIndex("P_id"));
                         Title0 = cursor.getString(cursor.getColumnIndex("L_Title"));
@@ -165,35 +166,39 @@ public class myQueryFragment extends DialogFragment {
                         if (mCount < 0) mCount = cursor.getCount();
                         publishProgress("查询中... " + n + "/" + mCount + '\n' + myMaps.getSetTitle(p_id) + '\n' + Title0 + '\n' + Author0);
 
-                        Arr2 = Map0.split("\r\n|\n\r|\n|\r|\\|");
+                        if (Title0.equals("无效关卡")) {
+                            Rows2 = 0;
+                            Cols2 = 0;
+                            Author0 = "";
+                        } else {
+                            Arr2 = Map0.split("\r\n|\n\r|\n|\r|\\|");
+                            Rows2 = Arr2.length;
+                            Cols2 = Arr2[0].length();
+
+                            //检查 XSB 是否规整
+                            if (Rows2 < 3 || Cols2 < 3) continue;
+
+                            flg = false;
+                            for (int r = 1; r < Rows2; r++) {
+                                if (Arr2[r].length() != Cols2) {
+                                    flg = true;
+                                    break;
+                                }
+                            }
+                            if (flg ) continue;
+
+                            //DB 中的关卡
+                            char ch;
+                            for (int r = 0; r < Rows2; r++) {
+                                for (int c = 0; c < Cols2; c++) {
+                                    ch = Arr2[r].charAt(c);
+                                    if (ch == '$' || ch == '*') m++;
+                                }
+                            }                        }
                     } catch (Exception e) {
                         continue;
                     }
 
-                    Rows2 = Arr2.length;
-                    Cols2 = Arr2[0].length();
-
-                    //检查 XSB 是否规整
-                    if (Rows2 < 3 || Cols2 < 3) continue;
-
-                    flg = false;
-                    for (int r = 1; r < Rows2; r++) {
-                        if (Arr2[r].length() != Cols2) {
-                            flg = true;
-                            break;
-                        }
-                    }
-                    if (flg ) continue;
-
-                    //DB 中的关卡
-                    char ch;
-                    int m = 0;  //统计箱子数
-                    for (int r = 0; r < Rows2; r++) {
-                        for (int c = 0; c < Cols2; c++) {
-                            ch = Arr2[r].charAt(c);
-                            if (ch == '$' || ch == '*') m++;
-                        }
-                    }
                     if ((mTitle.isEmpty() || Title0.toUpperCase().indexOf(mTitle) >= 0) &&
                             (mAuthor.isEmpty() || Author0.toUpperCase().indexOf(mAuthor) >= 0) &&
                             ((mBoxs == 0 && mBoxs2 == 0 || mBoxs2 == 0 && mBoxs <= m) || (mBoxs == 0 && mBoxs2 >= m) || (mBoxs <= m && mBoxs2 >= m)) &&

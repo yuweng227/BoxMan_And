@@ -21,6 +21,7 @@
         android:layout_height="6dp"
         android:background="#363636">
     </View>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -75,37 +76,44 @@
     </View>
 
     <LinearLayout
-        android:orientation="horizontal"
+        android:id="@+id/ex_is_grid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:layout_marginTop="8dp">
+        android:orientation="vertical">
 
-        <CheckBox
-            android:id="@+id/cb_ex_Cur"
-            style="@style/CustomCheckboxTheme"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="4dp"
-            android:checked="false"
-            android:text="导出正推现场"/>
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:layout_marginTop="8dp">
 
-        <View
-            android:layout_width="30dp"
-            android:layout_height="match_parent"
-            android:background="#363636">
-        </View>
+            <CheckBox
+                android:id="@+id/cb_ex_Cur"
+                style="@style/CustomCheckboxTheme"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:checked="false"
+                android:text="导出正推现场"/>
 
-        <CheckBox
-            android:id="@+id/cb_ex_Trun"
-            style="@style/CustomCheckboxTheme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="4dp"
-            android:checked="false"
-            android:text="保持现场旋转"/>
+            <View
+                android:layout_width="30dp"
+                android:layout_height="match_parent"
+                android:background="#363636">
+            </View>
 
+            <CheckBox
+                android:id="@+id/cb_ex_Trun"
+                style="@style/CustomCheckboxTheme"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:checked="false"
+                android:text="保持现场旋转"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -143,7 +151,5 @@
             android:text="导出" />
 
     </LinearLayout>
-
-
 
 </LinearLayout>

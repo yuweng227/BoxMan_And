@@ -98,14 +98,6 @@ public class myAbout1 extends Activity {
 					myMaps.J_Title = str;
 					myMaps.J_Author = et_Author.getText().toString().trim();
 					myMaps.J_Comment = et_Comment.getText().toString().trim();
-//					int st = 0, end = myMaps.J_Comment.length()-1;
-//					while (st <= end && myMaps.J_Comment.charAt(st) == '\n')
-//						st++;
-//					while (end >= 0 && myMaps.J_Comment.charAt(end) == '\n') {
-//						end--;
-//					}
-//					if (st > end) myMaps.J_Comment = "";
-//					else myMaps.J_Comment = myMaps.J_Comment.substring(st, end);
 					mySQLite.m_SQL.Update_T_Inf(myMaps.m_Set_id, myMaps.J_Title, myMaps.J_Author, myMaps.J_Comment);
 					myMaps.mSets3.get(myMaps.m_Sets[1]).title = str;
 					myMaps.sFile = str;

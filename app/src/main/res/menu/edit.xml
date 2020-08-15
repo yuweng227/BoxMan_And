@@ -18,10 +18,6 @@
 		android:title="设置..."/>
 
 	<item
-		android:id="@+id/edit_edpic"
-		android:title="关卡参照图..."/>
-
-	<item
 		android:id="@+id/edit_clear"
 		android:title="清空地图"/>
 

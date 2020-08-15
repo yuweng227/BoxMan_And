@@ -92,9 +92,9 @@ public class mySolutionBrow extends Activity {
 		   .setPositiveButton("覆写", new DialogInterface.OnClickListener(){
 				@Override
 				public void onClick(DialogInterface arg0, int arg1) {
-					String my_Name = new StringBuilder(myMaps.sRoot).append(myMaps.sPath).append("关卡扩展/").append(myMaps.sFile).append("_").append(myMaps.m_lstMaps.indexOf(myMaps.curMap)+1).append(".txt").toString();
+					String my_Name = new StringBuilder(myMaps.sRoot).append(myMaps.sPath).append("导出/").append(myMaps.sFile).append("_").append(myMaps.m_lstMaps.indexOf(myMaps.curMap)+1).append(".txt").toString();
 					if (writeStateFile(my_Name))
-						MyToast.showToast(mySolutionBrow.this, "导出完成！\n" + my_Name.substring(my_Name.indexOf("关卡扩展/")), Toast.LENGTH_SHORT);
+						MyToast.showToast(mySolutionBrow.this, "导出完成！\n" + my_Name.substring(my_Name.indexOf("导出/")), Toast.LENGTH_SHORT);
 					else
 						MyToast.showToast(mySolutionBrow.this, "导出时遇到错误！", Toast.LENGTH_SHORT);
 				}});
@@ -115,14 +115,17 @@ public class mySolutionBrow extends Activity {
 //				case 3:  //导出到文档: XSB+Lurd
 //					myMaps.m_State = mySQLite.m_SQL.load_State(m_Sel_id);
 //
-//					String my_Name = new StringBuilder(myMaps.sRoot).append(myMaps.sPath).append("关卡扩展/").append(myMaps.sFile).append("_").append(myMaps.m_lstMaps.indexOf(myMaps.curMap) + 1).append(".txt").toString();
+//					File targetDir = new File(myMaps.sRoot+myMaps.sPath + "导出/");
+//					if (!targetDir.exists()) targetDir.mkdirs();  //创建文件夹
+//
+//					String my_Name = new StringBuilder(myMaps.sRoot).append(myMaps.sPath).append("导出/").append(myMaps.sFile).append("_").append(myMaps.m_lstMaps.indexOf(myMaps.curMap) + 1).append(".txt").toString();
 //					File file = new File(my_Name);
 //					if (file.exists()) {
-//						mDlg.setMessage("文档已存在，覆写吗？\n" + my_Name.substring(my_Name.indexOf("关卡扩展/")));
+//						mDlg.setMessage("文档已存在，覆写吗？\n" + my_Name.substring(my_Name.indexOf("导出/")));
 //						mDlg.show(); //自设关卡已存在
 //					} else {
 //						if (writeStateFile(my_Name))
-//							MyToast.showToast(this, "导出完成！\n" + my_Name.substring(my_Name.indexOf("关卡扩展/")), Toast.LENGTH_SHORT);
+//							MyToast.showToast(this, "导出完成！\n" + my_Name.substring(my_Name.indexOf("导出/")), Toast.LENGTH_SHORT);
 //						else
 //							MyToast.showToast(this, "导出时遇到错误！", Toast.LENGTH_SHORT);
 //					}

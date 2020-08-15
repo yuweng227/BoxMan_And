@@ -123,19 +123,6 @@
         android:background="#363636"
         android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:padding="4dp"
-            android:text="文档编码："/>
-
-        <View
-            android:layout_width="16dp"
-            android:layout_height="match_parent"
-            android:background="#363636">
-        </View>
-
         <RadioGroup
             android:id="@+id/myCodeGroup3"
             android:layout_width="wrap_content"
@@ -144,12 +131,30 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+            <View
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:background="#363636">
+            </View>
+
             <RadioButton
                 android:id="@+id/rb_code_auto3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:text="自动" />
+
+            <View
+                android:layout_width="16dp"
+                android:layout_height="match_parent"
+                android:background="#363636">
+            </View>
+
+            <RadioButton
+                android:id="@+id/rb_code_GBK3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GBK" />
 
             <View
                 android:layout_width="16dp"

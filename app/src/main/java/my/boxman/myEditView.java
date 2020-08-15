@@ -10,6 +10,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -96,7 +97,6 @@ public class myEditView extends Activity {
             for (int j = 0; j < myMaps.m_nMaxCol*2; j++)
                 m_cArray[i][j] = '-';
 
-        myMaps.edPict = null;
         old_Map = myMaps.curMap;
         myMaps.isSaveBlock = false;
         initMap();
@@ -222,11 +222,11 @@ public class myEditView extends Activity {
                             for (int i = 0; i < selRows2; i++) {
                                 for (int j = 0; j < selCols2; j++) {
                                     if (m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '#' ||
-                                        m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '$' ||
-                                        m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '*' ||
-                                        m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '@' ||
-                                        m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '+' ||
-                                        m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '.') {
+                                            m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '$' ||
+                                            m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '*' ||
+                                            m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '@' ||
+                                            m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '+' ||
+                                            m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '.') {
                                         flg = true;
                                         break;
                                     }
@@ -311,7 +311,7 @@ public class myEditView extends Activity {
                         } else MyToast.showToast(myEditView.this, "剪切板中无法解析出 XSB！", Toast.LENGTH_SHORT);
                     }
                 }
-        }});
+            }});
 
         bt_Tru = (CheckBox) findViewById(R.id.bt_tru2);  //变换
         bt_Tru.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -354,7 +354,7 @@ public class myEditView extends Activity {
                     MyToast.showToast(myEditView.this, "关卡已保存！", Toast.LENGTH_LONG);
                     bt_Save.setEnabled(false);
                 } else
-                    MyToast.showToast(myEditView.this, "保存关卡时出错，保存失败！", Toast.LENGTH_SHORT);
+                    MyToast.showToast(myEditView.this, "出错了，保存失败！", Toast.LENGTH_SHORT);
             }
         });
 
@@ -395,11 +395,15 @@ public class myEditView extends Activity {
         try {
             if (mMap.m_nMapBottom-mMap.m_nMapTop < 2 || mMap.m_nMapRight-mMap.m_nMapLeft < 2) throw new Exception();
 
-            String[] Arr = myMaps.curMap.Map.split("\r\n|\n\r|\n|\r|\\|");
+            String[] Arr = null;
+
+            if (myMaps.curMap.Map != null) {
+                Arr = myMaps.curMap.Map.split("\r\n|\n\r|\n|\r|\\|");
+            }
 
             for (int i = mMap.m_nMapTop; i <= mMap.m_nMapBottom; i++) {
                 for (int j = mMap.m_nMapLeft; j <= mMap.m_nMapRight; j++) {
-                    if (isOK(Arr[i-mMap.m_nMapTop].charAt(j-mMap.m_nMapLeft))) m_cArray[i][j] = Arr[i-mMap.m_nMapTop].charAt(j-mMap.m_nMapLeft);
+                    if (Arr != null && isOK(Arr[i-mMap.m_nMapTop].charAt(j-mMap.m_nMapLeft))) m_cArray[i][j] = Arr[i-mMap.m_nMapTop].charAt(j-mMap.m_nMapLeft);
                     else m_cArray[i][j] = '-';
                 }
             }
@@ -407,12 +411,12 @@ public class myEditView extends Activity {
         } catch (ArrayIndexOutOfBoundsException ex) {
         } catch (Exception e) { }
 
-        if (flg) {
+        if (flg) {  // 创建新的空关卡
             myMaps.curMap.Map = null;
-            myMaps.curMap.Rows = 12;
-            myMaps.curMap.Cols = 8;
-            mMap.m_nMapBottom = mMap.m_nMapTop + 11;
-            mMap.m_nMapRight  = mMap.m_nMapLeft + 7;
+            myMaps.curMap.Rows = 15;
+            myMaps.curMap.Cols = 10;
+            mMap.m_nMapBottom = mMap.m_nMapTop + myMaps.curMap.Rows - 1;
+            mMap.m_nMapRight  = mMap.m_nMapLeft + myMaps.curMap.Cols - 1;
             for (int i = mMap.m_nMapTop; i <= mMap.m_nMapBottom; i++) {
                 for (int j = mMap.m_nMapLeft; j <= mMap.m_nMapRight; j++) {
                     m_cArray[i][j] = '-';
@@ -534,13 +538,15 @@ public class myEditView extends Activity {
                         MyToast.showToast(myEditView.this, "关卡已保存！", Toast.LENGTH_LONG);
                         bt_Save.setEnabled(false);
                     } else {
-                        MyToast.showToast(myEditView.this, "保存关卡时出错，关卡未保存！", Toast.LENGTH_LONG);
+                        MyToast.showToast(myEditView.this, "出错了，关卡未保存！", Toast.LENGTH_LONG);
                     }
                 }
-                String[] myList = new String[myMaps.mSets3.size()];
+                final String[] myList = new String[myMaps.mSets3.size()+1];
                 for (int k = 0; k < myMaps.mSets3.size(); k++) {
                     myList[k] = myMaps.mSets3.get(k).title;
                 }
+                myList[myList.length-1] = myMaps.getNewSetName();  // 末尾，自动加上一个新的关卡集
+
                 if (mWhich < 0 || mWhich >= myList.length) mWhich = 0;
                 AlertDialog.Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 builder.setTitle("提交到").setSingleChoiceItems(myList, mWhich, new OnClickListener() {
@@ -551,6 +557,21 @@ public class myEditView extends Activity {
                 }).setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        // 如果，选中的是最后一个新建关卡集
+                        if (mWhich == myList.length-1) {
+                            try {
+                                long new_ID = mySQLite.m_SQL.add_T(3, myList[myList.length-1], "", "");
+                                //将“新关卡集”加入列表
+                                set_Node nd = new set_Node();
+                                nd.id = new_ID;
+                                nd.title = myList[myList.length-1];
+                                myMaps.mSets3.add(nd);
+                            } catch (Exception e) {
+                                MyToast.showToast(myEditView.this, "新关卡集创建失败: " + myList[myList.length-1], Toast.LENGTH_SHORT);
+                                return;
+                            }
+                        }
+
                         ndAct = null;
                         ndAct = new ActNode(m_cArray, mMap.m_nMapLeft, mMap.m_nMapRight, mMap.m_nMapTop, mMap.m_nMapBottom, -1, -1, mMap.mMatrix, mMap.mCurrentMatrix, null, null);
                         ndAct.Act(8);
@@ -570,7 +591,7 @@ public class myEditView extends Activity {
                                 bt_ReDo.setEnabled(false);
 //                                bt_Save.setEnabled(true);
                             } else
-                                MyToast.showToast(myEditView.this, "未知原因，提交失败！", Toast.LENGTH_SHORT);
+                                MyToast.showToast(myEditView.this, "出错了，提交失败！", Toast.LENGTH_SHORT);
                         }
                     }
                 }).setNegativeButton("取消", null);
@@ -582,7 +603,7 @@ public class myEditView extends Activity {
                         MyToast.showToast(myEditView.this, "关卡已保存！", Toast.LENGTH_LONG);
                         bt_Save.setEnabled(false);
                     } else {
-                        MyToast.showToast(myEditView.this, "保存关卡时出错，关卡未保存！", Toast.LENGTH_LONG);
+                        MyToast.showToast(myEditView.this, "出错了，关卡未保存！", Toast.LENGTH_LONG);
                     }
                 }
                 old_Map = myMaps.curMap;
@@ -705,7 +726,7 @@ public class myEditView extends Activity {
                 });
 
                 AlertDialog.Builder dlg = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK);
-                dlg.setView(view).setCancelable(false).setTitle("修改尺寸").setNegativeButton("取消", null);
+                dlg.setView(view).setCancelable(false).setTitle("当前尺寸：" + (mMap.m_nMapRight-mMap.m_nMapLeft+1) + " × " + (mMap.m_nMapBottom-mMap.m_nMapTop+1)).setNegativeButton("取消", null);
                 dlg.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         int newLeft, newRight, newTop, newBottom;
@@ -853,61 +874,15 @@ public class myEditView extends Activity {
                     }
                 }).setCancelable(false).create().show();
                 return true;
-            case R.id.edit_edpic:  //加载参照关卡图
-                edPicList();
-                if (myMaps.mFile_List.size() > 0) {
-                    AlertDialog.Builder builder1 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
-                    builder1.setTitle("参照关卡图").setSingleChoiceItems(myMaps.mFile_List.toArray(new String[myMaps.mFile_List.size()]), -1, new OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            //选择的文档
-                            loadEDPic(myMaps.mFile_List.get(which));
-                            if (which > 0) mMap.setArena();  //重置舞台场地（背景）
-                            else myMaps.edPict = null;
-                            mMap.invalidate();
-                            dialog.dismiss();
-                        }
-                    }).setNegativeButton("取消", null);
-                    builder1.setCancelable(false).show();
-                } else
-                    MyToast.showToast(this, "没找到关卡图片文档", Toast.LENGTH_SHORT);
-
-                return true;
             default:
                 return super.onOptionsItemSelected(mt);
         }
     }
 
-    //加载关卡图
-    private static void loadEDPic(String fn) {
-        if (myMaps.edPict != null) myMaps.edPict.recycle();
-        myMaps.edPict = null;
-
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inPreferredConfig = android.graphics.Bitmap.Config.RGB_565;
-        try{
-            opts.inJustDecodeBounds = false;   //提取图片
-            opts.inDither=false;    /*不进行图片抖动处理*/
-            opts.inPreferredConfig=null;  /*设置让解码器以最佳方式解码*/
-		    /* 下面两个字段需要组合使用 */
-            opts.inPurgeable = true;
-            opts.inInputShareable = true;
-            myMaps.edPict = BitmapFactory.decodeFile(myMaps.sRoot+myMaps.sPath + "关卡图/" + fn, opts);
-        } catch (Exception e) {
-            if (myMaps.edPict != null && !myMaps.edPict.isRecycled()) {
-                myMaps.edPict.recycle();
-                myMaps.edPict = null;
-            }
-            System.gc();
-            MyToast.showToast(myMaps.ctxDealFile, "无效的关卡图！", Toast.LENGTH_SHORT);
-        }
-    }
-
-    //取得"皮肤/"文件夹下的文档列表
-    private void edPicList() {
-        File targetDir = new File(myMaps.sRoot + myMaps.sPath + "关卡图/");
+    //取得"关卡图/"文件夹下的文档列表
+    private void edPicList(String fn) {
+        File targetDir = new File(fn);
         myMaps.mFile_List.clear();
-        myMaps.mFile_List.add("无图");
         if (!targetDir.exists()) targetDir.mkdirs();  //创建"关卡图/"文件夹
         else {
             String[] filelist = targetDir.list();
@@ -948,17 +923,17 @@ public class myEditView extends Activity {
                                 switch (mMap.m_Objs[mMap.cur_Obj]) {
                                     case '.':
                                         if (m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '$' ||
-                                            m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '*')
+                                                m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '*')
                                             m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '*';
                                         else if (m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '@' ||
-                                                 m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '+')
+                                                m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '+')
                                             m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '+';
                                         else m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '.';
                                         break;
                                     case '$':
                                         if (m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '.' ||
-                                            m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '+' ||
-                                            m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '*')
+                                                m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '+' ||
+                                                m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '*')
                                             m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '*';
                                         else m_cArray[i + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '$';
                                         break;
@@ -973,31 +948,31 @@ public class myEditView extends Activity {
                             switch (mMap.m_Objs[mMap.cur_Obj]) {
                                 case '.':
                                     if (m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '$' ||
-                                        m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '*')
+                                            m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '*')
                                         m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '*';
                                     else if (m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '@' ||
-                                             m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '+')
+                                            m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '+')
                                         m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '+';
                                     else m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '.';
 
                                     if (m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '$' ||
-                                        m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '*')
+                                            m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '*')
                                         m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '*';
                                     else if (m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '@' ||
-                                             m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '+')
+                                            m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '+')
                                         m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '+';
                                     else m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '.';
                                     break;
                                 case '$':
                                     if (m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '.' ||
-                                        m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '+' ||
-                                        m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '*')
+                                            m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '+' ||
+                                            m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '*')
                                         m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '*';
                                     else m_cArray[mMap.selNode.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '$';
 
                                     if (m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '.' ||
-                                        m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '+' ||
-                                        m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '*')
+                                            m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '+' ||
+                                            m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] == '*')
                                         m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '*';
                                     else
                                         m_cArray[mMap.selNode2.row + mMap.m_nMapTop][j + mMap.m_nMapLeft] = '$';
@@ -1012,31 +987,31 @@ public class myEditView extends Activity {
                             switch (mMap.m_Objs[mMap.cur_Obj]) {
                                 case '.':
                                     if (m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] == '$' ||
-                                        m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] == '*')
+                                            m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] == '*')
                                         m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] = '*';
                                     else if (m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] == '@' ||
-                                             m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] == '+')
+                                            m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] == '+')
                                         m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] = '+';
                                     else m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] = '.';
 
                                     if (m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] == '$' ||
-                                        m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] == '*')
+                                            m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] == '*')
                                         m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] = '*';
                                     else if (m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] == '@' ||
-                                             m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] == '+')
+                                            m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] == '+')
                                         m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] = '+';
                                     else m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] = '.';
                                     break;
                                 case '$':
                                     if (m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] == '.' ||
-                                        m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] == '+' ||
-                                        m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] == '*')
+                                            m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] == '+' ||
+                                            m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] == '*')
                                         m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] = '*';
                                     else m_cArray[i + mMap.m_nMapTop][mMap.selNode.col + mMap.m_nMapLeft] = '$';
 
                                     if (m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] == '.' ||
-                                        m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] == '+' ||
-                                        m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] == '*')
+                                            m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] == '+' ||
+                                            m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] == '*')
                                         m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] = '*';
                                     else m_cArray[i + mMap.m_nMapTop][mMap.selNode2.col + mMap.m_nMapLeft] = '$';
                                     break;
@@ -1199,12 +1174,12 @@ public class myEditView extends Activity {
         et.setTypeface(Typeface.MONOSPACE);
         et.setText(str);
         new Builder(this).setTitle("剪切板").setView(et).setCancelable(false)
-            .setNegativeButton("取消", null)
-            .setPositiveButton("确定", new OnClickListener() {
-            @Override
-            public void onClick(DialogInterface arg0, int arg1) {
-                myMaps.saveClipper(et.getText().toString());
-            }}).create().show();
+                .setNegativeButton("取消", null)
+                .setPositiveButton("确定", new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        myMaps.saveClipper(et.getText().toString());
+                    }}).create().show();
     }
 
     //从剪切板导入 XSB
@@ -1217,16 +1192,30 @@ public class myEditView extends Activity {
             et.setTypeface(Typeface.MONOSPACE);
             et.setText(str);
             new Builder(this).setTitle("剪切板").setView(et).setCancelable(false)
-                .setNegativeButton("取消", null)
-                .setPositiveButton("确定", new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface arg0, int arg1) {
-                        try {
-                            StringBuilder ss = new StringBuilder();
-                            ss.append(et.getText());
-                            String fn = myMaps.curMap.fileName;
-                            if (myMaps.isLURD(ss.toString())) {  //导入的是答案
-                                if (LurdToXSB(ss.toString())) {
+                    .setNegativeButton("取消", null)
+                    .setPositiveButton("确定", new OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            try {
+                                StringBuilder ss = new StringBuilder();
+                                ss.append(et.getText());
+                                String fn = myMaps.curMap.fileName;
+                                if (myMaps.isLURD(ss.toString())) {  //导入的是答案
+                                    if (LurdToXSB(ss.toString())) {
+                                        ndAct = null;
+                                        ndAct = new ActNode(m_cArray, mMap.m_nMapLeft, mMap.m_nMapRight, mMap.m_nMapTop, mMap.m_nMapBottom, -1, -1, mMap.mMatrix, mMap.mCurrentMatrix, null, null);
+                                        ndAct.Act(7);
+
+                                        initMap();
+
+                                        myMaps.curMap.fileName = fn;
+                                        m_UnDoList.offer(ndAct);
+                                        bt_UnDo.setEnabled(true);
+                                        m_ReDoList.clear();
+                                        bt_ReDo.setEnabled(false);
+                                        bt_Save.setEnabled(true);
+                                    } else throw new Exception();
+                                } else if (myMaps.loadXSB(ss.toString())) {  //导入 XSB 有效
                                     ndAct = null;
                                     ndAct = new ActNode(m_cArray, mMap.m_nMapLeft, mMap.m_nMapRight, mMap.m_nMapTop, mMap.m_nMapBottom, -1, -1, mMap.mMatrix, mMap.mCurrentMatrix, null, null);
                                     ndAct.Act(7);
@@ -1240,25 +1229,11 @@ public class myEditView extends Activity {
                                     bt_ReDo.setEnabled(false);
                                     bt_Save.setEnabled(true);
                                 } else throw new Exception();
-                            } else if (myMaps.loadXSB(ss.toString())) {  //导入 XSB 有效
-                                ndAct = null;
-                                ndAct = new ActNode(m_cArray, mMap.m_nMapLeft, mMap.m_nMapRight, mMap.m_nMapTop, mMap.m_nMapBottom, -1, -1, mMap.mMatrix, mMap.mCurrentMatrix, null, null);
-                                ndAct.Act(7);
+                            } catch (Exception e) {
+                                MyToast.showToast(myEditView.this, "数据不可用！", Toast.LENGTH_SHORT);
+                            }
 
-                                initMap();
-
-                                myMaps.curMap.fileName = fn;
-                                m_UnDoList.offer(ndAct);
-                                bt_UnDo.setEnabled(true);
-                                m_ReDoList.clear();
-                                bt_ReDo.setEnabled(false);
-                                bt_Save.setEnabled(true);
-                            } else throw new Exception();
-                        } catch (Exception e) {
-                            MyToast.showToast(myEditView.this, "数据不可用！", Toast.LENGTH_SHORT);
-                        }
-
-                    }}).create().show();
+                        }}).create().show();
         }
     }
 
@@ -1280,11 +1255,11 @@ public class myEditView extends Activity {
             for (int j = 0; j < selCols2; j++) {
                 if (i < mRC && j < mRC) continue; //重合区域，不需检查
                 if (m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '#' ||
-                    m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '$' ||
-                    m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '*' ||
-                    m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '@' ||
-                    m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '+' ||
-                    m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '.') {
+                        m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '$' ||
+                        m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '*' ||
+                        m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '@' ||
+                        m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '+' ||
+                        m_cArray[mMap.selNode.row + i + mMap.m_nMapTop][mMap.selNode.col + j + mMap.m_nMapLeft] == '.') {
                     flg = true;
                     break;
                 }
@@ -1764,8 +1739,8 @@ public class myEditView extends Activity {
             str.append('\n').append(myMaps.curMap.Comment);
             int len = myMaps.curMap.Comment.length()-1;
             if (len >= 0 &&
-                myMaps.curMap.Comment.charAt(len) != '\n' &&
-                myMaps.curMap.Comment.charAt(len) != '\r')
+                    myMaps.curMap.Comment.charAt(len) != '\n' &&
+                    myMaps.curMap.Comment.charAt(len) != '\r')
                 str.append('\n');
             str.append("Comment_end:");
 
@@ -1935,7 +1910,7 @@ public class myEditView extends Activity {
         if (nRen != 1) {
             AlertDialog.Builder dlg = new Builder(this, AlertDialog.THEME_HOLO_DARK);
             dlg.setTitle("错误").setMessage("仓管员数目不正确！").setCancelable(false)
-                .setPositiveButton("确定", null).create().show();
+                    .setPositiveButton("确定", null).create().show();
 
             return false;
         }
@@ -1971,7 +1946,7 @@ public class myEditView extends Activity {
                 r = mr + dr[k];
                 c = mc + dc[k];
                 if (r < mMap.m_nMapTop || r > mMap.m_nMapBottom || c < mMap.m_nMapLeft || c > mMap.m_nMapRight ||
-                    Mark[r-mMap.m_nMapTop][c-mMap.m_nMapLeft] || mLevel[r][c] == '#') continue; //遇到墙壁或已访问或界外
+                        Mark[r-mMap.m_nMapTop][c-mMap.m_nMapLeft] || mLevel[r][c] == '#') continue; //遇到墙壁或已访问或界外
 
                 //重新计算四至
                 if (r1 > r) r1 = r;  //顶
@@ -1998,7 +1973,10 @@ public class myEditView extends Activity {
         for (int i = mMap.m_nMapTop; i <= mMap.m_nMapBottom; i++) {
             for (int j = mMap.m_nMapLeft; j <= mMap.m_nMapRight; j++) {
                 if (!Mark[i - mMap.m_nMapTop][j - mMap.m_nMapLeft]) {  //清理非可达区域的无效元素
-                    if (mLevel[i][j] == '#' || mLevel[i][j] == '*') {
+                    if (mLevel[i][j] == '#' || mLevel[i][j] == '$' || mLevel[i][j] == '*') {
+                        if (mLevel[i][j] == '$' || mLevel[i][j] == '*') {
+                            mLevel[i][j] = '#';
+                        }
                         if (i < r1)  r1 = i;
                         if (j < c1)  c1 = j;
                         if (i > r2)  r2 = i;
@@ -2231,9 +2209,9 @@ public class myEditView extends Activity {
         if (myMaps.m_Sets[16] == 1) return;
 
         int myFlags = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |         //隐藏导航栏或操作栏
-                      View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |        //隐藏状态栏和导航栏时的沉浸模式和保持交互性
-                      View.SYSTEM_UI_FLAG_FULLSCREEN |              //全屏显示
-                      View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |        //隐藏状态栏和导航栏时的沉浸模式和保持交互性
+                View.SYSTEM_UI_FLAG_FULLSCREEN |              //全屏显示
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
 
         getWindow().getDecorView().setSystemUiVisibility(myFlags);     //隐藏状态栏和导航栏时的沉浸模式和保持交互性
     }
@@ -2369,4 +2347,3 @@ public class myEditView extends Activity {
         }
     }
 }
-

@@ -174,8 +174,7 @@ public class mySQLite {
 //	public boolean isFieldExist(String tableName, String fieldName) {
 //		String queryStr = "select sql from sqlite_master where type = 'table' and name = '%s'";
 //		queryStr = String.format(queryStr, tableName);
-//		Cursor c;
-//		c = mSDB.rawQuery(queryStr, null);
+//		Cursor c = mSDB.rawQuery(queryStr, null);
 //		String tableCreateSql = null;
 //		try {
 //			if (c != null && c.moveToFirst()) {
@@ -189,13 +188,12 @@ public class mySQLite {
 //		return false;
 //	}
 
-//	//添加字段
+	//添加字段
 //	public int addField(String tableName, String fieldName, String typeName) {
 //		if (isFieldExist(tableName, fieldName))
 //			return -1;
 //
-//		String queryStr = "ALTER TABLE %s ADD %s %s";
-//		queryStr = String.format(queryStr, tableName, fieldName, typeName);
+//		String queryStr = String.format("ALTER TABLE %s ADD %s %s", tableName, fieldName, typeName);
 //
 //		try {
 //			mSDB.execSQL(queryStr);
@@ -560,6 +558,25 @@ public class mySQLite {
 		return m_id;
 	}
 
+	//获取关卡最大id
+	public long get_Max_id() {
+		Cursor cursor = mSDB.rawQuery("PRAGMA synchronous=OFF", null);
+		String strSql = "select max(L_id) AS maxId from G_Level";
+
+		long m_id = -1;
+		try {
+			cursor = mSDB.rawQuery(strSql, null);
+			if (cursor.moveToNext()) {
+				m_id = cursor.getLong(cursor.getColumnIndex("maxId"));
+			}
+		} catch (Exception e) {
+			m_id = -1;
+		} finally {
+			if (cursor != null) cursor.close();
+		}
+		return m_id;
+	}
+
 	//按CRC查找关卡，返回关卡id
 //	public long find_Level(long key) {
 //		Cursor cursor = mSDB.rawQuery("PRAGMA synchronous=OFF", null);
@@ -797,6 +814,38 @@ public class mySQLite {
 		} finally {
 			if (cursor != null) cursor.close();
 		}
+	}
+
+	//取得 id 后面的关卡到“关卡列表”
+	public ArrayList<mapNode> get_New_Level(long p_id, long l_id) {
+		Cursor cursor = mSDB.rawQuery("PRAGMA synchronous=OFF", null);
+		String where = "P_id = ? AND L_id > ?";
+		String[] whereValue = { Long.toString(p_id), Long.toString(l_id) };
+		ArrayList<mapNode> mList = new ArrayList<mapNode>();
+
+		try {
+			cursor = mSDB.query("G_Level", null, where, whereValue, null, null, null);
+			if (cursor.moveToNext()){
+				mapNode nd = new mapNode(1,
+						p_id,
+						cursor.getLong(cursor.getColumnIndex("L_id")),
+						cursor.getInt(cursor.getColumnIndex("L_Solved")),
+						cursor.getString(cursor.getColumnIndex("L_Content")),  //关卡 XSB
+						cursor.getString(cursor.getColumnIndex("L_Title")),
+						cursor.getString(cursor.getColumnIndex("L_Author")),
+						cursor.getString(cursor.getColumnIndex("L_Comment")),
+						cursor.getLong(cursor.getColumnIndex("L_Key")),
+						cursor.getInt(cursor.getColumnIndex("L_Solution")),  //第几转
+						cursor.getString(cursor.getColumnIndex("L_thin_XSB")),  //标准化关卡
+						cursor.getInt(cursor.getColumnIndex("L_Locked")));  //是否加锁图标
+
+				mList.add(nd);
+			}
+		} catch (Exception e) {
+		} finally {
+			if (cursor != null) cursor.close();
+		}
+		return mList;
 	}
 
 //	//计算关卡的SHA1
@@ -1150,8 +1199,12 @@ public class mySQLite {
 			while (cursor.moveToNext()) {
 				k = cursor.getLong(cursor.getColumnIndex("L_Key"));
 
-				mSDB.delete("G_State", "P_Key = ? AND G_Solution = 1", new String[]{ Long.toString(k) });  //删除答案
-				Set_L_Solved(k, 0, false);
+				if (k == 328550106) {  //第一个内置关卡 -- BoxWorld 的第一个关卡
+//					mSDB.delete("G_State", "P_Key = ? AND G_Solution = 1 AND S_CRC <> 893232827", new String[]{ Long.toString(k) });  //删除答案
+				} else {
+					mSDB.delete("G_State", "P_Key = ? AND G_Solution = 1", new String[]{ Long.toString(k) });  //删除答案
+					Set_L_Solved(k, 0, false);
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace ();
@@ -1237,7 +1290,7 @@ public class mySQLite {
 		cursor = mSDB.rawQuery("PRAGMA synchronous=OFF", null);
 
 		try{
-			my_Name = new StringBuilder(myMaps.sRoot).append(myMaps.sPath).append("仅有答案的关卡").append(myMaps.isLurd ? ".txt" : ".xsb").toString();
+			my_Name = new StringBuilder(myMaps.sRoot).append(myMaps.sPath).append("导出/").append("仅有答案的关卡").append(myMaps.isLurd ? ".txt" : ".xsb").toString();
 
 			FileOutputStream fout = new FileOutputStream(my_Name);
 			StringBuilder str = new StringBuilder();
@@ -1392,24 +1445,34 @@ public class mySQLite {
 		return str.toString();
 	}
 
-	//取得最优移动答案
-	public String load_Solution(long key, int num) {
+	// 检查该答案是否为快手保留答案（第一个内置关卡，至少需保留 1 个答案）
+	public boolean isCanDeleteAns(long s_id) {
 		Cursor cursor = mSDB.rawQuery("PRAGMA synchronous=OFF", null);
-		String where = "P_Key = ? AND G_Solution = 1";     //以CRC查询答案
-		String orderBy = "G_Moves, G_Pushs";
-		String[] whereValue = { Long.toString(key) };
-		String s = "";
-		try {
-			cursor = mSDB.query("G_State", null, where, whereValue, null, null, orderBy);
 
-			if (cursor.moveToNext()){
-				s = myMaps.getANS(cursor.getString(cursor.getColumnIndex("G_Ans")), cursor.getInt(cursor.getColumnIndex("P_Key_Num")), num);
+		String where = "S_id = ?";
+		String[] whereValue = { Long.toString(s_id) };
+
+		long p_key;
+		try {
+			cursor = mSDB.query("G_State", null, where, whereValue, null, null, null);
+			if (cursor.moveToNext()) {
+				p_key = cursor.getLong(cursor.getColumnIndex("P_Key"));
+
+				// 不是第一个内置关卡，或多于 1 个答案，就允许删除
+				if (p_key != 328550106 || count_S(-1, p_key, 1) > 1) {
+					return false;
+				} else {
+					return true;
+				}
 			}
+
 		} catch (Exception e) {
 		} finally {
 			if (cursor != null) cursor.close();
 		}
-		return s;
+
+		// 遇到错误时，默认不允许删除
+		return true;
 	}
 
 	//取得指定关卡(id)的状态列表

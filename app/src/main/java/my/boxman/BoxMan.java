@@ -15,6 +15,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.text.InputType;
+import android.text.method.NumberKeyListener;
 import android.util.DisplayMetrics;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -50,8 +52,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -92,12 +94,13 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		setContentView(R.layout.main);
 
 		myMaps.res = getResources();
-		myMaps.m_Sets = new int[33]; //系统参数设置数组
+		myMaps.m_Sets = new int[37]; //系统参数设置数组
 
 		//路径设置
 		myMaps.sRoot = Environment.getExternalStorageDirectory().getPath();
 		myMaps.sPath = new StringBuilder("/推箱快手/").toString();
 		loadSets();  //读入系统设置
+        myMaps.myPathList[0] = myMaps.sPath + "关卡图/";
 
 		//取得 Context
 		try {
@@ -182,7 +185,11 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 				byte[] buffer = new byte[len];
 				while (fis.read(buffer) > 0) fos.write(buffer);
 			}
-			targetDir = new File(myMaps.sRoot+myMaps.sPath + "关卡扩展/");
+			targetDir = new File(myMaps.sRoot+myMaps.sPath + "超长答案/");
+			if (!targetDir.exists()) targetDir.mkdirs();  //创建文件夹
+			targetDir = new File(myMaps.sRoot+myMaps.sPath + "导入/");
+			if (!targetDir.exists()) targetDir.mkdirs();  //创建文件夹
+			targetDir = new File(myMaps.sRoot+myMaps.sPath + "导出/");
 			if (!targetDir.exists()) targetDir.mkdirs();  //创建文件夹
 			targetDir = new File(myMaps.sRoot+myMaps.sPath + "创编关卡/");
 			if (!targetDir.exists()) targetDir.mkdirs();  //创建文件夹
@@ -204,6 +211,17 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		myMaps.mSets1 = mySQLite.m_SQL.get_GroupList(1);
 		myMaps.mSets2 = mySQLite.m_SQL.get_GroupList(2);
 		myMaps.mSets3 = mySQLite.m_SQL.get_GroupList(3);
+		//若扩展关卡组是空的，则自动创建一个“新关卡集”
+		if (myMaps.mSets3.size() == 0) {
+			try {
+				long new_ID = mySQLite.m_SQL.add_T(3, "新关卡集", "", "");
+				//将“新关卡集”加入列表
+				set_Node nd = new set_Node();
+				nd.id = new_ID;
+				nd.title = "新关卡集";
+				myMaps.mSets3.add(nd);
+			} catch (Exception e) { }
+		}
 
 		//对扩展关卡集，按名称排序
 		MyComparator mc = new MyComparator() ;
@@ -304,6 +322,18 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		return true;
 	}
 
+	final NumberKeyListener getNumber = new NumberKeyListener() {
+		@Override
+		protected char[] getAcceptedChars() {
+			return new char[]{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'};
+		}
+
+		@Override
+		public int getInputType() {
+			return InputType.TYPE_CLASS_PHONE;
+		}
+	};
+
 	public boolean onOptionsItemSelected(MenuItem mt) {
 		switch (mt.getItemId()) {
 			case R.id.menu_set:  //导入
@@ -317,9 +347,9 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 				return true;
 			case R.id.menu_NewSet:  //增设新的关卡集...
 				final EditText et = new EditText(this);
-				et.setText("");
+				et.setText(myMaps.getNewSetName());
 				et.setMaxLines(1);
-				et.setSelection(et.getText().length());
+				et.selectAll();    //.setSelection(et.getText().length());
 
 				new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK).setTitle("关卡集名称").setCancelable(false)
 						.setView(et).setOnKeyListener(new DialogInterface.OnKeyListener() {
@@ -449,7 +479,12 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 				final EditText l_boxs2 = (EditText) view.findViewById(R.id.level_boxs2);  //关卡箱子数
 				final EditText l_cols2 = (EditText) view.findViewById(R.id.level_cols2);  //关卡列数
 				final EditText l_rows2 = (EditText) view.findViewById(R.id.level_rows2);  //关卡行数
-
+				l_boxs.setKeyListener(getNumber);
+				l_boxs2.setKeyListener(getNumber);
+				l_cols.setKeyListener(getNumber);
+				l_rows.setKeyListener(getNumber);
+				l_cols2.setKeyListener(getNumber);
+				l_rows2.setKeyListener(getNumber);
 				mySets = new ArrayList<Long>();                                                            //关卡集 id
 				mAdapter = new myMaps.MyAdapter(this, (ArrayList)myMaps.getData(mySets));
 				myMaps.m_setName.setAdapter(mAdapter);                                                     //关卡集
@@ -575,6 +610,13 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 				startActivity(intent3);
 
 				return true;
+			case R.id.menu_recog:
+				myMaps.edPicList(myMaps.sRoot + myMaps.myPathList[myMaps.m_Sets[36]]);
+				Intent intent4 = new Intent();
+				intent4.setClass(this, myPicListView.class);
+				startActivity(intent4);
+
+				return true;
 			case R.id.menu_help:
 				//帮助
 				Intent intent1 = new Intent();
@@ -645,11 +687,15 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 			myMaps.m_Sets[22] = 1;
 			myMaps.m_Sets[30] = 1;
 			myMaps.m_Sets[31] = 1;
+			myMaps.m_Sets[36] = 0;
 			myMaps.skin_File = "默认皮肤";
 			myMaps.bk_Pic = "使用背景色";
 			myMaps.nickname = "";
 			myMaps.country = "00";
 			myMaps.email = "";
+			myMaps.mMatchNo = "";
+			myMaps.mMatchDate1 = "";
+			myMaps.mMatchDate2 = "";
 			return;
 		}
 
@@ -660,6 +706,8 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		myMaps.m_Sets[1] = Integer.parseInt(file.get("常规", "当前关卡集", "0").toString());
 		myMaps.m_Sets[2] = Integer.parseInt(file.get("常规", "预览时是否显示关卡标题", "0").toString());
 		myMaps.m_Sets[12] = Integer.parseInt(file.get("常规", "是否标识出重复关卡", "1").toString());
+		myMaps.m_Sets[33] = Integer.parseInt(file.get("常规", "浏览时每行的图标数", "0").toString());
+		myMaps.m_Sets[34] = Integer.parseInt(file.get("常规", "浏览时每行的图标默认数", "0").toString());
 
 		myMaps.m_Sets[4] = Integer.parseInt(file.get("界面", "背景色", "0").toString());
 		myMaps.skin_File = file.get("界面", "皮肤", "默认皮肤").toString();
@@ -686,10 +734,20 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		myMaps.m_Sets[21] = Integer.parseInt(file.get("编辑", "关卡编辑中，图中标尺的字体颜色", "1677721600").toString());
 		myMaps.m_Sets[22] = Integer.parseInt(file.get("编辑", "关卡编辑中，携带标尺的元素", "1").toString());
 		myMaps.m_Sets[19] = Integer.parseInt(file.get("编辑", "是否采用YASC绘制习惯", "0").toString());
+		myMaps.m_Sets[36] = Integer.parseInt(file.get("识别", "图像识别", "0").toString());
 
 		myMaps.nickname = file.get("提交", "nickname", "").toString();
 		myMaps.country = file.get("提交", "country", "00").toString();
 		myMaps.email = file.get("提交", "email", "").toString();
+		myMaps.mMatchNo = file.get("比赛", "matchname", "").toString();
+		myMaps.mMatchDate1 = file.get("比赛", "mmatchdate1", "").toString();
+		myMaps.mMatchDate2 = file.get("比赛", "mmatchdate2", "").toString();
+
+		myMaps.myPathList[2] = file.get("识别", "sPicPath", "").toString();
+
+		if (myMaps.myPathList[2].trim().isEmpty()) {
+			myMaps.m_Sets[36] = 0;
+		}
 	}
 
 	//保存快手设置
@@ -700,6 +758,8 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		file.set("常规", "当前关卡集", myMaps.m_Sets[1]);
 		file.set("常规", "预览时是否显示关卡标题", myMaps.m_Sets[2]);
 		file.set("常规", "是否标识出重复关卡", myMaps.m_Sets[12]);
+		file.set("常规", "浏览时每行的图标数", myMaps.m_Sets[33]);
+		file.set("常规", "浏览时每行的图标默认数", myMaps.m_Sets[34]);
 
 		file.set("界面", "背景色", myMaps.m_Sets[4]);
 		file.set("界面", "皮肤", myMaps.skin_File);
@@ -726,10 +786,16 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		file.set("编辑", "关卡编辑中，图中标尺的字体颜色", myMaps.m_Sets[21]);
 		file.set("编辑", "关卡编辑中，携带标尺的元素", myMaps.m_Sets[22]);
 		file.set("编辑", "是否采用YASC绘制习惯", myMaps.m_Sets[19]);
+		file.set("识别", "图像识别", myMaps.m_Sets[36]);
 
 		file.set("提交", "nickname", myMaps.nickname);
 		file.set("提交", "country", myMaps.country);
 		file.set("提交", "email", myMaps.email);
+		file.set("比赛", "matchname", myMaps.mMatchNo);
+		file.set("比赛", "mmatchdate1", myMaps.mMatchDate1);
+		file.set("比赛", "mmatchdate2", myMaps.mMatchDate2);
+
+		file.set("识别", "sPicPath", myMaps.myPathList[2]);
 
 		file.save(new File(myMaps.sRoot+myMaps.sPath + "BoxMan.ini"));
 	}
@@ -914,6 +980,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 			final CheckBox m_XSB = (CheckBox) view.findViewById(R.id.im_xsb);                       //关卡
 			final CheckBox m_LURD = (CheckBox) view.findViewById(R.id.im_lurd);                     //答案
             final RadioGroup myCodeGroup = (RadioGroup) view.findViewById(R.id.myCodeGroup3);  //文档编码格式
+            final RadioButton rb_Code_GBK = (RadioButton) view.findViewById(R.id.rb_code_GBK3);  //GBK
             final RadioButton rb_Code_UTF8 = (RadioButton) view.findViewById(R.id.rb_code_utf83);  //UTF-8
 
 			mySets = new ArrayList<Long>();
@@ -973,14 +1040,16 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 			});
              myCodeGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
                 public void onCheckedChanged(RadioGroup group, int checkedId) {
-                    if (rb_Code_UTF8.getId() == checkedId){
-                        myMaps.isUTF8 = true;
+                    if (rb_Code_UTF8.getId() == checkedId) {
+                        myMaps.m_Code = 2;
+                    } else if (rb_Code_GBK.getId() == checkedId) {
+						myMaps.m_Code = 1;
                     } else {
-                        myMaps.isUTF8 = false;
+                        myMaps.m_Code = 0;
                     }
                 }
             });
-            myMaps.isUTF8 = false;
+            myMaps.m_Code = 0;
 			andOpen = false;
 			m_XSB.setChecked(true);
 			AlertDialog.Builder dlg = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK);
@@ -1123,7 +1192,9 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 			final CheckBox m_XSB = (CheckBox) view.findViewById(R.id.cb_xsb);  //关卡
 			final CheckBox m_LURD = (CheckBox) view.findViewById(R.id.cb_lurd);  //答案
 			final RadioGroup myCodeGroup = (RadioGroup) view.findViewById(R.id.myCodeGroup);  //文档编码格式
+			final RadioButton rb_Code_GBK = (RadioButton) view.findViewById(R.id.rb_code_GBK);  //GBK
 			final RadioButton rb_Code_UTF8 = (RadioButton) view.findViewById(R.id.rb_code_utf8);  //UTF-8
+			final CheckBox m_Open = (CheckBox) view.findViewById(R.id.cb_open3);  //导入仅一个关卡时，自动打开
 
 			m_XSB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 				@Override
@@ -1145,15 +1216,23 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 			});
 			myCodeGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
 				public void onCheckedChanged(RadioGroup group, int checkedId) {
-					if (rb_Code_UTF8.getId() == checkedId){
-						myMaps.isUTF8 = true;
+					if (rb_Code_UTF8.getId() == checkedId) {
+						myMaps.m_Code = 2;
+					} else if (rb_Code_GBK.getId() == checkedId) {
+						myMaps.m_Code = 1;
 					} else {
-						myMaps.isUTF8 = false;
+						myMaps.m_Code = 0;
 					}
 				}
 			});
-            myMaps.isUTF8 = false;
-            andOpen = false;
+			m_Open.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+				@Override
+				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+					myMaps.m_Sets[31] = isChecked ? 1 : 0;
+				}
+			});
+			m_Open.setChecked (myMaps.m_Sets[31] == 1 ? true : false);
+			myMaps.m_Code = 0;
 			m_XSB.setChecked(true);
 			AlertDialog.Builder dlg = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK);
 			dlg.setView(view).setCancelable(false);
@@ -1250,7 +1329,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 			mySQLite.m_SQL.get_Last_Level(myMaps.m_Set_id);  //取得刚刚添加的关卡到“关卡列表”（仅含一个关卡的列表）
 
 			if (0 == myMaps.m_Nums[3]) {  //关卡有效时
-				if (0 < myMaps.m_Nums[1]) MyToast.showToast(this, "答案导入不完整！", Toast.LENGTH_SHORT);
+				if (0 < myMaps.m_Nums[1]) MyToast.showToast(this, "重复或无效的答案未导入！", Toast.LENGTH_SHORT);
 				myMaps.iskinChange = false;
 				myMaps.sFile = "关卡导入";
 				myMaps.curMap = myMaps.m_lstMaps.get(0);
@@ -1283,7 +1362,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		}
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK);
-		builder.setTitle("信息").setMessage(inf.toString()).setPositiveButton("确定", null);
+		builder.setTitle("已存入“导出/”文件夹").setMessage(inf).setPositiveButton("确定", null);
 		builder.setCancelable(false).create().show();
 	}
 
@@ -1319,16 +1398,18 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 
 		menu.add(0, 1, 0, "打开");
 		menu.add(0, 2, 0, "导出...");
-//		menu.add(0, 3, 0, "导出(XSB+Lurd)");
-		menu.add(0, 4, 0, "清理集内关卡的状态记录");
+		menu.add(0, 3, 0, "清理状态记录...");
+        menu.add(0, 4, 0, "删除答案...");
 		if (groupPos > 2) {  //扩展组
-			menu.add(0, 5, 0, "添加关卡(文档)...");
-			menu.add(0, 6, 0, "添加关卡(剪切板)...");
-			menu.add(0, 7, 0, "添加比赛关卡(sokoban.ws)");
-			menu.add(0, 8, 0, "重命名...");
-			menu.add(0, 9, 0, "删除");
+            menu.add(0, 5, 0, "重命名...");
+            menu.add(0, 6, 0, "删除");
+			menu.add(0, 7, 0, "添加关卡(文档)...");
+			menu.add(0, 8, 0, "添加关卡(剪切板)...");
+			menu.add(0, 9, 0, "添加比赛关卡(sokoban.ws)");
 		}
-		menu.add(0, 10, 0, "删除答案...");
+		menu.add(0, 10, 0, "详细...");
+		myMaps.m_Sets[0] = groupPos;
+		myMaps.m_Sets[1] = childPos;
 	}
 
 	@Override
@@ -1396,9 +1477,9 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 					}).create().show();
 				}
 				break;
-			case 4:  //清理集内关卡状态
+			case 3:  //清理集内关卡状态
 				new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK).setTitle("状态清理").setCancelable(false)
-						.setMessage("本关卡集内所有关卡保存的中间状态将被清理，确认吗？")
+						.setMessage("本集关卡保存的全部状态将被清理，确认吗？")
 						.setPositiveButton("确定", new OnClickListener() {
 							public void onClick(DialogInterface dialog, int which) {
 								long m_id = -1;
@@ -1421,28 +1502,25 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 						.setNegativeButton("取消", null)
 						.show();
 				break;
-			case 5:  //导入关卡（文档）
-				myMaps.m_Set_id = myMaps.mSets3.get(childPos).id;
-				sel_File();
-				break;
-			case 6:  //导入关卡（剪切板）
-				myMaps.m_Set_id = myMaps.mSets3.get(childPos).id;
-				read_Plate();
-				break;
-			case 7:  //导入比赛关卡
-				myMaps.m_Set_id = myMaps.mSets3.get(childPos).id;
-
-				dialog = new ProgressDialog(this);
-				dialog.setMessage("下载中...");
-				dialog.setCancelable(true);
-				new Thread(new MyThread()).start();
-				dialog.show();
-
-				break;
-			case 8:
+            case 4:  // 删除关卡集的答案
+                new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK)
+                        .setTitle("提醒")
+                        .setMessage("本集关卡的答案将全部删除，\n请做好备份！\n确定要删除答案吗？")
+                        .setCancelable(false).setNegativeButton("取消", null)
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener(){
+                            @Override
+                            public void onClick(DialogInterface arg0, int arg1) {
+                                dialog = new ProgressDialog(BoxMan.this);
+                                dialog.setMessage("答案删除中...");
+                                dialog.setCancelable(true);
+                                new Thread(new delete2Thread()).start();
+                                dialog.show();
+                            }}).create().show();
+                break;
+			case 5:
 				reName();   //重命名
 				break;
-			case 9:
+			case 6:  // 删除关卡集
                 new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK)
                         .setTitle("提醒").setMessage("删除关卡集，确定吗？\n（" + myMaps.mSets3.get(childPos).title+")")
                         .setCancelable(false).setNegativeButton("取消", null)
@@ -1456,20 +1534,48 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
                                 dialog.show();
                             }}).create().show();
                 break;
-			case 10:
-				new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK)
-						.setTitle("提醒")
-						.setMessage("删除前，请做好备份！\n确定要删除答案吗？")
-						.setCancelable(false).setNegativeButton("取消", null)
-						.setPositiveButton("确定", new DialogInterface.OnClickListener(){
-							@Override
-							public void onClick(DialogInterface arg0, int arg1) {
-								dialog = new ProgressDialog(BoxMan.this);
-								dialog.setMessage("答案删除中...");
-								dialog.setCancelable(true);
-								new Thread(new delete2Thread()).start();
-								dialog.show();
-							}}).create().show();
+            case 7:  //导入关卡（文档）
+                myMaps.m_Set_id = myMaps.mSets3.get(childPos).id;
+                sel_File();
+                break;
+            case 8:  //导入关卡（剪切板）
+                myMaps.m_Set_id = myMaps.mSets3.get(childPos).id;
+                read_Plate();
+                break;
+            case 9:  //导入比赛关卡
+                myMaps.m_Set_id = myMaps.mSets3.get(childPos).id;
+
+                dialog = new ProgressDialog(this);
+                dialog.setMessage("下载中...");
+                dialog.setCancelable(true);
+                new Thread(new MyThread()).start();
+                dialog.show();
+
+                break;
+			case 10:  // 详细 == 关卡集的“关于...”
+				long m_id = -1;
+				switch (groupPos){
+					case 0:
+						m_id = myMaps.mSets0.get(childPos).id;
+						myMaps.sFile = myMaps.mSets0.get(childPos).title;
+						break;
+					case 1:
+						m_id = myMaps.mSets1.get(childPos).id;
+						myMaps.sFile = myMaps.mSets1.get(childPos).title;
+						break;
+					case 2:
+						m_id = myMaps.mSets2.get(childPos).id;
+						myMaps.sFile = myMaps.mSets2.get(childPos).title;
+						break;
+					case 3:
+						m_id = myMaps.mSets3.get(childPos).id;
+						myMaps.sFile = myMaps.mSets3.get(childPos).title;
+				}
+				mySQLite.m_SQL.get_Set(m_id);
+				//关卡集描述
+				Intent intent1 = new Intent();
+				intent1.setClass(this, myAbout1.class);
+				startActivity(intent1);
 				break;
 		}
 		return true;
@@ -1558,6 +1664,9 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 				for (int k = 0; k < myMaps.m_lstMaps.size(); k++) {
 					mySQLite.m_SQL.add_L(myMaps.m_Set_id, myMaps.m_lstMaps.get(k));   //添加的关卡库，P_id = myMaps.m_Set_id
 				}
+				myMaps.mMatchNo = "第" + m_no + "期比赛";
+				myMaps.mMatchDate1 = m_begin;
+				myMaps.mMatchDate2 = m_end;
 			} else {
 				inf = "第" + m_no + "期（尚未开赛）！\n开始：" + m_begin + "\n结束：" + m_end;
 			}
@@ -1712,9 +1821,9 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 	protected void onStart() {
 		setTitle("推箱快手 " + mySQLite.m_SQL.count_Level());
 		myMaps.curJi = false;
-		super.onStart();
 		expAdapter.notifyDataSetChanged();
 		expView.expandGroup(myMaps.m_Sets[0]);
+		super.onStart();
 	}
 
 	@Override

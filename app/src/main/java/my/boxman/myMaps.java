@@ -44,7 +44,7 @@ public class myMaps {
 	static boolean isHengping = false;  //是否使用横屏皮肤
 
 	//公用变量
-	public static Context ctxDealFile;
+	static Context ctxDealFile;
 
 	static int m_nWinWidth;  //屏幕尺寸
 	static int m_nWinHeight;
@@ -57,6 +57,11 @@ public class myMaps {
 	static String sRoot;    //路径根
 	static String sPath;    //根目录
 	static String sFile;    //关卡集文档名
+	static String[] myPathList = {  //关卡截图根目录列表
+			"",
+			"/tencent/qq_images/",
+			""
+	};
 
 	static String[] sAction;  //动作寄存器缓存
 	static boolean m_ActionIsRedy = false;  //状态是否准备就绪
@@ -90,7 +95,7 @@ public class myMaps {
 	static boolean isXSB = true;  //是否导入关卡
 	static boolean isLurd = false;  //是否导入答案
 	static boolean isComment = false;  //是否导入答案的备注
-	static boolean isUTF8 = false;  //文档导入关卡是否强制使用 UTF-8 字符编码格式
+	static int m_Code = 0;  //文档导入关卡的字符编码格式：0 - 自动，1 - GBK，2 - utf-8
 	static int[] m_Nums = {0, 0, 0, 0};  //用于统计导入答案数、因重复未能导入数；关卡数、无效关卡数
 
 	static byte[][] Trun8 = { //关卡8方位旋转之n转换算数组
@@ -118,7 +123,10 @@ public class myMaps {
 	static String J_Comment;  //关卡集"注释"
 
 	static long m_Set_id;  //增补关卡之关卡集 id
-	static int[] m_Sets;  //系统参数设置(0-关卡集组，1-关卡集， 2-关卡预览图标题，3-长按目标点提示关联网点及网口， 4-关卡背景色， 5-仓管员图片方向，6-瞬移，7-轮转方位，8-显示可达提示，9-标尺不随关卡旋转，10-移动速度，11-死锁提示，12-标识重复关卡，13-即景逆推，14-仓管员移动方向，15-使用音量键选择关卡，16-显示系统虚拟按键，17-是否允许穿越，18-unDO、ReDo，19-是否采用YASC绘制习惯，20-禁用全屏，21-编辑关卡图时，地图中的标尺字体颜色，22-编辑关卡图时，哪些元素携带标尺，23-单步进退，25-即景正推，26-查找相似关卡的默认相似度，27-仓管员转向动画，28-演示时仅推动，29-自动爬阶梯，30-导出答案的注释信息，31-导入关卡为一个时，自动打开，32-禁用逆推目标点)
+	static int[] m_Sets;  //系统参数设置(0-关卡集组，1-关卡集， 2-关卡预览图标题，3-长按目标点提示关联网点及网口， 4-关卡背景色， 5-仓管员图片方向，6-瞬移，7-轮转方位，8-显示可达提示，9-标尺不随关卡旋转，10-移动速度，11-死锁提示，12-标识重复关卡，13-即景逆推，14-仓管员移动方向，15-使用音量键选择关卡，16-显示系统虚拟按键，17-是否允许穿越，18-unDO、ReDo，19-是否采用YASC绘制习惯，20-禁用全屏，21-编辑关卡图时，地图中的标尺字体颜色，22-编辑关卡图时，哪些元素携带标尺，23-单步进退，25-即景正推，26-查找相似关卡的默认相似度，27-仓管员转向动画，28-演示时仅推动，29-自动爬阶梯，30-导出答案的注释信息，31-导入关卡为一个时，自动打开，32-禁用逆推目标点，33-每行浏览的图标数，34-每行浏览的图标默认数，35-布局中的图标默认高度，36-识别)
+	static String mMatchNo = "";  //第 n 期比赛
+	static String mMatchDate1 = "";  //比赛开始日期
+	static String mMatchDate2 = "";  //比赛结束日期
 	static String nickname = "";  //提交答案 - nickname
 	static String country = "CN";  //提交答案 - country
 	static String email = "";  //提交答案 - email
@@ -460,11 +468,29 @@ public class myMaps {
 		}
 	}
 
-	//"关卡扩展/"下的文档列表
+	//取得截图列表
+	static void edPicList(String fn) {
+		File targetDir = new File(fn);
+		myMaps.mFile_List.clear();
+		if (targetDir.exists()) {
+			String[] filelist = targetDir.list();
+			Arrays.sort(filelist, String.CASE_INSENSITIVE_ORDER);
+			for (int i = 0; i < filelist.length; i++) {
+				int dot = filelist[i].lastIndexOf('.');
+				if ((dot > -1) && (dot < (filelist[i].length()))) {
+					String prefix = filelist[i].substring(filelist[i].lastIndexOf(".") + 1);
+					if (prefix.equalsIgnoreCase("jpg") || prefix.equalsIgnoreCase("bmp") || prefix.equalsIgnoreCase("png"))
+						myMaps.mFile_List.add(filelist[i]);
+				}
+			}
+		}
+	}
+
+	//"导入/"下的文档列表
 	static void newSetList(){
-		File targetDir = new File(sRoot+sPath + "关卡扩展/");
+		File targetDir = new File(sRoot+sPath + "导入/");
 		mFile_List.clear();
-		if (!targetDir.exists()) targetDir.mkdirs();  //创建"关卡扩展/"文件夹
+		if (!targetDir.exists()) targetDir.mkdirs();  //创建"导入/"文件夹
 		else {
 			String[] filelist = targetDir.list();
 			Arrays.sort(filelist, String.CASE_INSENSITIVE_ORDER);
@@ -538,19 +564,19 @@ public class myMaps {
 			StringBuilder g_Author = new StringBuilder();  //作者
 			StringBuilder g_Comment = new StringBuilder();  //"注释"
 			for (int k = p; k < Arr.length && k < m_nMaxRow; k++) {
-				if (Arr[k].toLowerCase(Locale.getDefault()).startsWith("title:")) {  //匹配 Title，标题
-					g_Title.append(Arr[k].substring(6).trim());
-				} else if (Arr[k].toLowerCase(Locale.getDefault()).startsWith("author:")) {  //匹配 Author，作者
-					g_Author.append(Arr[k].substring(7).trim());
-				} else if (Arr[k].toLowerCase(Locale.getDefault()).startsWith("comment:")) {  //匹配 Comment，"注释"块开始
-					if (!Arr[k].substring(8).trim().equals(""))
-						g_Comment.append(Arr[k].substring(8).trim()).append('\n');
+				if (Arr[k].trim().toLowerCase(Locale.getDefault()).startsWith("title:")) {  //匹配 Title，标题
+					g_Title.append(Arr[k].substring(Arr[k].indexOf(":")+1).trim());
+				} else if (Arr[k].trim().toLowerCase(Locale.getDefault()).startsWith("author:")) {  //匹配 Author，作者
+					g_Author.append(Arr[k].substring(Arr[k].indexOf(":")+1).trim());
+				} else if (Arr[k].trim().toLowerCase(Locale.getDefault()).startsWith("comment:")) {  //匹配 Comment，"注释"块开始
+					if (!Arr[k].substring(Arr[k].indexOf(":")+1).trim().equals(""))
+						g_Comment.append(Arr[k].substring(Arr[k].indexOf(":")+1).trim()).append('\n');
 					flg2 = true;
-				} else if (Arr[k].toLowerCase(Locale.getDefault()).startsWith("comment-end:")) {
+				} else if (Arr[k].trim().toLowerCase(Locale.getDefault()).startsWith("comment-end:")) {
 					flg2 = false;
-				} else if (Arr[k].toLowerCase(Locale.getDefault()).startsWith("comment_end:")) {
+				} else if (Arr[k].trim().toLowerCase(Locale.getDefault()).startsWith("comment_end:")) {
 					flg2 = false;
-				} else if (Arr[k].toLowerCase(Locale.getDefault()).startsWith("solution:")) {
+				} else if (Arr[k].trim().toLowerCase(Locale.getDefault()).startsWith("solution:")) {
 					flg2 = false;
 				} else {
 					if (flg2) g_Comment.append(Arr[k]).append('\n');
@@ -611,7 +637,7 @@ public class myMaps {
 			int index2 = index;
 			try {
 				while ("lurdLURD[0123456789,-] \t\n\r".indexOf(str.charAt(index2)) >= 0) index2++;
-				index2++;
+//				index2++;
 			} catch (Exception e) {
 				index2 = str.length();
 			}
@@ -685,7 +711,7 @@ public class myMaps {
 
 	//判断是否为有效的 XSB 行，目前效率最高的判断方法
 	static boolean isXSB(String str){
-		if (str == null || str.trim().isEmpty()) return false;  //排除空行的可能
+		if (str == null || str.matches("\\s*")) return false;  //排除空行的可能 || str.trim().isEmpty()
 
 		int n = str.length();
 		for(int k = 0; k < n; k++) { //判断是否全部由有效字符组成
@@ -775,7 +801,8 @@ public class myMaps {
 
 	static String getTxtEncode(FileInputStream in) {
 
-		if (myMaps.isUTF8) return "UTF-8";
+		if (myMaps.m_Code == 2) return "UTF-8";
+		else if (myMaps.m_Code == 1) return "GBK";
 
 		String charsetName = Charset.defaultCharset().name();
 
@@ -814,6 +841,29 @@ public class myMaps {
 		} catch (Exception e) {
 			return 0;
 		}
+	}
+
+	//生成不重复的新关卡集名称
+	static String getNewSetName() {
+		String name = "新建关卡集_";
+		int n = 1, k, len = mSets3.size();
+
+		while (true) {
+			// 检查新关卡集的名称有没有重复
+			k = 0;
+			for (; k < len; k++) {
+				if (mSets3.get(k).title.equals(name + (n))) {
+					break;
+				}
+			}
+			// 直到新关卡集的名称有没有重复
+			if (k == len) {
+				break;
+			}
+			n++;
+		}
+
+		return name+n;
 	}
 
 	//根据答案的旋转数计算出关卡某旋转的答案
@@ -1069,11 +1119,19 @@ class mapNode{
 		Cols = cs;
 
 		if (rs > myMaps.m_nMaxRow || cs > myMaps.m_nMaxCol || rs < 3 || cs < 3 || !mapNormalize(arr)){  //无效关卡
-			Comment = m + "\nTitle: " + t + "\nAuthor: " + a + "\nComment: \n" + c + "\nComment_End: ";  //无效关卡的所有信息，记录在关卡的“说明”中
 			Map = "--";
 			Map0 = "";
-			Rows = 1;
-			Cols = 2;
+			Title = "无效关卡";
+			Author = "";
+			if (c.trim().isEmpty()) {
+				Comment = m + "\nTitle: " + t + "\nAuthor: " + a;  //无效关卡的所有信息，记录在关卡的“说明”中
+			} else {
+				Comment = m + "\nTitle: " + t + "\nAuthor: " + a + "\nComment: \n" + c + "\nComment_End: ";  //无效关卡的所有信息，记录在关卡的“说明”中
+			}
+			if (rs < 3 || cs < 3) {
+				Rows = 1;
+				Cols = 2;
+			}
 			L_CRC_Num = -1;
 			key = 0;
 		}
@@ -1094,11 +1152,10 @@ class mapNode{
 			nLen = Arr[i].length();
 			for (int j = 0; j < Cols; j++){
 				if (j < nLen) ch = Arr[i].charAt(j);
-				else ch = '_';
+				else ch = '-';
 
 				switch (ch){
 					case '#':
-					case '_':
 					case '.':
 					case '$':
 					case '*':
@@ -1151,7 +1208,7 @@ class mapNode{
 				mr2 = mr + dr[k];
 				mc2 = mc + dc[k];
 				if (mr2 < 0 || mr2 >= Rows || mc2 < 0 || mc2 >= Cols ||  //出界
-						Mark[mr2][mc2] || sMapArray[mr2][mc2] == '_' || sMapArray[mr2][mc2] == '#') continue;  //已访问或遇到墙
+						Mark[mr2][mc2] || sMapArray[mr2][mc2] == '#') continue;  //已访问或遇到墙
 
 				//调整四至
 				if (left > mc2) left = mc2;
@@ -1190,7 +1247,10 @@ class mapNode{
 						sMapArray[i][j] = ch;
 					}
 				} else {  //墙外造型
-					if (!(ch == '.' || ch == '$' || ch == '*' || ch == '#' || ch == '_')) {  //无效元素
+					if (ch == '*' || ch == '$') {
+						ch = '#';
+						sMapArray[i][j] = ch;
+					} else if (!(ch == '#' || ch == '_')) {  //无效元素
 						ch = '_';
 						sMapArray[i][j] = ch;
 					}
@@ -1202,14 +1262,46 @@ class mapNode{
 			}
 		}
 
+		// 关卡最小化
+		int mTop = 0, mLeft = 0, mBottom = Rows-1, mRight = Cols-1;
+		for (int k = 0, t; k < Rows; k++) {
+			t = 0;
+			while (t < Cols && sMapArray[k][t] == '_') t++;
+			if (t == Cols) mTop++;
+			else break;
+		}
+		for (int k = Rows-1, t; k > mTop; k--) {
+			t = 0;
+			while (t < Cols && sMapArray[k][t] == '_') t++;
+			if (t == Cols) mBottom--;
+			else break;
+		}
+		if (mBottom - mTop < 2) return false;
+
+		for (int k = 0, t; k < Cols; k++) {
+			t = mTop;
+			while (t <= mBottom && sMapArray[t][k] == '_') t++;
+			if (t > mBottom) mLeft++;
+			else break;
+		}
+		for (int k = Cols-1, t; k > mLeft; k--) {
+			t = mTop;
+			while (t <= mBottom && sMapArray[t][k] == '_') t++;
+			if (t > mBottom) mRight--;
+			else break;
+		}
+		if (mRight - mLeft < 2) return false;
+
 		StringBuilder s1 = new StringBuilder();  //保持关卡原貌，对墙外造型部分不再清理
-		for (int i = 0; i < Rows; i++) {
-			for (int j = 0; j < Cols; j++) {
+		for (int i = mTop; i <= mBottom; i++) {
+			for (int j = mLeft; j <= mRight; j++) {
 				s1.append(sMapArray[i][j]);
 			}
 			if (i < Rows-1) s1.append('\n');
 		}
 		Map = s1.toString();  //关卡原貌，已做简单标准化（保留墙外造型）
+		Rows = mBottom-mTop+1;
+		Cols = mRight-mLeft+1;
 
 		//标准化关卡的四周填充 '_'
 		for (int i = 0; i < nRows; i++) {

@@ -287,7 +287,13 @@ public class myActGMView extends Activity {
 					 MyToast.showToast(myActGMView.this, "逆推请使用标准动作字符！", Toast.LENGTH_SHORT);
 				 } else {
 					 myMaps.m_ActionIsRedy = true;
-					 myMaps.sAction = et_Action.getText().toString().split("\n|\r|\n\r|\r\n|\\|");
+					 // 对于非“宏”，自动加上忽略大小写命令
+					 if (myMaps.isLURD(et_Action.getText().toString())) {
+						 myMaps.sAction = new String[1];
+						 myMaps.sAction[0] = "{" + et_Action.getText().toString() + "}~";
+					 } else {
+						 myMaps.sAction = et_Action.getText().toString().split("\n|\r|\n\r|\r\n|\\|");
+					 }
 
 					 //提前去掉注释行和两端的空格及制表符，方便以后处理
 					 int len = myMaps.sAction.length;
@@ -409,7 +415,7 @@ public class myActGMView extends Activity {
 								}
 							}).show();
 						} else {
-							MyToast.showToast(myActGMView.this, "请将文档复制到“关卡扩展/”玩文件夹下", Toast.LENGTH_SHORT);
+							MyToast.showToast(myActGMView.this, "请将文档复制到“导入/”文件夹下", Toast.LENGTH_SHORT);
 						}
 						break;
 					case 4:  //读取：剪切板
@@ -498,7 +504,7 @@ public class myActGMView extends Activity {
 		InputStream fin;
 		String my_Name;
 		try {
-			my_Name = new StringBuilder(myMaps.sRoot).append(myMaps.sPath).append("关卡扩展/").append(fn).toString();
+			my_Name = new StringBuilder(myMaps.sRoot).append(myMaps.sPath).append("导入/").append(fn).toString();
 			fin = new FileInputStream(my_Name);
 
 			int len = fin.available();
@@ -765,32 +771,6 @@ public class myActGMView extends Activity {
 				if (flg && et_Action.getText().toString().replaceAll("[ \n\r\t]", "").length() > 0) isSaveDlg.show();
 				else finish();
 				return true;
-//			case R.id.act_yass:  //YASS 求解
-//				if (!is_BK) {
-//					if (flg && et_Action.getText().toString().replaceAll("[ \n\r\t]", "").length() > 0) {  //求解前，若编辑过则提示保存
-//						AlertDialog.Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
-//						builder.setMessage("内容有修改，是否暂存一下？").setCancelable(false)
-//								.setNegativeButton("取消", null)
-//								.setNeutralButton("否", new DialogInterface.OnClickListener(){
-//									@Override
-//									public void onClick(DialogInterface dialog, int which) {
-//										mySolution();  //不保存求解
-//									}
-//								})
-//								.setPositiveButton("是", new DialogInterface.OnClickListener(){
-//									@Override
-//									public void onClick(DialogInterface dialog, int which) {
-//										saveAct("reg0", et_Action.getText().toString());  //暂存当前编辑区内容
-//										mySolution();  //保存求解
-//									}
-//								}).create().show();
-//					} else {
-//						mySolution();  //直接求解
-//					}
-//				} else {
-//					MyToast.showToast(this, "逆推时，无此功能！", Toast.LENGTH_SHORT);
-//				}
-//				return true;
 			default:
 				return super.onOptionsItemSelected(mt);
 		}

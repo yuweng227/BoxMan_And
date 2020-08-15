@@ -141,23 +141,26 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 		if (myMaps.mState2.size() > 0) s_expView.expandGroup(1);
 
 		AlertDialog.Builder dlg = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK);
-		dlg.setMessage("删除此状态，确认吗？")
+		dlg.setMessage("删除此状态或答案，确认吗？")
 		   .setCancelable(false).setNegativeButton("取消", null)
 		   .setPositiveButton("确定", new DialogInterface.OnClickListener(){
 				@Override
 				public void onClick(DialogInterface arg0, int arg1) {
-	    			
-					mySQLite.m_SQL.del_S(m_Sel_id);
-					if (g_Pos == 0)
-						myMaps.mState1.remove(c_Pos);
-					else
-						myMaps.mState2.remove(c_Pos);
-						
-					myMaps.curMap.Solved = (myMaps.mState2.size() > 0);
-					if (g_Pos == 1 && !myMaps.curMap.Solved) { //若此CRC关卡的答案个数为0，则设置涉及到的全部关卡为无答案
-						mySQLite.m_SQL.Set_L_Solved(myMaps.curMap.key, 0, false);
+					if (mySQLite.m_SQL.isCanDeleteAns(m_Sel_id)) {  //第一个内置关卡，至少需保留 1 个答案
+						MyToast.showToast(myStateBrow.this, "第一个内置关卡，至少需保留 1 个答案！", Toast.LENGTH_SHORT);
+					} else {
+						mySQLite.m_SQL.del_S(m_Sel_id);
+						if (g_Pos == 0)
+							myMaps.mState1.remove(c_Pos);
+						else
+							myMaps.mState2.remove(c_Pos);
+
+						myMaps.curMap.Solved = (myMaps.mState2.size() > 0);
+						if (g_Pos == 1 && !myMaps.curMap.Solved) { //若此CRC关卡的答案个数为0，则设置涉及到的全部关卡为无答案
+							mySQLite.m_SQL.Set_L_Solved(myMaps.curMap.key, 0, false);
+						}
+						s_Adapter.notifyDataSetChanged();
 					}
-					s_Adapter.notifyDataSetChanged();
 				}});
 		DelDlg = dlg.create();
 		
@@ -256,24 +259,53 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+
 		menu.add(0, 1, 0, "打开");
-		if (g_Pos == 1) {
-			menu.add(0, 2, 0, "YASS优化");
-		}
-		menu.add(0, 3, 0, "导出到文档: XSB+Lurd");
-		menu.add(0, 4, 0, "导出到剪切板: XSB+Lurd");
-		menu.add(0, 5, 0, "导出到剪切板: Lurd");
+		menu.add(0, 2, 1, "YASS优化");
+		menu.add(0, 3, 2, "导出到文档: XSB+Lurd");
+		menu.add(0, 4, 3, "导出到剪切板: XSB+Lurd");
+		menu.add(0, 5, 4, "导出到剪切板: Lurd");
+		menu.add(0, 6, 5, "导出到剪切板: 正推 Lurd");
+		menu.add(0, 7, 6, "导出到剪切板: 逆推 Lurd");
+		menu.add(0, 8, 7, "注释标签");
+		menu.add(0, 9, 8, "删除");
+		menu.add(0, 10, 9, "删除全部状态");
+		menu.add(0, 11, 10, "提交答案（sokoban.cn）");
+		menu.add(0, 12, 11, "制作 GIF 演示动画");
+
+		menu.getItem(0).setVisible(false);    // 打开
+		menu.getItem(1).setVisible(false);    // YASS优化
+		menu.getItem(2).setVisible(false);    // 导出到文档: XSB+Lurd
+		menu.getItem(3).setVisible(false);    // 导出到剪切板: XSB+Lurd
+		menu.getItem(4).setVisible(false);    // 导出到剪切板: Lurd
+		menu.getItem(5).setVisible(false);    // 导出到剪切板: 正推 Lurd
+		menu.getItem(6).setVisible(false);    // 导出到剪切板: 逆推 Lurd
+		menu.getItem(7).setVisible(false);    // 注释标签
+		menu.getItem(8).setVisible(false);    // 删除
+		menu.getItem(9).setVisible(false);    // 删除全部状态
+		menu.getItem(10).setVisible(false);   // 提交答案（sokoban.cn）
+		menu.getItem(11).setVisible(false);   // 制作 GIF 演示动画
+
 		if (g_Pos == 0) {
-			menu.add(0, 6, 0, "导出到剪切板: 正推 Lurd");
-			menu.add(0, 7, 0, "导出到剪切板: 逆推 Lurd");
-		}
-		menu.add(0, 8, 0, "注释标签");
-		menu.add(0, 9, 0, "删除");
-		if (g_Pos == 0) {
-			menu.add(0, 10, 0, "删除全部状态");
+			menu.getItem(0).setVisible(true);    // 打开
+			menu.getItem(2).setVisible(true);    // 导出到文档: XSB+Lurd
+			menu.getItem(3).setVisible(true);    // 导出到剪切板: XSB+Lurd
+			menu.getItem(4).setVisible(true);    // 导出到剪切板: Lurd
+			menu.getItem(5).setVisible(true);    // 导出到剪切板: 正推 Lurd
+			menu.getItem(6).setVisible(true);    // 导出到剪切板: 逆推 Lurd
+			menu.getItem(7).setVisible(true);    // 注释标签
+			menu.getItem(8).setVisible(true);    // 删除
+			menu.getItem(9).setVisible(true);    // 删除全部状态
 		} else {
-			menu.add(0, 11, 0, "提交答案（sokoban.cn）");
-			menu.add(0, 12, 0, "制作 GIF 演示动画");
+			menu.getItem(0).setVisible(true);    // 打开
+			menu.getItem(1).setVisible(true);    // YASS优化
+			menu.getItem(2).setVisible(true);    // 导出到文档: XSB+Lurd
+			menu.getItem(3).setVisible(true);    // 导出到剪切板: XSB+Lurd
+			menu.getItem(4).setVisible(true);    // 导出到剪切板: Lurd
+			menu.getItem(7).setVisible(true);    // 注释标签
+			menu.getItem(8).setVisible(true);    // 删除
+			menu.getItem(10).setVisible(true);   // 提交答案（sokoban.cn）
+			menu.getItem(11).setVisible(true);   // 制作 GIF 演示动画
 		}
 	}
 	
@@ -360,7 +392,7 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 								try {
 									mySQLite.m_SQL.Update_A_inf(m_Sel_id, inf);
 								} catch (Exception e) {
-									MyToast.showToast(myStateBrow.this, "DB 写错误，注释未能保存！", Toast.LENGTH_SHORT);
+									MyToast.showToast(myStateBrow.this, "出错了，注释未能保存！", Toast.LENGTH_SHORT);
 								}
 							}
 						})
@@ -989,9 +1021,9 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 
 	//取得"推箱快手/"文件夹下的“.txt”文档列表
 	private void mTxtList() {
-		File targetDir = new File(myMaps.sRoot + myMaps.sPath + "关卡扩展/");
+		File targetDir = new File(myMaps.sRoot + myMaps.sPath + "款/");
 		myMaps.mFile_List.clear();
-		if (!targetDir.exists()) targetDir.mkdirs();  //创建"关卡扩展/"文件夹
+		if (!targetDir.exists()) targetDir.mkdirs();  //创建"导入/"文件夹
 		else {
 			String[] filelist = targetDir.list();
 			Arrays.sort(filelist, String.CASE_INSENSITIVE_ORDER);
@@ -1030,9 +1062,9 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 				}).setPositiveButton("确定", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				try {
-					File targetDir = new File(myMaps.sRoot + myMaps.sPath + "关卡扩展/");
+					File targetDir = new File(myMaps.sRoot + myMaps.sPath + "导出/");
 					myMaps.mFile_List.clear();
-					if (!targetDir.exists()) targetDir.mkdirs();  //创建"关卡扩展/"文件夹
+					if (!targetDir.exists()) targetDir.mkdirs();  //创建"导出/"文件夹
 
 					String str = et.getText().toString().trim();
 					String prefix = str.substring(str.lastIndexOf(".") + 1);
@@ -1040,27 +1072,27 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 						str = str + ".txt";
 					}
 					final String my_Name = str;
-					File file = new File(myMaps.sRoot + myMaps.sPath + my_Name);
+					File file = new File(myMaps.sRoot + myMaps.sPath + "导出/" + my_Name);
 					if (file.exists()) {
-						new AlertDialog.Builder(myStateBrow.this, AlertDialog.THEME_HOLO_DARK).setMessage("文档已存在，覆写吗？\n关卡扩展/" + my_Name)
+						new AlertDialog.Builder(myStateBrow.this, AlertDialog.THEME_HOLO_DARK).setMessage("文档已存在，覆写吗？\n导出/" + my_Name)
 								.setNegativeButton("取消", null).setPositiveButton("覆写", new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface arg0, int arg1) {
 								if (writeStateFile(my_Name, my_id)) {
 									MyToast.showToast(myStateBrow.this, "导出成功！", Toast.LENGTH_SHORT);
 								} else {
-									MyToast.showToast(myStateBrow.this, "写错误，导出失败！", Toast.LENGTH_SHORT);
+									MyToast.showToast(myStateBrow.this, "出错了，导出失败！", Toast.LENGTH_SHORT);
 								}
 							}}).setCancelable(false).show();
 					} else {
 						if (writeStateFile(my_Name, my_id)) {
 							MyToast.showToast(myStateBrow.this, "导出成功！", Toast.LENGTH_SHORT);
 						} else {
-							MyToast.showToast(myStateBrow.this, "写错误，导出失败！", Toast.LENGTH_SHORT);
+							MyToast.showToast(myStateBrow.this, "出错了，导出失败！", Toast.LENGTH_SHORT);
 						}
 					}
 				} catch (Exception e) {
-					MyToast.showToast(myStateBrow.this, "创建“关卡扩展/”文件夹失败！", Toast.LENGTH_SHORT);
+					MyToast.showToast(myStateBrow.this, "出错了，导出失败！", Toast.LENGTH_SHORT);
 				}
 			}
 		}).setNegativeButton("取消", null).setCancelable(false).show();
@@ -1069,12 +1101,14 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 	//导出状态
 	private boolean writeStateFile(String my_Name, long myID) {
 		try{   
-			FileOutputStream fout = new FileOutputStream(myMaps.sRoot+myMaps.sPath+my_Name);
+			FileOutputStream fout = new FileOutputStream(myMaps.sRoot+myMaps.sPath+"导出/"+my_Name);
 			
 			fout.write(myMaps.curMap.Map.getBytes());
 			StringBuilder s = new StringBuilder();
 			s.append("\nTitle: ").append(myMaps.curMap.Title).append("\nAuthor: ").append(myMaps.curMap.Author);
-			s.append("\nComment:\n").append(myMaps.curMap.Comment).append("\nComment-End:");
+			if (!myMaps.curMap.Comment.trim().isEmpty()) {
+				s.append("\nComment:\n").append(myMaps.curMap.Comment).append("\nComment-End:");
+			}
 			fout.write(s.toString().getBytes());
 
 			if (myID < 0) {  //导出全部答案

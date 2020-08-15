@@ -72,19 +72,6 @@
         android:background="#363636"
         android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:padding="4dp"
-            android:text="文档编码："/>
-
-        <View
-            android:layout_width="16dp"
-            android:layout_height="match_parent"
-            android:background="#363636">
-        </View>
-
         <RadioGroup
             android:id="@+id/myCodeGroup"
             android:layout_width="wrap_content"
@@ -92,6 +79,12 @@
             android:layout_centerVertical="true"
             android:gravity="center_vertical"
             android:orientation="horizontal">
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:background="#363636">
+            </View>
 
             <RadioButton
                 android:id="@+id/rb_code_auto"
@@ -107,12 +100,48 @@
             </View>
 
             <RadioButton
+                android:id="@+id/rb_code_GBK"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="UTF-8" />
+
+            <View
+                android:layout_width="16dp"
+                android:layout_height="match_parent"
+                android:background="#363636">
+            </View>
+
+            <RadioButton
                 android:id="@+id/rb_code_utf8"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="UTF-8" />
 
         </RadioGroup>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingLeft="56dp"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/cb_open3"
+            style="@style/CustomCheckboxTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:text="仅有一个关卡时，自动打开"/>
 
     </LinearLayout>
 

@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
@@ -47,47 +48,59 @@ public class myExport extends Activity implements myGifMakeFragment.GifMakeStatu
 	int m_Gif_Interval = 300;  //制作GIF动画相关参数：帧间隔（毫秒）、帧方式（逐推、逐移）
 	boolean m_Gif_Type = true;
     boolean m_Gif_Skin = false;
-	boolean[] my_Rule;
-	short[] my_BoxNum;
+	boolean[] my_Rule;   // 仅合成 GIF 使用
+	short[] my_BoxNum;   // 仅合成 GIF 使用
+
+	Menu my_Menu = null;
+
 	private static final String TAG_PROGRESS_DIALOG_FRAGMENT = "exp_gif_make_progress_fragment";
 
 	@Override
 	 protected void onCreate(Bundle savedInstanceState) {
-		 super.onCreate(savedInstanceState);
+		super.onCreate(savedInstanceState);
 
-		 setContentView(R.layout.export_view);
+		setContentView(R.layout.export_view);
 
-		 //接收数据
-		 Bundle bundle = this.getIntent().getExtras();
-		 my_Rule = bundle.getBooleanArray("my_Rule");  //需要显示标尺的格子
-		 my_BoxNum = bundle.getShortArray("my_BoxNum");  //迷宫箱子编号（人为）
-		 m_Gif_Start = bundle.getInt("m_Gif_Start");  //导出 GIF 的起点
-		 is_ANS = bundle.getBoolean("is_ANS");  //是否答案
-		 my_Local = bundle.getString("LOCAL");  //接收关卡现场
-		 my_Loca8 = bundle.getString("LOCAL8");  //接收关卡现场 -- 旋转
-		 my_XSB = bundle.getString("m_XSB");  //关卡 XSB
-		 my_Lurd = bundle.getString("m_Lurd");  //lurd
-		 my_imPort_YASS = bundle.getString("m_InPort_YASS");  //是否为“导入”或“YASS”动作
-		 my_AND = new StringBuilder("\n");
-		 if (is_ANS) {
-			 int len = my_Lurd.length();
-			 int p = 0;
-			 for (int k = 0; k < len; k++) {
-				 if ("LURD".indexOf(my_Lurd.charAt(k)) >= 0) p++;
-			 }
-			 if (my_imPort_YASS.toLowerCase().indexOf("yass") >= 0) {
-				 my_imPort_YASS = "YASS" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-			 } else if (my_imPort_YASS.toLowerCase().indexOf("导入") >= 0) {
-				 my_imPort_YASS = "导入" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-			 } else {
-				 my_imPort_YASS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-			 }
-			 my_AND.append("Solution (moves ").append(len).append(", pushes ").append(p);
-			 if (myMaps.m_Sets[30] == 1) {  //是否导出答案备注
-				 my_AND.append(", comment ").append(my_imPort_YASS);
-			 }
-			 my_AND.append("): \n");
-		 }
+		//接收数据
+		Bundle bundle = this.getIntent().getExtras();
+		my_XSB = bundle.getString("m_XSB");  //关卡 XSB
+		my_Lurd = bundle.getString("m_Lurd");  //lurd
+		my_Local = bundle.getString("LOCAL");  //接收关卡现场
+		is_ANS = bundle.getBoolean("is_ANS");  //是否答案
+		my_AND = new StringBuilder("\n");
+
+		if (my_Local == null) {  // 浏览界面的导出
+			my_Rule = null;  //需要显示标尺的格子
+			my_BoxNum = null;  //迷宫箱子编号（人为）
+			m_Gif_Start = 0;  //导出 GIF 的起点
+			my_Loca8 = "";  //接收关卡现场 -- 旋转
+			my_imPort_YASS = "";  //是否为“导入”或“YASS”动作
+		} else {  // 推关卡界面的导出
+			my_Rule = bundle.getBooleanArray("my_Rule");  //需要显示标尺的格子
+			my_BoxNum = bundle.getShortArray("my_BoxNum");  //迷宫箱子编号（人为）
+			m_Gif_Start = bundle.getInt("m_Gif_Start");  //导出 GIF 的起点
+			my_Loca8 = bundle.getString("LOCAL8");  //接收关卡现场 -- 旋转
+			my_imPort_YASS = bundle.getString("m_InPort_YASS");  //是否为“导入”或“YASS”动作
+			if (is_ANS) {
+				int len = my_Lurd.length();
+				int p = 0;
+				for (int k = 0; k < len; k++) {
+					if ("LURD".indexOf(my_Lurd.charAt(k)) >= 0) p++;
+				}
+				if (my_imPort_YASS.toLowerCase().indexOf("yass") >= 0) {
+					my_imPort_YASS = "YASS" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+				} else if (my_imPort_YASS.toLowerCase().indexOf("导入") >= 0) {
+					my_imPort_YASS = "导入" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+				} else {
+					my_imPort_YASS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+				}
+				my_AND.append("Solution (moves ").append(len).append(", pushes ").append(p);
+				if (myMaps.m_Sets[30] == 1) {  //是否导出答案备注
+					my_AND.append(", comment ").append(my_imPort_YASS);
+				}
+				my_AND.append("): \n");
+			}
+		}
 
 		 //开启标题栏的返回键
 		 ActionBar actionBar = getActionBar();
@@ -115,21 +128,49 @@ public class myExport extends Activity implements myGifMakeFragment.GifMakeStatu
 		 cb_File.setChecked(false);
 		 cb_Cur.setChecked(false);
 		 cb_Trun.setEnabled(false);
-		 if (my_Lurd.isEmpty()) {
-			 et_Action.setText(my_XSB);  //自动加载编辑框
-			 myMaps.isLurd = false;
-			 cb_Lurd.setEnabled(false);
-			 myMaps.isXSB = true;
-			 cb_XSB.setChecked(true);
-		 } else {
-			 et_Action.setText(my_Lurd);  //自动加载编辑框
-			 myMaps.isXSB = false;
-			 cb_Lurd.setEnabled(true);
-			 myMaps.isLurd = true;
-			 cb_Lurd.setChecked(true);
-		 }
 
-		 cb_XSB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+		if (my_Local == null) {  // 浏览界面的导出
+			if (my_Lurd.isEmpty()) {  // 无答案
+				et_Action.setText(my_XSB);  //自动加载编辑框
+				myMaps.isLurd = false;
+				cb_Lurd.setChecked(false);
+				cb_Lurd.setEnabled(false);
+			} else {  // 有答案
+				et_Action.setText(my_XSB + my_AND + my_Lurd);  //自动加载编辑框
+				myMaps.isLurd = true;
+				cb_Lurd.setChecked(true);
+				cb_Lurd.setEnabled(true);
+			}
+			myMaps.isXSB = true;
+			cb_XSB.setChecked(true);
+			cb_XSB.setEnabled(false);
+		} else {  // 推关卡界面的导出
+			cb_XSB.setEnabled(true);
+			if (my_Lurd.isEmpty()) {
+				et_Action.setText(my_XSB);  //自动加载编辑框
+				myMaps.isLurd = false;
+				cb_Lurd.setEnabled(false);
+				myMaps.isXSB = true;
+				cb_XSB.setChecked(true);
+			} else {
+				et_Action.setText(my_Lurd);  //自动加载编辑框
+				myMaps.isXSB = false;
+				cb_Lurd.setEnabled(true);
+				myMaps.isLurd = true;
+				cb_Lurd.setChecked(true);
+			}
+		}
+
+		final LinearLayout lin = (LinearLayout) findViewById(R.id.ex_is_grid);
+		if (my_Local == null) {  // 浏览界面的导出
+			lin.setVisibility(View.GONE);
+			if (my_Menu != null) my_Menu.setGroupVisible(0, false);
+		} else {     // 推关卡界面的导出
+			lin.setVisibility(View.VISIBLE);
+			if (my_Menu != null) my_Menu.setGroupVisible(0, true);
+		}
+
+		cb_XSB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			 @Override
 			 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				 if (my_Lurd.isEmpty()) {
@@ -155,18 +196,27 @@ public class myExport extends Activity implements myGifMakeFragment.GifMakeStatu
 		 cb_Lurd.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			 @Override
 			 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				 myMaps.isLurd = isChecked;
-				 if (!isChecked && !cb_XSB.isChecked()) {
-					 cb_XSB.setChecked(true);
-				 }
-				 if (myMaps.isXSB) {
-					 if (myMaps.isLurd && !my_Lurd.isEmpty()) {
+				 if (my_Local == null) {  // 浏览界面的导出，能够到这里，肯定是有答案的
+					 myMaps.isLurd = isChecked;
+					 if (myMaps.isLurd) {
 						 et_Action.setText(my_XSB + my_AND + my_Lurd);
 					 } else {
 						 et_Action.setText(my_XSB);
 					 }
 				 } else {
-					 et_Action.setText(my_Lurd);
+					 myMaps.isLurd = isChecked;
+					 if (!isChecked && !cb_XSB.isChecked()) {
+						 cb_XSB.setChecked(true);
+					 }     // 推关卡界面的导出
+					 if (myMaps.isXSB) {
+						 if (myMaps.isLurd && !my_Lurd.isEmpty()) {
+							 et_Action.setText(my_XSB + my_AND + my_Lurd);
+						 } else {
+							 et_Action.setText(my_XSB);
+						 }
+					 } else {
+						 et_Action.setText(my_Lurd);
+					 }
 				 }
 			 }
 		 });
@@ -221,7 +271,7 @@ public class myExport extends Activity implements myGifMakeFragment.GifMakeStatu
 			 public void onClick(View v) {
 				 if (cb_File.isChecked()) {  //导出到文档
 					 //按关卡集和关卡序号生成文档名
-					 final String my_Name = new StringBuilder("关卡扩展/").append(myMaps.sFile).append("_").append(myMaps.m_lstMaps.indexOf(myMaps.curMap)+1).append(cb_Lurd.isChecked () ? ".txt" : ".xsb").toString();
+					 final String my_Name = new StringBuilder("导出/").append(myMaps.sFile).append("_").append(myMaps.m_lstMaps.indexOf(myMaps.curMap)+1).append(cb_Lurd.isChecked () ? ".txt" : ".xsb").toString();
 					 File file = new File(myMaps.sRoot + myMaps.sPath + my_Name);
 					 if (file.exists()) {
 						 new AlertDialog.Builder(myExport.this, AlertDialog.THEME_HOLO_DARK).setNegativeButton("取消", null)
@@ -229,14 +279,12 @@ public class myExport extends Activity implements myGifMakeFragment.GifMakeStatu
 									 @Override
 									 public void onClick(DialogInterface arg0, int arg1) {
 										 saveFile(et_Action.getText().toString(), my_Name);
-										 finish();
 									 }})
 								 .setTitle("警告")
 								 .setMessage("文档已存在，覆写吗？\n" + my_Name).setCancelable(false)
 								 .show(); //自设关卡已存在
 					 } else {
 						 saveFile(et_Action.getText().toString(), my_Name);
-						 finish();
 					 }
 				 } else {  //导出到剪切板
 					 myMaps.saveClipper(et_Action.getText().toString());
@@ -255,9 +303,20 @@ public class myExport extends Activity implements myGifMakeFragment.GifMakeStatu
 
 			fout.flush();
 			fout.close();
-			MyToast.showToast(this, "导出成功！\n" + fn, Toast.LENGTH_SHORT);
+
+			new AlertDialog.Builder(myExport.this, AlertDialog.THEME_HOLO_DARK).setNegativeButton("确定", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							finish();
+						}
+					})
+					.setTitle("成功")
+					.setMessage(fn).setCancelable(false)
+					.show();
+//			MyToast.showToast(this, "导出成功！\n" + fn, Toast.LENGTH_SHORT);
 		} catch (Exception e){
-			MyToast.showToast(this, "出错了！", Toast.LENGTH_SHORT);
+			MyToast.showToast(this, "出错了，导出失败！", Toast.LENGTH_SHORT);
+			finish();
 		}
 	}
 
@@ -270,6 +329,13 @@ public class myExport extends Activity implements myGifMakeFragment.GifMakeStatu
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.export, menu);
+		my_Menu = menu;
+
+		if (my_Local == null) {  // 浏览界面的导出
+			menu.setGroupVisible(0, false);
+		} else {     // 推关卡界面的导出
+			menu.setGroupVisible(0, true);
+		}
 
 		return true;
 	}

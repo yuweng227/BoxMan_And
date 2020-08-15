@@ -13,6 +13,14 @@
 		android:title="导出..."/>
 
 	<item
+		android:id="@+id/menu_recent"
+		android:title="最近推过的关卡"/>
+
+	<item
+		android:id="@+id/menu_query"
+		android:title="关卡查询"/>
+
+	<item
 		android:id="@+id/menu_NewSet"
 		android:title="新建关卡集..."/>
 
@@ -21,12 +29,8 @@
 		android:title="【 创编关卡 】"/>
 
 	<item
-		android:id="@+id/menu_recent"
-		android:title="最近推过的关卡"/>
-
-	<item
-	    android:id="@+id/menu_query"
-		android:title="关卡查询"/>
+		android:id="@+id/menu_recog"
+		android:title="图像识别"/>
 
 	<item
 	    android:id="@+id/menu_submit_list"

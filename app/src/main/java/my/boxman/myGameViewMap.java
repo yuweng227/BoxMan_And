@@ -85,6 +85,8 @@ public class myGameViewMap extends View {
     private Bitmap bitNextSkin;
     int curButton = 0;
 
+    private Bitmap bitInvalid;  // 无效关卡图片
+
     public ArrayList<Integer> myMacro = new ArrayList<Integer>();
     public String myMacroInf = "";
 
@@ -166,6 +168,12 @@ public class myGameViewMap extends View {
         Drawable dw04 = myMaps.res.getDrawable(R.drawable.redobtn);
         dw04.setBounds(0, 0, m_nArenaTop*2, m_nArenaTop*2);
         dw04.draw(cvs04);
+
+        bitInvalid = Bitmap.createBitmap(50, 50, myMaps.cfg); //无效关卡图片
+        Canvas cvs00 = new Canvas(bitInvalid);
+        Drawable dw00 = myMaps.res.getDrawable(R.drawable.defbit);
+        dw00.setBounds(0, 0, 50, 50);
+        dw00.draw(cvs00);
 
         m_rPre_BK = new Rect();
         m_rNext_BK = new Rect();
@@ -520,6 +528,9 @@ public class myGameViewMap extends View {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {  //onTouchEvent
+            if ((int) event.getY() >= m_nArenaTop && myMaps.curMap.Title.equals("无效关卡")) {  // 无效关卡时，不执行任何命令
+                return true;
+            }
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN: //触发点击，记录被点击的物件（箱子、墙壁、人等）
                     doACT((int) event.getX(), (int) event.getY(), false);
@@ -1075,6 +1086,21 @@ public class myGameViewMap extends View {
                         rt1.set(50, 200-myMaps.isSkin_200, 100, 250-myMaps.isSkin_200);
                         canvas.drawBitmap(myMaps.skinBit, rt1, rt, myPaint);
                     }
+                    if (ch == '-' && myMaps.curMap.Title.equals("无效关卡")) {
+                        canvas.drawBitmap(bitInvalid, rt.left, rt.top, myPaint);
+
+//                        mStr = j == 0 ? "无" : "效";
+//                        myPaint.setTextSize(m_PicWidth/2);
+//                        myPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+//                        myPaint.setARGB(255, 255, 255, 255);
+//                        myPaint.setStrokeWidth(5);
+//                        canvas.drawText(mStr, rt.left+m_PicWidth/4, rt.bottom-m_PicWidth/3, myPaint);
+//                        myPaint.setARGB(255, 0, 0, 0);
+//                        myPaint.setStrokeWidth(3);
+//                        canvas.drawText(mStr, rt.left+m_PicWidth/4, rt.bottom-m_PicWidth/3, myPaint);
+
+                        continue;
+                    }
                 }
                 //第三层显示————目标点
                 if (ch == '.' || ch == '*' || ch == '+') {
@@ -1214,14 +1240,6 @@ public class myGameViewMap extends View {
                         break;
                 } //end switch
 
-                // 显示围栏情况（board.boxData.isBoxInCorral()并不能得到当前围栏死锁的信息，具体怎样得到，暂时未知）
-//                if (m_Game.deadlockDetection != null && m_Game.deadlockDetection.deadlockType == 5 && m_Game.board.boxData.isBoxInCorral(m_Game.board.getBoxNo(j + m_nCols * i))) {
-//                    myPaint.setARGB(223, 80, 175, 180);
-//                    myPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-//                    rt1.set(rt.left+18, rt.top+18, rt.right-18, rt.bottom-18);
-//                    canvas.drawRect(rt1, myPaint);
-//                }
-
                 if (myMaps.m_bBiaochi && (i == 0 || j == 0 || i == m_nRows-1 || j == m_nCols-1 || m_Game.mark44[i][j] && (!m_Game.bt_BK.isChecked() && m_Game.m_cArray[i][j] != '$' && m_Game.m_cArray[i][j] != '*'|| m_Game.bt_BK.isChecked() && m_Game.bk_cArray[i][j] != '$' && m_Game.bk_cArray[i][j] != '*'))) {   //标尺开关
 //                    myPaint.setARGB(127, 63, 63, 63);
 //                    myPaint.setStyle(Paint.Style.FILL);
@@ -1346,12 +1364,14 @@ public class myGameViewMap extends View {
                         if (m_Game.bk_selArray[i][j] == 1) canvas.drawRect(rt, myPaint);
                         if (selNode2.r2 < 0 && m_iR == i && m_iC == j) {
                             rt1.set(100, 200-myMaps.isSkin_200, 150, 250-myMaps.isSkin_200);
+                            canvas.drawRect(rt, myPaint);
                             canvas.drawBitmap(myMaps.skinBit, rt1, rt, myPaint);
                         }
                     } else {
                         if (m_Game.m_selArray[i][j] == 1) canvas.drawRect(rt, myPaint);
                         if (selNode.r2 < 0 && m_iR == i && m_iC == j) {
                             rt1.set(100, 200-myMaps.isSkin_200, 150, 250-myMaps.isSkin_200);
+                            canvas.drawRect(rt, myPaint);
                             canvas.drawBitmap(myMaps.skinBit, rt1, rt, myPaint);
                         }
                     }
@@ -1724,7 +1744,7 @@ public class myGameViewMap extends View {
             }
 
             m_Game.mPathfinder.FindBlock(isBK, m_Level, f_Row, f_Col);   //计算割点，块
-            m_Game.mPathfinder.boxReachable(isBK, f_Row, f_Col, isBK ? m_Game.m_nRow2 : m_Game.m_nRow, isBK ? m_Game.m_nCol2 : m_Game.m_nCol, isBK ? null : m_Game.board);  //计算箱子可达点
+            m_Game.mPathfinder.boxReachable(isBK, f_Row, f_Col, isBK ? m_Game.m_nRow2 : m_Game.m_nRow, isBK ? m_Game.m_nCol2 : m_Game.m_nCol);  //计算箱子可达点
 
             for (int i = 0; i < m_nRows; i++) {
                 for (int j = 0; j < m_nCols; j++) {
@@ -1755,7 +1775,7 @@ public class myGameViewMap extends View {
         switch (myMaps.m_nTrun) {
             case 0:
                 RC[0] = ((int) ((i - m_fLeft) / m_fScale)) / m_PicWidth;
-                RC[1] = ((int) ((j - m_fTop) / m_fScale)) / m_PicWidth;
+                RC[1] = ((int) ((j - m_fTop ) / m_fScale)) / m_PicWidth;
                 break;
             case 1:
                 RC[1] = m_Game.m_cArray.length - 1 - ((int) ((i - m_fLeft) / m_fScale)) / m_PicWidth;
@@ -1984,7 +2004,7 @@ public class myGameViewMap extends View {
                     } else {
                         click_Box_Row2 = m_iR;
                         click_Box_Col2 = m_iC;
-                        if (m_Game.mark15 != null && m_Game.mark15[m_iR][m_iC]) {
+                        if (myMaps.m_Sets[11] == 1 && m_Game.mark15 != null && m_Game.mark15[m_iR][m_iC]) {
                             MyToast.showToast(myMaps.ctxDealFile, "这是一个被冻结的箱子！", Toast.LENGTH_SHORT);
                             for (int r = 0; r < m_nRows; r++) {
                                 for (int c = 0; c < m_nCols; c++) {
@@ -1995,7 +2015,7 @@ public class myGameViewMap extends View {
                         } else {
                             if (mLadder2.size() > 0) mLadder2.clear();
                             m_Game.mPathfinder.FindBlock(true, m_Game.bk_cArray, m_iR, m_iC);   //计算割点，块
-                            m_Game.mPathfinder.boxReachable(true, m_iR, m_iC, m_Game.m_nRow2, m_Game.m_nCol2, null);  //计算箱子可达点
+                            m_Game.mPathfinder.boxReachable(true, m_iR, m_iC, m_Game.m_nRow2, m_Game.m_nCol2);  //计算箱子可达点
                         }
                         m_bBoxTo2 = true;  //置箱子可达位置提示状态标志
                         m_bManTo2 = false;
@@ -2173,6 +2193,9 @@ public class myGameViewMap extends View {
                                 m_bManTo2 = true;
                                 m_Game.mPathfinder.manReachable(true, m_Game.bk_cArray, m_Game.m_nRow2, m_Game.m_nCol2);
                             }
+                        } else if (ch == '#' || ch == '_') {//点按了墙壁
+                            m_bBoxTo2 = false;
+                            m_bManTo2 = false;
                         }
                     }
                 }
@@ -2194,7 +2217,7 @@ public class myGameViewMap extends View {
                         if (mLadder.size() > 0) mLadder.clear();
                         click_Box_Row = m_iR;
                         click_Box_Col = m_iC;
-                        if (m_Game.mark16 != null && m_Game.mark16[m_iR][m_iC]) {
+                        if (myMaps.m_Sets[11] == 1 && m_Game.mark16 != null && m_Game.mark16[m_iR][m_iC]) {
                             MyToast.showToast(myMaps.ctxDealFile, "这是一个陷于网锁的箱子！", Toast.LENGTH_SHORT);
                             for (int r = 0; r < m_nRows; r++) {
                                 for (int c = 0; c < m_nCols; c++) {
@@ -2204,7 +2227,7 @@ public class myGameViewMap extends View {
                             m_Game.mPathfinder.mark3[m_iR][m_iC] = true;
                         } else {
                             m_Game.mPathfinder.FindBlock(false, m_Game.m_cArray, m_iR, m_iC);   //计算割点，块
-                            m_Game.mPathfinder.boxReachable(false, m_iR, m_iC, m_Game.m_nRow, m_Game.m_nCol, m_Game.board);  //计算箱子可达点
+                            m_Game.mPathfinder.boxReachable(false, m_iR, m_iC, m_Game.m_nRow, m_Game.m_nCol);  //计算箱子可达点
                         }
                         m_bBoxTo = true;  //置箱子可达位置提示状态标志
                         m_bManTo = false;
@@ -2382,6 +2405,9 @@ public class myGameViewMap extends View {
                                 m_bManTo = true;
                                 m_Game.mPathfinder.manReachable(false, m_Game.m_cArray, m_Game.m_nRow, m_Game.m_nCol);
                             }
+                        } else if (ch == '#' || ch == '_') {//点按了墙壁
+                            m_bBoxTo = false;
+                            m_bManTo = false;
                         }
                     }
                 }

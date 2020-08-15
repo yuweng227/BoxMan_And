@@ -10,11 +10,15 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
+import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
@@ -61,15 +65,31 @@ public class myGridViewAdapter extends BaseAdapter{
             viewHolder.textview_test = (TextView)convertView.findViewById(R.id.m_image_text);
             viewHolder.textview_test2 = (TextView)convertView.findViewById(R.id.m_image_text2);
             convertView.setTag(viewHolder);
+            myMaps.m_Sets[35] = viewHolder.imageview_thumbnail.getLayoutParams().height;
         }else{
             viewHolder = (MyGridViewHolder)convertView.getTag();
         }
+
         if (myMaps.m_Sets[2] == 0) {
             viewHolder.textview_test.setVisibility(View.VISIBLE);
             viewHolder.textview_test2.setVisibility(View.GONE);
+
+            // 下面根据比例计算您的item的高度，此处只是使用itemWidth
+            if (m_PicWidth > 0) {
+                LinearLayout.LayoutParams para;
+                para = (LinearLayout.LayoutParams) viewHolder.imageview_thumbnail.getLayoutParams();
+                para.height = m_PicWidth;
+                para.width  = m_PicWidth;
+                viewHolder.imageview_thumbnail.setLayoutParams(para);
+            }
         } else {
             viewHolder.textview_test.setVisibility(View.GONE);
             viewHolder.textview_test2.setVisibility(View.VISIBLE);
+            LinearLayout.LayoutParams para;
+            para = (LinearLayout.LayoutParams) viewHolder.imageview_thumbnail.getLayoutParams();
+            para.height = myMaps.m_Sets[35];
+            para.width  = myMaps.m_Sets[35];
+            viewHolder.imageview_thumbnail.setLayoutParams(para);
         }
          
         //先cancelPotentialLoad判断是否有线程正在为imageview加载图片资源，  
@@ -111,6 +131,11 @@ public class myGridViewAdapter extends BaseAdapter{
 	public Bitmap getBitmapFromUrl(int key){
 
         Bitmap bitmap = myGridView.gridviewBitmapCaches.get(key);
+
+        if (myMaps.m_Sets[2] == 0) {
+            m_PicWidth = myGridView.mGridView.getColumnWidth();
+        }
+        m_PicWidth = m_PicWidth > 0 ? m_PicWidth : myMaps.m_Sets[35];
 
         if (myMaps.m_lstMaps.get(key).Lock || m_changeItem == key) {
             if (m_changeItem == key) {  //“锁”图标的处理

@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -99,17 +100,21 @@ public class mySplitLevelsFragment extends DialogFragment {
 
         @Override
         protected void onPreExecute() {
-            myMaps.m_lstMaps.clear();  //关卡列表
+            if (myMaps.m_lstMaps != null) {
+                myMaps.m_lstMaps.clear();  //关卡列表
+            }
         }
 
         @Override
         protected String doInBackground(Void... params) {
 
+            long exitTime = System.currentTimeMillis();
+
             if (myType < 0 || myFiles == null) return "没有可解析的内容！";
 
             publishProgress("解析中...");
 
-            int[] num = {0, 0};      //解析出来的关卡数、无效关卡数
+            int[] num = {0, 0, 0};      //解析出来的关卡数、无效关卡数，忽略（跳过）的关卡数
             myMaps.m_Nums[0] = 0;    //解析出来的答案数、无效答案数
             myMaps.m_Nums[1] = 0;
 
@@ -126,9 +131,11 @@ public class mySplitLevelsFragment extends DialogFragment {
                 InputStreamReader read;
                 BufferedReader bufferedReader;
 
-                boolean flg = false;   //是否 XSB
-                boolean flg2 = false;  //是否 Comment
+                boolean flg = false;   //是否开始了 XSB
+                byte flg2 = 0;  //是否开始了 Comment
                 boolean flg3 = false;  //是否答案
+                byte flg4 = 0;  //是否开始了 Title
+                byte flg5 = 0;  //是否开始了 author
                 boolean newSet = false;  //关卡集解析尚未开始
 
                 String line;
@@ -136,7 +143,7 @@ public class mySplitLevelsFragment extends DialogFragment {
                     if (isCancelled()) return "";
                     if (myMaps.m_setName.isItemChecked(i)) {
                         try {
-                            my_Name = new StringBuilder(myMaps.sRoot).append(myMaps.sPath).append("关卡扩展/").append(myFiles.get(i)).toString();
+                            my_Name = new StringBuilder(myMaps.sRoot).append(myMaps.sPath).append("导入/").append(myFiles.get(i)).toString();
                             //若包含导入关卡选项，查看是否有重复关卡集
                             if (myMaps.isXSB) {
                                 myMaps.J_Title = myFiles.get(i).substring(0, myFiles.get(i).lastIndexOf("."));    //去掉扩展名
@@ -161,7 +168,7 @@ public class mySplitLevelsFragment extends DialogFragment {
                             while (true) {
                                 if (isCancelled()) return "";
 
-                                publishProgress("解析中...\n" + myFiles.get(i) + "\n" + num[0]);
+                                publishProgress("解析中...\n" + myFiles.get(i) + "\n" + (num[0] - num[2]));
 
                                 line = bufferedReader.readLine();
                                 if (line == null || myMaps.isXSB(line)){  //匹配 XSB 行，目前效率最高的判断方法，效率约是最初正则的 10 倍
@@ -172,7 +179,12 @@ public class mySplitLevelsFragment extends DialogFragment {
                                             if (nd == null)
                                                 nd = new mapNode(g_Map.toString(), g_Title.toString(), g_Author.toString(), g_Comment.toString());  //关卡节点
                                             if (myMaps.isXSB) {
-                                                id = mySQLite.m_SQL.add_L(myMaps.m_Set_id, nd);   //添加的关卡库，关卡所属的关卡集 id: P_id = myMaps.m_Set_id
+                                                if (nd.Title.equals("无效关卡") && nd.Cols == 2 && nd.Rows == 1) {
+                                                    id = -1;
+                                                    num[2]++;
+                                                } else {
+                                                    id = mySQLite.m_SQL.add_L(myMaps.m_Set_id, nd);   //添加的关卡库，关卡所属的关卡集 id: P_id = myMaps.m_Set_id
+                                                }
                                                 if (nd.L_CRC_Num < 0 || id <= 0) num[1]++;
                                             }
                                         } else {  //当遇到第一个关卡的XSB后，需要先保存一下关卡集的作者、说明等信息，此时，还没有关卡的XSB读入
@@ -196,24 +208,26 @@ public class mySplitLevelsFragment extends DialogFragment {
                                         g_Comment = new StringBuilder();
                                         sSolution = new StringBuilder();
                                         flg3 = false;
-                                        flg2 = false;  //强制"注释"块结束，预防“注释”块没写"comment-end:"的情况
+                                        flg2 = 0;  //强制"注释"块结束，可以重新开始，预防“注释”块没写"comment-end:"的情况
+                                        flg4 = 0;  //强制"标题"可以重新开始
+                                        flg5 = 0;  //强制"作者"可以重新开始
                                         flg = true;    //准备读入关卡XSB
                                         nd = null;
                                     }
                                     if (g_Map.length() > 0) g_Map.append('\n');
                                     g_Map.append(line);
                                 } else
-                                if (!flg2 && line.toLowerCase(Locale.getDefault()).startsWith("title:")){  //匹配 Title，标题
-                                    g_Title.append(line.substring(6).trim());
+                                if (flg2 == 0 && line.trim().toLowerCase(Locale.getDefault()).startsWith("title:") && flg4++ == 0){  //匹配 Title，标题
+                                    g_Title.append(line.substring(line.indexOf(":")+1).trim());
                                     flg = false;  //结束关卡SXB的解析
                                     flg3 = false;
                                 } else
-                                if (!flg2 && line.toLowerCase(Locale.getDefault()).startsWith("author:")){  //匹配 Author，作者
-                                    g_Author.append(line.substring(7).trim());
+                                if (flg2 == 0 && line.trim().toLowerCase(Locale.getDefault()).startsWith("author:") && flg5++ == 0){  //匹配 Author，作者
+                                    g_Author.append(line.substring(line.indexOf(":")+1).trim());
                                     flg = false;  //结束关卡SXB的解析
                                     flg3 = false;
                                 } else
-                                if (myMaps.isLurd && line.toLowerCase(Locale.getDefault()).startsWith("solution")){  //匹配 Solution，答案
+                                if (myMaps.isLurd && line.trim().toLowerCase(Locale.getDefault()).startsWith("solution")){  //匹配 Solution，答案
                                     if (sSolution.length() > 0) {  //有答案尚未保存
                                         if (nd == null)
                                             nd = new mapNode(g_Map.toString(), g_Title.toString(), g_Author.toString(), g_Comment.toString());  //关卡节点}
@@ -225,30 +239,31 @@ public class mySplitLevelsFragment extends DialogFragment {
                                     } else {
                                         sSolution.append(line.substring(line.indexOf(")")+1).trim());
                                     }
+                                    if (flg2 > 0) flg2++;
                                     flg = false;
-                                    flg2 = false;  //结束"注释"块
                                     flg3 = true;   //开始答案行
                                 } else
-                                if (line.toLowerCase(Locale.getDefault()).startsWith("comment-end:") ||
-                                        line.toLowerCase(Locale.getDefault()).startsWith("comment_end:")){  //匹配 Comment-end，"注释"块结束
-                                    flg2 = false;  //结束"注释"块
+                                if (line.trim().toLowerCase(Locale.getDefault()).startsWith("comment-end:") ||
+                                        line.trim().toLowerCase(Locale.getDefault()).startsWith("comment_end:")){  //匹配 Comment-end，"注释"块结束
+                                    if (flg2 > 0) flg2++;  //结束"注释"块
                                 } else
-                                if (line.toLowerCase(Locale.getDefault()).startsWith("comment:")){  //匹配 Comment，"注释"块开始
+                                if (line.trim().toLowerCase(Locale.getDefault()).startsWith("comment:") && flg2++ == 0){  //匹配 Comment，"注释"块开始
                                     flg3 = false;
-                                    flg2 = true;  //开始"注释"块
                                     flg = false;  //结束关卡SXB的解析
-                                    line = line.substring(8).trim();
+                                    line = line.substring(line.indexOf(":")+1).trim();
                                     if (!line.equals("")) g_Comment.append(line);
                                 } else
-                                if (!flg2 && (line.indexOf(';') == 0 || line.matches("\\s*"))){  //若非"说明"信息，则跳过注释行和空行
+                                if (flg2 != 1 && (line.indexOf(';') == 0 || line.matches("\\s*"))){  //若非"说明"信息，则跳过注释行和空行
                                     flg = false;  //结束关卡SXB的解析
                                 } else
-                                if (flg2) {   //"注释"块
+                                if (flg2 == 1) {   //"注释"块
                                     if (!g_Comment.toString().isEmpty()) g_Comment.append('\n');
                                     g_Comment.append(line);
                                 } else
                                 if (flg3) {  //答案行
                                     sSolution.append(line);
+                                } else {
+                                    flg = false;  //结束关卡SXB的解析
                                 }
                             }  //end the while
 
@@ -261,7 +276,7 @@ public class mySplitLevelsFragment extends DialogFragment {
             } else if (myType == 1) {  //关卡文档（忽略关卡集方面的信息）
                 try {
                     publishProgress("检查文档编码...\n" + myFiles.get(0));
-                    String my_Name = new StringBuilder(myMaps.sRoot).append(myMaps.sPath).append("关卡扩展/").append(myFiles.get(0)).toString();
+                    String my_Name = new StringBuilder(myMaps.sRoot).append(myMaps.sPath).append("导入/").append(myFiles.get(0)).toString();
                     File file = new File(my_Name);
                     InputStreamReader read = new InputStreamReader(new FileInputStream(file), myMaps.getTxtEncode(new FileInputStream(file)));  //考虑到编码格式
                     BufferedReader bufferedReader = new BufferedReader(read);
@@ -275,14 +290,16 @@ public class mySplitLevelsFragment extends DialogFragment {
                     long id;
 
                     boolean flg = false;   //是否 XSB
-                    boolean flg2 = false;  //是否 Comment
+                    byte flg2 = 0;  //是否 Comment
                     boolean flg3 = false;  //是否答案
+                    byte flg4 = 0;  //是否开始了 Title
+                    byte flg5 = 0;  //是否开始了 author
 
                     String line;
                     while (true) {
                         if (isCancelled()) return "";
 
-                        publishProgress("解析中...\n" + myFiles.get(0) + "\n" + num[0]);
+                        publishProgress("解析中...\n" + myFiles.get(0) + "\n" + (num[0] - num[2]));
 
                         line = bufferedReader.readLine();
                         if (line == null || myMaps.isXSB(line)){  //匹配 XSB 行，目前效率最高的判断方法，效率约是最初正则的 10 倍
@@ -293,7 +310,12 @@ public class mySplitLevelsFragment extends DialogFragment {
                                     if (nd == null)
                                         nd = new mapNode(g_Map.toString(), g_Title.toString(), g_Author.toString(), g_Comment.toString());  //关卡节点
                                     if (myMaps.isXSB) {
-                                        id = mySQLite.m_SQL.add_L(myMaps.m_Set_id, nd);   //添加的关卡库，关卡所属的关卡集 id: P_id = myMaps.m_Set_id
+                                        if (nd.Title.equals("无效关卡") && nd.Cols == 2 && nd.Rows == 1) {
+                                            id = -1;
+                                            num[2]++;
+                                        } else {
+                                            id = mySQLite.m_SQL.add_L(myMaps.m_Set_id, nd);   //添加的关卡库，关卡所属的关卡集 id: P_id = myMaps.m_Set_id
+                                        }
                                         if (nd.L_CRC_Num < 0 || id <= 0) num[1]++;
                                     }
                                 }
@@ -308,24 +330,26 @@ public class mySplitLevelsFragment extends DialogFragment {
                                 g_Comment = new StringBuilder();
                                 sSolution = new StringBuilder();
                                 flg3 = false;
-                                flg2 = false;  //强制"注释"块结束，预防“注释”块没写"comment-end:"的情况
+                                flg2 = 0;  //强制"注释"块结束，可以重新开始，预防“注释”块没写"comment-end:"的情况
+                                flg4 = 0;  //强制"标题"可以重新开始
+                                flg5 = 0;  //强制"作者"可以重新开始
                                 flg = true;    //准备读入关卡XSB
                                 nd = null;
                             }
                             if (g_Map.length() > 0) g_Map.append('\n');
                             g_Map.append(line);
                         } else
-                        if (!flg2 && line.toLowerCase(Locale.getDefault()).startsWith("title:")){  //匹配 Title，标题
-                            g_Title.append(line.substring(6).trim());
+                        if (flg2 == 0 && line.trim().toLowerCase(Locale.getDefault()).startsWith("title:") && flg4++ == 0){  //匹配 Title，标题
+                            g_Title.append(line.substring(line.indexOf(":")+1).trim());
                             flg = false;  //结束关卡SXB的解析
                             flg3 = false;
                         } else
-                        if (!flg2 && line.toLowerCase(Locale.getDefault()).startsWith("author:")){  //匹配 Author，作者
-                            g_Author.append(line.substring(7).trim());
+                        if (flg2 == 0 && line.trim().toLowerCase(Locale.getDefault()).startsWith("author:") && flg5++ == 0){  //匹配 Author，作者
+                            g_Author.append(line.substring(line.indexOf(":")+1).trim());
                             flg = false;  //结束关卡SXB的解析
                             flg3 = false;
                         } else
-                        if (myMaps.isLurd && line.toLowerCase(Locale.getDefault()).startsWith("solution")){  //匹配 Solution，答案
+                        if (myMaps.isLurd && line.trim().toLowerCase(Locale.getDefault()).startsWith("solution")){  //匹配 Solution，答案
                             if (sSolution.length() > 0) {  //有答案尚未保存
                                 if (nd == null)
                                     nd = new mapNode(g_Map.toString(), g_Title.toString(), g_Author.toString(), g_Comment.toString());  //关卡节点}
@@ -337,30 +361,31 @@ public class mySplitLevelsFragment extends DialogFragment {
                             } else {
                                 sSolution.append(line.substring(line.indexOf(")")+1).trim());
                             }
+                            if (flg2 > 0)  flg2++;
                             flg = false;
-                            flg2 = false;  //结束"注释"块
                             flg3 = true;   //开始答案行
                         } else
-                        if (line.toLowerCase(Locale.getDefault()).startsWith("comment-end:") ||
-                                line.toLowerCase(Locale.getDefault()).startsWith("comment_end:")){  //匹配 Comment-end，"注释"块结束
-                            flg2 = false;  //结束"注释"块
+                        if (line.trim().toLowerCase(Locale.getDefault()).startsWith("comment-end:") ||
+                                line.trim().toLowerCase(Locale.getDefault()).startsWith("comment_end:")){  //匹配 Comment-end，"注释"块结束
+                            if (flg2 > 0) flg2++;  //结束"注释"块
                         } else
-                        if (line.toLowerCase(Locale.getDefault()).startsWith("comment:")){  //匹配 Comment，"注释"块开始
+                        if (line.trim().toLowerCase(Locale.getDefault()).startsWith("comment:") && flg2++ == 0){  //匹配 Comment，"注释"块开始
                             flg3 = false;
-                            flg2 = true;  //开始"注释"块
                             flg = false;  //结束关卡SXB的解析
-                            line = line.substring(8).trim();
+                            line = line.substring(line.indexOf(":")+1).trim();
                             if (!line.equals("")) g_Comment.append(line);
                         } else
-                        if (!flg2 && (line.indexOf(';') == 0 || line.matches("\\s*"))){  //若非"说明"信息，则跳过注释行和空行
+                        if (flg2 != 1 && (line.indexOf(';') == 0 || line.matches("\\s*"))){  //若非"说明"信息，则跳过注释行和空行
                             flg = false;  //结束关卡SXB的解析
                         } else
-                        if (flg2) {   //"注释"块
+                        if (flg2 == 1) {   //"注释"块
                             if (!g_Comment.toString().isEmpty()) g_Comment.append('\n');
                             g_Comment.append(line);
                         } else
                         if (flg3) {  //答案行
                             sSolution.append(line);
+                        } else {
+                            flg = false;  //结束关卡SXB的解析
                         }
                     }  //end the while
 
@@ -380,15 +405,17 @@ public class mySplitLevelsFragment extends DialogFragment {
                     long id;
 
                     boolean flg = false;   //是否 XSB
-                    boolean flg2 = false;  //是否 Comment
+                    byte flg2 = 0;  //是否 Comment
                     boolean flg3 = false;  //是否答案
+                    byte flg4 = 0;  //是否开始了 Title
+                    byte flg5 = 0;  //是否开始了 author
 
                     String line;
                     int k = 0;
                     while (k < Arr.length) {
                         if (isCancelled()) return "";
 
-                        publishProgress("解析中...\n剪切板\n" + num[0]);
+                        publishProgress("解析中...\n剪切板\n" + (num[0] - num[2]));
 
                         line = Arr[k++];
                         if (myMaps.isXSB(line) || k == Arr.length-1){  //匹配 XSB 行，目前效率最高的判断方法，效率约是最初正则的 10 倍
@@ -398,7 +425,12 @@ public class mySplitLevelsFragment extends DialogFragment {
                                     if (nd == null)
                                         nd = new mapNode(g_Map.toString(), g_Title.toString(), g_Author.toString(), g_Comment.toString());  //关卡节点
                                     if (myMaps.isXSB) {
-                                        id = mySQLite.m_SQL.add_L(myMaps.m_Set_id, nd);   //添加的关卡库，关卡所属的关卡集 id: P_id = myMaps.m_Set_id
+                                        if (nd.Title.equals("无效关卡") && nd.Cols == 2 && nd.Rows == 1) {
+                                            id = -1;
+                                            num[2]++;
+                                        } else {
+                                            id = mySQLite.m_SQL.add_L(myMaps.m_Set_id, nd);   //添加的关卡库，关卡所属的关卡集 id: P_id = myMaps.m_Set_id
+                                        }
                                         if (nd.L_CRC_Num < 0 || id <= 0) num[1]++;
                                     }
                                 }
@@ -411,24 +443,26 @@ public class mySplitLevelsFragment extends DialogFragment {
                                 g_Comment = new StringBuilder();
                                 sSolution = new StringBuilder();
                                 flg3 = false;
-                                flg2 = false;  //强制"注释"块结束，预防“注释”块没写"comment-end:"的情况
+                                flg2 = 0;  //强制"注释"块结束，预防“注释”块没写"comment-end:"的情况
+                                flg4 = 0;  //强制"标题"结束
+                                flg5 = 0;  //强制"作者"结束
                                 flg = true;   //准备读入关卡XSB
                                 nd = null;
                             }
                             if (g_Map.length() > 0) g_Map.append('\n');
                             g_Map.append(line);
                         } else
-                        if (!flg2 && line.toLowerCase(Locale.getDefault()).startsWith("title:")){  //匹配 Title，标题
-                            g_Title.append(line.substring(6).trim());
+                        if (flg2 == 0 && line.trim().toLowerCase(Locale.getDefault()).startsWith("title:") && flg4++ == 0){  //匹配 Title，标题
+                            g_Title.append(line.substring(line.indexOf(":")+1).trim());
                             flg = false;  //结束关卡SXB的解析
                             flg3 = false;
                         } else
-                        if (!flg2 && line.toLowerCase(Locale.getDefault()).startsWith("author:")){  //匹配 Author，作者
-                            g_Author.append(line.substring(7).trim());
+                        if (flg2 == 0 && line.trim().toLowerCase(Locale.getDefault()).startsWith("author:") && flg5++ == 0){  //匹配 Author，作者
+                            g_Author.append(line.substring(line.indexOf(":")+1).trim());
                             flg = false;  //结束关卡SXB的解析
                             flg3 = false;
                         } else
-                        if (myMaps.isLurd && line.toLowerCase(Locale.getDefault()).startsWith("solution")){  //匹配 Solution，答案
+                        if (myMaps.isLurd && line.trim().toLowerCase(Locale.getDefault()).startsWith("solution")){  //匹配 Solution，答案
                             if (sSolution.length() > 0) {  //有答案尚未保存
                                 if (nd == null)
                                     nd = new mapNode(g_Map.toString(), g_Title.toString(), g_Author.toString(), g_Comment.toString());  //关卡节点
@@ -440,30 +474,31 @@ public class mySplitLevelsFragment extends DialogFragment {
                             } else {
                                 sSolution.append(line.substring(line.indexOf(")")+1).trim());
                             }
+                            if (flg2 > 0)  flg2++;  //结束"注释"块
                             flg = false;
-                            flg2 = false;  //结束"注释"块
                             flg3 = true;   //开始答案行
                         } else
-                        if (line.toLowerCase(Locale.getDefault()).startsWith("comment-end:") ||
-                                line.toLowerCase(Locale.getDefault()).startsWith("comment_end:")){  //匹配 Comment-end，"注释"块结束
-                            flg2 = false;  //结束"注释"块
+                        if (line.trim().toLowerCase(Locale.getDefault()).startsWith("comment-end:") ||
+                                line.trim().toLowerCase(Locale.getDefault()).startsWith("comment_end:")){  //匹配 Comment-end，"注释"块结束
+                            if (flg2 > 0) flg2++;  //结束"注释"块
                         } else
-                        if (line.toLowerCase(Locale.getDefault()).startsWith("comment:")){  //匹配 Comment，"注释"块开始
+                        if (line.trim().toLowerCase(Locale.getDefault()).startsWith("comment:") && flg2++ == 0){  //匹配 Comment，"注释"块开始
                             flg3 = false;
-                            flg2 = true;  //开始"注释"块
                             flg = false;  //结束关卡SXB的解析
-                            line = line.substring(8).trim();
+                            line = line.substring(line.indexOf(":")+1).trim();
                             if (!line.equals("")) g_Comment.append(line);
                         } else
-                        if (!flg2 && (line.indexOf(';') == 0 || line.matches("\\s*"))){  //若非"说明"信息，则跳过注释行和空行
+                        if (flg2 != 1 && (line.indexOf(';') == 0 || line.matches("\\s*"))){  //若非"说明"信息，则跳过注释行和空行
                             flg = false;  //结束关卡SXB的解析
                         } else
-                        if (flg2) {   //"注释"块
+                        if (flg2 == 1) {   //"注释"块
                             if (!g_Comment.toString().isEmpty()) g_Comment.append('\n');
                             g_Comment.append(line);
                         } else
                         if (flg3) {  //答案行
                             sSolution.append(line);
+                        } else {
+                            flg = false;  //结束关卡SXB的解析
                         }
                     }  //end the while
 
@@ -478,8 +513,8 @@ public class mySplitLevelsFragment extends DialogFragment {
             if (num[0] == 0) {
                 str.append("关卡集重复或无效！");
             } else {
-
-                str.append("关卡数：").append(num[0]).append("\n无效关卡数：").append(num[1]);
+                str.append("解析耗时：").append((System.currentTimeMillis() - exitTime) / 1000).append(" 秒\n");
+                str.append("关卡数：").append(num[0] - num[2]).append("\n无效关卡数：").append(num[1] - num[2]);
                 myMaps.m_Nums[2] = num[0];
                 myMaps.m_Nums[3] = num[1];
                 if (myMaps.isLurd) {

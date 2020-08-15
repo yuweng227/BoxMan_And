@@ -22,8 +22,6 @@ import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-import my.boxman.jsoko.board.Board;
-
 //探路单元，提供各种寻径功能
 public class myPathfinder {
 
@@ -634,7 +632,7 @@ public class myPathfinder {
     }
 
     //计算箱子的可达位置
-    public void boxReachable(boolean flg, int boxR, int boxC, int manR, int manC, Board board) {
+    public void boxReachable(boolean flg, int boxR, int boxC, int manR, int manC) {
         int newR, newC, mToR, mToC;
 
         boolean[][] mark = flg ? mark4 : mark3, mark9 = flg ? mark6 : mark5;
@@ -676,7 +674,7 @@ public class myPathfinder {
                     mToR = f.box_R - dr4[k];  //箱子至新位置，人需到的位置
                     mToC = f.box_C - dc4[k];
                     //界外，不计算
-                    if (!isPass(tmpLevel, newR, newC) || !isPass(tmpLevel, mToR, mToC) || myMaps.m_Sets[11] == 1 && board != null && board.isSimpleDeadlockSquare(newC, newR)) {
+                    if (!isPass(tmpLevel, newR, newC) || !isPass(tmpLevel, mToR, mToC)) {
                         continue;
                     }
                 }

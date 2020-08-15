@@ -16,6 +16,11 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.media.AudioManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.media.SoundPool;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -50,17 +55,14 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import my.boxman.jsoko.board.Board;
-import my.boxman.jsoko.deadlockdetection.DeadlockDetection;
-import my.boxman.jsoko.deadlockdetection.FreezeDeadlockDetection;
+import my.boxman.jsoko.DiagonalLock;
+import my.boxman.jsoko.FreezeLock;
+import my.boxman.jsoko.IntStack;
 
 public class myGameView extends Activity {
 
     AsyncCountBoxsTask mTask;
     public RunMicroTask mMicroTask;
-
-    public Board board;
-    public DeadlockDetection deadlockDetection = null;
 
     AlertDialog AotoNextDlg;
     AlertDialog exitDlg;
@@ -86,10 +88,9 @@ public class myGameView extends Activity {
     CheckBox bt_BK = null;
 
     //正推，目标数、完成数、仓管员初始位置
-    int m_nDstNum;
+    public int m_nDstNum;
     int m_nDstOK;
-    int m_nRow;
-    int m_nCol;
+    public int m_nRow, m_nCol;
     //逆推，目标数、完成数、仓管员初始位置
     int m_nDstNum2;
     int m_nDstOK2;
@@ -110,13 +111,14 @@ public class myGameView extends Activity {
     LinkedList<Byte> m_lstMovUnDo2;  //逆推 unDo 栈
     LinkedList<Byte> m_lstMovReDo2;  //逆推 reDo 栈
 
+    char[][] mArray9;  //检查死锁用的临时地图（空地图），正推根据目标数识别死锁时，也会用到
     myPathfinder mPF;  //检查死锁用的探路者，正推根据目标数识别死锁时，也会用到
-    boolean[][] mark15, mark16, mark7, mark8, mark11, mark12, mark44;  //15、为逆推死点（不可推动的点）；15、为正推网锁点（不可推动的点）；7、为正推箱子初位；8、为正推初态地板；11、为哪个箱子能动或未动过；12、为正推未被使用过的地板；44、是否显示标尺
+    boolean[][] mark15, mark16, mark7, mark8, mark11, mark12, mark44;  //15、为逆推死点（不可推动的点）；16、为正推网锁点（不可推动的点）；7、为正推箱子初位；8、为正推初态地板；11、为哪个箱子能动或未动过；12、为正推未被使用过的地板；44、是否显示标尺
     short[][] mark14;  //14、为逆推可推的点（其它为推死的点）
     byte[][] mark41;  //网锁标志
 
     int m_Gif_Start = 0;  //导出 GIF 的起点
-    int m_nStep, m_nLastSteps = -1;  //执行"推"、"移"的步数，最后一动的步数
+    int m_nStep, m_nLastSteps = -1;  //执行"推"、"移"的步数
     boolean m_bYanshi, m_bYanshi2;  //是否演示
     String m_imPort_YASS;  //是否做过动作“导入”或“YASS”过动作
     int m_iStep[] = new int[4];    //记录"推"、"移"的步数
@@ -136,14 +138,17 @@ public class myGameView extends Activity {
     short[][] m_iBoxNum;  //迷宫箱子编号（人为）
     short[][] m_iBoxNum2;  //迷宫箱子自动（固定）编号
     char[][] m_cArray0;  //迷宫初态
-    char[][] m_cArray;  //迷宫
+    public char[][] m_cArray;  //迷宫
     char[][] bk_cArray;  //逆推迷宫
 
-    char[][] ls_m_cArray;  //循环控制迷宫
     char[][] ls_bk_cArray;  //导入时用的临时逆推迷宫
 
     byte[][] m_selArray;  //迷宫选择
     byte[][] bk_selArray;  //逆推迷宫选择
+
+    DiagonalLock closedDiagonalLock;
+    public FreezeLock freezeDeadlock;
+    public byte[][] m_Freeze;  //检查冻结时使用的临时数字
 
     int m_nRow3;  //逆推过关时用，记录仓管员正推地图之初始占位
     int m_nCol3;
@@ -712,12 +717,6 @@ public class myGameView extends Activity {
             else
                 m_cArray[m_nRow][m_nCol] = '.';
 
-            //  死锁检测需要的准备
-            if (board != null) {
-                try {
-                    board.moveBox(i * m_cArray[0].length + j, i2 * m_cArray[0].length + j2);
-                } catch (Throwable ex) { }
-            }
             m_nRow = i;
             m_nCol = j;
             m_iR9 = i2;  //决定是否有必要进行死锁判断
@@ -861,13 +860,6 @@ public class myGameView extends Activity {
                 m_iBoxNum[i2][j2] = -1;
                 m_iBoxNum2[m_nRow][m_nCol] = m_iBoxNum2[i2][j2];
                 m_iBoxNum2[i2][j2] = -1;
-
-                // 死锁检测需要的准备
-                if (board != null) {
-                    try {
-                        board.moveBox(i2 * m_cArray[0].length + j2, m_nRow * m_cArray[0].length + m_nCol);
-                    } catch (Throwable ex) { }
-                }
 
                 b_nRow = m_nRow;  //动画移动时使用
                 b_nCol = m_nCol;
@@ -1256,7 +1248,7 @@ public class myGameView extends Activity {
                             initMap();
                             ls_bk_cArray = bk_cArray;
                         } else {
-                            MyToast.showToast(myGameView.this, "后面没有找到未解关卡！", Toast.LENGTH_SHORT);
+                            MyToast.showToast(myGameView.this, "后面没有未解关卡！", Toast.LENGTH_SHORT);
                         }
                     }
                 });
@@ -1311,7 +1303,7 @@ public class myGameView extends Activity {
         Builder dlg4 = new Builder(this);
         dlg4.setTitle("死锁移动").setMessage("这一步造成关卡死锁，继续吗？")
                 .setCancelable(false).setNegativeButton("继续", null)
-                .setPositiveButton("撤销移动", new DialogInterface.OnClickListener() {
+                .setPositiveButton("撤销移动", new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface arg0, int arg1) {
                         bt_UnDo.setChecked(!bt_UnDo.isChecked());
@@ -1740,6 +1732,9 @@ public class myGameView extends Activity {
         m_b_ReDo_LongPress = false;  //是否长按了“ReDo”按钮
         m_b_TR_LongPress = false;  //是否长按了“旋转”按钮
         m_bNetLock = false;  //取消网型提示
+
+        closedDiagonalLock = new DiagonalLock(this);
+        freezeDeadlock = new FreezeLock(this);
     }
 
     //逆推undo至首后，有可能更改了仓管员的位置，与redo不符，如此可调整到与redo相符的位置
@@ -2030,7 +2025,7 @@ public class myGameView extends Activity {
         try {
             m_iBoxNum = new short[myMaps.curMap.Rows][myMaps.curMap.Cols];
             m_iBoxNum2 = new short[myMaps.curMap.Rows][myMaps.curMap.Cols];
-            ls_m_cArray = new char[myMaps.curMap.Rows][myMaps.curMap.Cols];
+            m_Freeze = new byte[myMaps.curMap.Rows][myMaps.curMap.Cols];
             m_cArray = new char[myMaps.curMap.Rows][myMaps.curMap.Cols];
             m_cArray0 = new char[myMaps.curMap.Rows][myMaps.curMap.Cols];
             bk_cArray = new char[myMaps.curMap.Rows][myMaps.curMap.Cols];
@@ -2101,16 +2096,10 @@ public class myGameView extends Activity {
                 }
             }
 
-//            board = new Board();
-//            board.setBoardFromArray(m_cArray);
-//            board.isValid(new StringBuilder());
-//            board.prepareBoard();
-//            deadlockDetection = new DeadlockDetection(board);
             mark14 = null;
             mark15 = null;
             mark16 = null;
-            board = null;
-            deadlockDetection = null;
+            mArray9 = null;
 
             //箱子自动编号只针对人的活动范围内的箱子，手动编号针对“全部”箱子（包括墙外的箱子）
             mBoxNum(m_cArray, m_nRow, m_nCol);
@@ -2155,7 +2144,11 @@ public class myGameView extends Activity {
             m_nLastSteps = -1;
         } catch (Throwable ex) {
             myStop();
-            finish();
+            myMaps.curMap.Title = "无效关卡";
+            myMaps.curMap.Map = "--";
+            myMaps.curMap.Rows = 1;
+            myMaps.curMap.Cols = 2;
+//            finish();
         }
     }
 
@@ -2176,17 +2169,67 @@ public class myGameView extends Activity {
         myMaps.m_Sets[25] = 0;  //加载新的关卡时，关闭即景正推
         levelReset(false);  //因为有了即景正推，计算静态死锁点中有正逆推的临时转换，影响正推箱子目标的复位，故此处特别进行正推关卡复位
 
-        //记录关卡打开时间，便于遍历“最近打开的关卡”
-        mySQLite.m_SQL.Set_L_DateTime(myMaps.curMap.Level_id);
-
-        //取得状态列表
-        mySQLite.m_SQL.load_StateList(myMaps.curMap.Level_id, myMaps.curMap.key);
-
         //舞台初始化
         mMap.initArena();
 
+        //记录关卡打开时间，便于遍历“最近打开的关卡”
+        mySQLite.m_SQL.Set_L_DateTime(myMaps.curMap.Level_id);
+
+        //取得状态及答案列表
+        mySQLite.m_SQL.load_StateList(myMaps.curMap.Level_id, myMaps.curMap.key);
+
+        if (myMaps.mState2.size() > 0) {  // 若有答案
+            myMaps.m_State = mySQLite.m_SQL.load_State(myMaps.mState2.get(0).id);
+            if (myMaps.m_State.ans.length() > 0) formatPath(myMaps.m_State.ans, false);
+        } else if (myMaps.mState1.size() > 0) {  // 若有保存的状态，自动加载最新状态
+            // 按保存时间排序，第一个为最新状态
+            Collections.sort(myMaps.mState1, new Comparator() {
+                @Override
+                public int compare(Object o1, Object o2) {
+                    return ((state_Node) o2).time.compareTo(((state_Node) o1).time);
+                }
+            });
+            myMaps.m_State = mySQLite.m_SQL.load_State(myMaps.mState1.get(0).id);
+            m_nLastSteps = -1;
+            int len = myMaps.m_State.ans.length();
+            if (len > 0) {
+                formatPath(myMaps.m_State.ans, false);
+                if (myMaps.m_State.time.toLowerCase().indexOf("yass") >= 0) {
+                    m_imPort_YASS = "[YASS]";
+                } else if (myMaps.m_State.time.toLowerCase().indexOf("导入") >= 0) {
+                    m_imPort_YASS = "[导入]";
+                } else {
+                    m_imPort_YASS = "";
+                }
+                len = m_lstMovReDo.size();
+                for (int k = 0; k < len; k++) reDo1();
+                m_bBusing = false;
+            }
+
+            len = myMaps.m_State.bk_ans.length();
+            if (len > 0) {
+                try {
+                    m_nRow0 = myMaps.m_State.r;
+                    m_nCol0 = myMaps.m_State.c;
+                    m_nRow2 = m_nRow0;
+                    m_nCol2 = m_nCol0;
+                    bk_cArray[m_nRow2][m_nCol2] = (bk_cArray[m_nRow2][m_nCol2] == '-' ? '@' : '+');
+                    formatPath(myMaps.m_State.bk_ans, true);
+                    len = m_lstMovReDo2.size();
+                    for (int k = 0; k < len; k++) reDo2();
+                    m_bBusing = false;
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                    m_nRow0 = -1;
+                    m_nCol0 = -1;
+                    m_nRow2 = m_nRow0;
+                    m_nCol2 = m_nCol0;
+                    m_lstMovReDo2.clear();
+                }
+            }
+        }
+
         //异步进程计算逆推的死锁点，比较耗时
-        mTask = new myGameView.AsyncCountBoxsTask(this);
+        mTask = new AsyncCountBoxsTask(this);
         mTask.execute(myMaps.curMap.Rows, myMaps.curMap.Cols);
 
         m_bACT_ERROR = false;  //执行动作时是否遇到错误
@@ -2204,7 +2247,20 @@ public class myGameView extends Activity {
         return true;
     }
 
-    //是否是墙壁、墙外、界外
+    //是否是箱子、墙壁、墙外、界外
+    private boolean isWall_Box(char[][] m_Arr, int mR, int mC) {
+        try {
+            if (m_Arr[mR][mC] == '#' || m_Arr[mR][mC] == '_' || m_Arr[mR][mC] == '$' || m_Arr[mR][mC] == '*')
+                return true;
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            return true;
+        } catch (Throwable ex) {
+            return true;
+        }
+        return false;
+    }
+
+    //是否是墙壁、墙外
     private boolean isWall(char[][] m_Arr, int mR, int mC) {
         try {
             if (m_Arr[mR][mC] == '#' || m_Arr[mR][mC] == '_') return true;
@@ -2265,6 +2321,10 @@ public class myGameView extends Activity {
             }
         }
 
+        mArray9[mR][mC] = '$';
+        mPF.boxReachable(true, mR, mC, mRow, mCol);  //计算箱子范围
+        mArray9[mR][mC] = '-';
+
         //排查可达点的四邻（用循环取代递归）
         boolean is_ALL_OK = true;  //区域内的箱子是否全部在目标点上
         int n = 0, n2 = 0;  //记录区域内的箱子数、邻域死点上的箱子（此时是死点上的目标点）
@@ -2278,6 +2338,7 @@ public class myGameView extends Activity {
                     try {
                         i1 = (mPathfinder.pt[p] >>> 16) + dr4[k];
                         j1 = (mPathfinder.pt[p] & 0x0000ffff) + dc4[k];
+                        if (!mPF.mark4[i1][j1]) continue;  //对于非可达范围，不检查
                         if (m_mark[mR][mC] == m_mark[i1][j1] && !mPathfinder.mark1[i1][j1]) {  //仅在区域内没有检查过的格子
                             tail++;
                             mPathfinder.pt[tail] = i1 << 16 | j1;
@@ -2310,7 +2371,31 @@ public class myGameView extends Activity {
         return (n > m_mark[mR][mC] + n2);
     }
 
-    //逆推“网”型死锁
+    //正推目标点不够用之死锁
+    private boolean isLock_Goal(char[][] m_Arr, int bRow, int bCol, int mRow, int mCol) {
+        //检查死锁用的探路者 mPF
+        mArray9[bRow][bCol] = '$';
+
+        mPF.boxReachable(false, bRow, bCol, mRow, mCol);  //计算箱子可达点
+
+        //若箱子的打开范围内目标点数不够用了，则死锁
+        int n1 = 0, n2 = 0;
+        for (int r = 0; r < myMaps.curMap.Rows; r++) {
+            for (int c = 0; c < myMaps.curMap.Cols; c++) {
+                if (mPF.mark3[r][c]) {  //可达
+                    //在目标点上的箱子，就不用数了
+                    if (m_Arr[r][c] == '$') n1++;
+                    if (m_Arr[r][c] == '.' || m_Arr[r][c] == '+') n2++;
+                }
+            }
+        }
+
+        mArray9[bRow][bCol] = '-';
+
+        return n1 > n2;
+    }
+
+     //逆推“网”型死锁
     private boolean isLock_Net2(char[][] m_Arr, int b_new_Row, int b_new_Col) {
         int mRows = m_Arr.length, mCols = m_Arr[0].length;
 
@@ -2398,24 +2483,17 @@ public class myGameView extends Activity {
     }
 
     //正推死锁识别
-    String lockInf[] = {"", "(阻滞冻结)", "(阻滞冻结)", "(闭口对角)", "(箱位不符)", "(闭锁空间)"};
     private boolean myLock(int bRow, int bCol) {
-        if (deadlockDetection != null) {
-            try {
-                board.setPlayerPosition(m_nCol, m_nRow);
-                if (deadlockDetection.isDeadlock(bCol, bRow)) {
-                    lockDlg.setMessage("这一步造成关卡死锁，继续吗？\n" + lockInf[deadlockDetection.deadlockType]);
-                    return true;
-                }
-            } catch (Throwable e1) {
-                try {
-                    board.setBoardFromArray(m_cArray);
-                    board.prepareBoard();
-                    if (deadlockDetection.isDeadlock(bCol, bRow)) {
-                        lockDlg.setMessage("这一步造成关卡死锁，继续吗？\n" + lockInf[deadlockDetection.deadlockType]);
-                        return true;
-                    }
-                } catch (Throwable e2) { }
+        if (m_iR9 > -1) {
+            if (mArray9 != null && isLock_Goal(m_cArray, bRow, bCol, m_nRow, m_nCol)) {
+                lockDlg.setMessage("这一步造成关卡死锁，继续吗？\n（点位不足）");
+                return true;
+            } else if (freezeDeadlock.isDeadlock(bRow, bCol)) {
+                lockDlg.setMessage("这一步造成关卡死锁，继续吗？\n（僵位冻结）");
+                return true;
+            } else if (closedDiagonalLock.isDeadlock(bRow * myMaps.curMap.Cols + bCol)) {
+                lockDlg.setMessage("这一步造成关卡死锁，继续吗？\n（闭锁对角）");
+                return true;
             }
         }
         return false;
@@ -2424,8 +2502,8 @@ public class myGameView extends Activity {
     //逆推死锁识别
     private boolean myLock2(int bRow, int bCol) {
         if (m_iR10 > -1 && mark14 != null) {
-            if (isLock_Count(bk_cArray, mark14, bRow, bCol, m_nRow2, m_nCol2)) {
-                lockDlg.setMessage("这一步造成关卡死锁，继续吗？\n（箱位不符）");
+            if (mArray9 != null && isLock_Count(bk_cArray, mark14, bRow, bCol, m_nRow2, m_nCol2)) {
+                lockDlg.setMessage("这一步造成关卡死锁，继续吗？\n（点位不足）");
                 return true;
             } else if (isLock_Net2(bk_cArray, bRow, bCol)) {  //“网”型死锁
                 lockDlg.setMessage("这一步造成关卡死锁，继续吗？\n（网位互锁）");
@@ -2435,7 +2513,7 @@ public class myGameView extends Activity {
         return false;
     }
 
-    // 设置进度条
+    //设置进度条
     private void mySetProgressBar() {
         //进度条
         m_nLastSteps = -1;
@@ -2645,7 +2723,7 @@ public class myGameView extends Activity {
                     final CheckBox isBack = new CheckBox(this);
                     isBack.setText("关卡回到该“宏”打开前的状态");
                     isBack.setChecked(true);
-                    new AlertDialog.Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK).setTitle("关闭调试")
+                    new Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK).setTitle("关闭调试")
                         .setView(isBack)
                         .setPositiveButton("确定", new OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
@@ -3081,7 +3159,7 @@ public class myGameView extends Activity {
             fout.close();
             MyToast.showToast(this, "保存成功！" , Toast.LENGTH_SHORT);
         } catch (Exception e){
-            MyToast.showToast(this, "出错了！", Toast.LENGTH_SHORT);
+            MyToast.showToast(this, "出错了，保存失败！", Toast.LENGTH_SHORT);
         }
     }
 
@@ -3132,7 +3210,7 @@ public class myGameView extends Activity {
                 str.append(s1);
             }
 
-            final String my_Name = new StringBuilder("关卡扩展/").append(myMaps.sFile).append("_").append(myMaps.m_lstMaps.indexOf(myMaps.curMap)+1).toString();
+            final String my_Name = new StringBuilder("导入/").append(myMaps.sFile).append("_").append(myMaps.m_lstMaps.indexOf(myMaps.curMap)+1).toString();
             File file;
             int n = 1;
             file = new File(myMaps.sRoot + myMaps.sPath + my_Name + "(" + n + ").txt");
@@ -3141,9 +3219,9 @@ public class myGameView extends Activity {
                 file = new File(myMaps.sRoot + myMaps.sPath + my_Name + "(" + n + ").txt");
             }
             final int finalN = n;
-            new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK).setTitle("注意").setMessage("答案或状态太长，保存到文档！\n" + my_Name + "(" + n + ").txt").setCancelable(false)
+            new Builder(this, AlertDialog.THEME_HOLO_DARK).setTitle("注意").setMessage("答案或状态太长，保存到文档！\n" + my_Name + "(" + n + ").txt").setCancelable(false)
                 .setNegativeButton("取消", null)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                .setPositiveButton("确定", new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface arg0, int arg1) {
                         saveToFile(str.toString(), my_Name + "(" + finalN + ").txt");
@@ -3190,7 +3268,7 @@ public class myGameView extends Activity {
                 }
             } else {
                 myMaps.curMap.Solved |= (m_Solution == 1);
-                MyToast.showToast(this, "DB写错误，保存失败！", Toast.LENGTH_LONG);
+                MyToast.showToast(this, "出错了，保存失败！", Toast.LENGTH_LONG);
             }
         }
     }
@@ -3238,7 +3316,10 @@ public class myGameView extends Activity {
             str.append(m_imPort_YASS);
             str.append(s1);
 
-            final String my_Name = new StringBuilder("关卡扩展/").append(myMaps.sFile).append("_").append(myMaps.m_lstMaps.indexOf(myMaps.curMap)+1).toString();
+            File targetDir = new File(myMaps.sRoot+myMaps.sPath + "超长答案/");
+            if (!targetDir.exists()) targetDir.mkdirs();  //创建文件夹
+
+            final String my_Name = new StringBuilder("超长答案/").append(myMaps.sFile).append("_").append(myMaps.m_lstMaps.indexOf(myMaps.curMap)+1).toString();
             File file;
             int n = 1;
             file = new File(myMaps.sRoot + myMaps.sPath + my_Name + "(" + n + ").txt");
@@ -3247,9 +3328,9 @@ public class myGameView extends Activity {
                 file = new File(myMaps.sRoot + myMaps.sPath + my_Name + "(" + n + ").txt");
             }
             final int finalN = n;
-            new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK).setTitle("注意").setMessage("答案太长，保存到文档！\n" + my_Name + "(" + n + ").txt").setCancelable(false)
+            new Builder(this, AlertDialog.THEME_HOLO_DARK).setTitle("注意").setMessage("答案太长，保存到文档！\n" + my_Name + "(" + n + ").txt").setCancelable(false)
                     .setNegativeButton("取消", null)
-                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    .setPositiveButton("确定", new OnClickListener() {
                         @Override
                         public void onClick(DialogInterface arg0, int arg1) {
                             saveToFile(str.toString(), my_Name + "(" + finalN + ").txt");
@@ -3282,19 +3363,19 @@ public class myGameView extends Activity {
                     ans.inf = "移动: " + m_iStep[1] + ", 推动: " + m_iStep[0];
                     ans.time = m_imPort_YASS;
                     myMaps.mState2.add(ans);
-                    AlertDialog.Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
+                    Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                     builder.setTitle("正逆相合或通关！")
                             .setMessage("答案成功保存！\n(可用进退键观看通关演示)")
                             .setPositiveButton("确定", null);
                     builder.setCancelable(false).show();
                 } else if (hh == 0) {
-                    AlertDialog.Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
+                    Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                     builder.setTitle("正逆相合或通关！")
                             .setMessage("答案有重复！\n移动：" + (m_iStep[1] + m_lstMovReDo.size()) + "，推动：" + (m_iStep[0] + m_iStep[2]) + "，\n本次未做保存！\n(可用进退键观看通关演示)")
                             .setPositiveButton("确定", null);
                     builder.setCancelable(false).show();
                 } else {
-                    AlertDialog.Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
+                    Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                     builder.setTitle("正逆相合或通关！")
                             .setMessage("DB写错误，答案未能保存，请利用剪切板手动保存到其它地方！\n(可用进退键观看通关演示)")
                             .setPositiveButton("确定", null);
@@ -3307,7 +3388,6 @@ public class myGameView extends Activity {
     //接收打开的状态
     private void OpenState() {
         m_nLastSteps = -1;
-        deadlockDetection.deadlockType = 0;  // 死锁类型复位
         myMaps.m_StateIsRedy = false;
         try {
             levelReset(false);  //正推复位
@@ -3408,18 +3488,18 @@ public class myGameView extends Activity {
         return true;
     }
 
-    public boolean onOptionsItemSelected(MenuItem mt) {
-        final NumberKeyListener getNumber = new NumberKeyListener() {
-            @Override
-            protected char[] getAcceptedChars() {
-                return new char[]{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F', ','};
-            }
+    final NumberKeyListener getNumber16 = new NumberKeyListener() {
+        @Override
+        protected char[] getAcceptedChars() {
+            return new char[]{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F', ','};
+        }
 
-            @Override
-            public int getInputType() {
-                return InputType.TYPE_CLASS_PHONE;
-            }
-        };
+        @Override
+        public int getInputType() {
+            return InputType.TYPE_CLASS_PHONE;
+        }
+    };
+    public boolean onOptionsItemSelected(MenuItem mt) {
 
         switch (mt.getItemId()) {
             case R.id.player_about:  //关卡描述
@@ -3454,7 +3534,7 @@ public class myGameView extends Activity {
                     final CheckBox isBack = new CheckBox(this);
                     isBack.setText("关卡回到该“宏”打开前的状态");
                     isBack.setChecked(true);
-                    new AlertDialog.Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK).setTitle("关闭调试")
+                    new Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK).setTitle("关闭调试")
                             .setView(isBack)
                             .setPositiveButton("确定", new OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
@@ -3588,19 +3668,19 @@ public class myGameView extends Activity {
                         "更换背景图片",
                         "设置背景色"
                 };
-                AlertDialog.Builder builder2 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
+                Builder builder2 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 builder2.setTitle("场景设置").setSingleChoiceItems(m_menu2, -1, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which) {
                             case 0:   //速度设置
-                                AlertDialog.Builder builder4 = new Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK);
+                                Builder builder4 = new Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK);
                                 builder4.setTitle("速度设置").setSingleChoiceItems(m_sSleep, myMaps.m_Sets[10], new OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         myMaps.m_Sets[10] = which;
                                     }
-                                }).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                }).setPositiveButton("确定", new OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         BoxMan.saveSets();  //保存设置
@@ -3618,7 +3698,7 @@ public class myGameView extends Activity {
                                             break;
                                         }
                                     }
-                                    AlertDialog.Builder builder = new Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK);
+                                    Builder builder = new Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK);
                                     builder.setTitle("皮肤").setSingleChoiceItems(myMaps.mFile_List1.toArray(new String[myMaps.mFile_List1.size()]), m_nItemSelect, new OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
@@ -3626,13 +3706,13 @@ public class myGameView extends Activity {
                                             myMaps.loadSkins();
                                             mMap.invalidate();
                                         }
-                                    }).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                    }).setPositiveButton("确定", new OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             myMaps.iskinChange = true;
                                             dialog.dismiss();
                                         }
-                                    }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                                    }).setNegativeButton("取消", new OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             myMaps.iskinChange = false;
@@ -3656,7 +3736,7 @@ public class myGameView extends Activity {
                                             break;
                                         }
                                     }
-                                    AlertDialog.Builder builder = new Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK);
+                                    Builder builder = new Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK);
                                     builder.setTitle("背景图片").setSingleChoiceItems(myMaps.mFile_List2.toArray(new String[myMaps.mFile_List2.size()]), m_nItemSelect, new OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
@@ -3671,12 +3751,12 @@ public class myGameView extends Activity {
                                             }
                                             mMap.invalidate();
                                         }
-                                    }).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                    }).setPositiveButton("确定", new OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             dialog.dismiss();
                                         }
-                                    }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                                    }).setNegativeButton("取消", new OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int n) {
                                             myMaps.bk_Pic = myMaps.mFile_List2.get(m_nItemSelect);  //选择的文档
@@ -3700,7 +3780,7 @@ public class myGameView extends Activity {
                             case 3:   //设置背景色
 
                                 final EditText et = new EditText(myGameView.this);
-                                et.setKeyListener(getNumber);
+                                et.setKeyListener(getNumber16);
 
                                 int i1 = myMaps.m_Sets[4] & 0x00ffffff;
                                 String s1 = Integer.toHexString(i1).toUpperCase(Locale.getDefault());
@@ -3709,7 +3789,7 @@ public class myGameView extends Activity {
 
                                 et.setText(s1);
 
-                                new AlertDialog.Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK).setTitle("背景色(RGB)")
+                                new Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK).setTitle("背景色(RGB)")
                                         .setView(et)
                                         .setMessage("(例：223344、AABBCC 等)")
                                         .setPositiveButton("确定", new OnClickListener() {
@@ -3727,7 +3807,7 @@ public class myGameView extends Activity {
                                         .show();
                         }  //end switch
                     }
-                }).setPositiveButton("返回", new DialogInterface.OnClickListener() {
+                }).setPositiveButton("返回", new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         BoxMan.saveSets();  //保存设置
@@ -3772,12 +3852,12 @@ public class myGameView extends Activity {
                         myMaps.m_Sets[15] == 1   //音量键选择关卡
                 };
 
-                AlertDialog.Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
+                Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 builder.setTitle("开关选项").setMultiChoiceItems(m_menu, mChk, new DialogInterface.OnMultiChoiceClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                     }
-                }).setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                }).setNegativeButton("取消", null).setPositiveButton("确定", new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //自动箱子编号
@@ -3890,7 +3970,9 @@ public class myGameView extends Activity {
 
                 //关卡初态
                 s_XSB.append(myMaps.curMap.Map).append("\nTitle: ").append(myMaps.curMap.Title).append("\nAuthor: ").append(myMaps.curMap.Author);
-                s_XSB.append("\nComment:\n").append(myMaps.curMap.Comment).append("\nComment-End:");
+                if (!myMaps.curMap.Comment.trim().isEmpty()) {
+                    s_XSB.append("\nComment:\n").append(myMaps.curMap.Comment).append("\nComment-End:");
+                }
 
                 //关卡正推现场
                 for (int i = 0; i < myMaps.curMap.Rows; i++) {
@@ -3973,7 +4055,7 @@ public class myGameView extends Activity {
                 for (int i = 0; i < myMaps.curMap.Rows; i++) {
                     for (int j = 0; j < myMaps.curMap.Cols; j++) {
                         my_Rule[myMaps.curMap.Cols*i+j] = mark44[i][j];
-                        if (m_cArray[i][j] == '$' || m_cArray[i][j] == '*') {
+                        if (m_iBoxNum2[i][j] > 0 && (m_cArray[i][j] == '$' || m_cArray[i][j] == '*')) {
                             my_BoxNum[m_iBoxNum2[i][j]-1] = m_iBoxNum[i][j];   //自动箱子编号与人工箱子编号建立关联
                         }
                     }
@@ -4104,6 +4186,7 @@ public class myGameView extends Activity {
             mySQLite.m_SQL.Set_L_Solved(myMaps.curMap.Level_id, myMaps.curMap.Solved ? 1 : 0, true);
         }
 
+        // 状态按保存时间排序，最后保存的在最前面
         Collections.sort(myMaps.mState1, new Comparator() {
             @Override
             public int compare(Object o1, Object o2) {
@@ -4249,7 +4332,7 @@ public class myGameView extends Activity {
 //                myDo_Block(0, myMaps.sAction.length - 1, false, false);     //这里延迟较长
                 //异步执行“宏”任务
                 StopMicro();
-                mMicroTask = new myGameView.RunMicroTask(myGameView.this);
+                mMicroTask = new RunMicroTask(myGameView.this);
                 mMicroTask.execute(0, myMaps.sAction.length - 1);
             }
             mMap.invalidate();
@@ -4270,13 +4353,13 @@ public class myGameView extends Activity {
             mMap.m_lGoto = false;
             myMaps.mMacroList();
             if (myMaps.mFile_List.size() > 0) {
-                new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK).setTitle("选择：宏").setCancelable(false)
-                        .setSingleChoiceItems(myMaps.mFile_List.toArray(new String[myMaps.mFile_List.size()]), -1, new DialogInterface.OnClickListener() {
+                new Builder(this, AlertDialog.THEME_HOLO_DARK).setTitle("选择：宏").setCancelable(false)
+                        .setSingleChoiceItems(myMaps.mFile_List.toArray(new String[myMaps.mFile_List.size()]), -1, new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                             m_nItemSelect = which;
                         }
-                    }).setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    }).setNegativeButton("取消", null).setPositiveButton("确定", new OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dlg, int arg1) {
                     if (m_nItemSelect > -1) {
@@ -4342,7 +4425,7 @@ public class myGameView extends Activity {
                         myMaps.isMacroDebug = false;
 //                        myDo_Block(0, myMaps.sAction.length - 1, false, false);     //这里延迟较长
                         StopMicro();
-                        mMicroTask = new myGameView.RunMicroTask(myGameView.this);
+                        mMicroTask = new RunMicroTask(myGameView.this);
                         mMicroTask.execute(0, myMaps.sAction.length - 1);
                         m_bBusing = false;
 
@@ -5023,7 +5106,7 @@ public class myGameView extends Activity {
             for (int j = 0; j < myMaps.curMap.Cols; j++) {
                 if (level[i][j] == '$' || level[i][j] == '*') {
                     mPathfinder.FindBlock(bt_BK.isChecked(), level, i, j);
-                    mPathfinder.boxReachable(bt_BK.isChecked(), i, j, nRow, nCol, bt_BK.isChecked() ? null : board);
+                    mPathfinder.boxReachable(bt_BK.isChecked(), i, j, nRow, nCol);
                     mark9[i][j] = mark[row][col];
                 }
             }
@@ -5140,16 +5223,18 @@ public class myGameView extends Activity {
 //        m_Path_Formating = false;
     }
 
-    // 为检查逆推死锁，需要提前做好的准备数据，以及关卡初态形成网锁的箱子（也是正推时，不能动的箱子）
+    //计数逆推区域箱子数的异步任务和关卡正推初态中陷于网锁的箱子（这些箱子正推时不可动）
     private class AsyncCountBoxsTask extends AsyncTask<Integer, Void, short[][]> {
 
-        Board myBoard;
-
-        boolean m_bNoSolution = false;  //关卡初态是否无解
-        boolean[][] mk15, mk16;  //15 - 记录逆推死点（真正逆推时，不可以移动的箱子），16 - 记录正推死点（真正正推时，不可以移动的箱子 -- 想吃网锁的箱子）
-        byte[][] mk0;
+        boolean m_bNoSolution = false;  //关卡是否无解
+        boolean[][] mk15, mk16;  //15：记录逆推死点（正推初态中被冻结的箱子）；16 - 记录正推死点（正推初态中陷于网锁的箱子）
         short[][] mk14;  //记录逆推中的区域箱子数
-        char[][] mArray;  //仅有墙壁和地板的地图
+        byte[][] mk0;
+        char[][] mArray;   //空地图，逆推死点（正推初态中被冻结的箱子）被变成了墙壁
+        char[][] mArray0;  //地图副本
+        byte[][] freezeBoxs;  // 记录该位置的箱子是否已经检查过了
+        IntStack intStack;
+        int m_Rows, m_Cols;
 
         private final WeakReference<myGameView> mViewReference;
 
@@ -5160,6 +5245,10 @@ public class myGameView extends Activity {
 
         @Override
         protected void onPreExecute() {
+            mark14 = null;
+            mark15 = null;
+            mark16 = null;
+            mArray9 = null;
             m_bNoSolution = false;
             bt_More.setTextColor(0xffcc0000);
 
@@ -5169,24 +5258,12 @@ public class myGameView extends Activity {
         @Override
         protected short[][] doInBackground(Integer... params) {
             try {
-                int m_Rows = params[0];
-                int m_Cols = params[1];
+                //计算逆推的预知死锁点，比较耗时，将在异步进程中调用此方法
+                m_Rows = params[0];
+                m_Cols = params[1];
 
                 int mRow = m_nRow;
                 int mCol = m_nCol;
-
-                try {
-                    Board bd = new Board();
-                    bd.setBoardFromArray(m_cArray);
-                    bd.isValid(new StringBuilder());
-                    bd.prepareBoard();
-                    DeadlockDetection dld = new DeadlockDetection(bd);
-                    board = bd;
-                    deadlockDetection = dld;
-                } catch (Throwable ex) {
-                    board = null;
-                    deadlockDetection = null;
-                }
 
                 if (isCancelled()) return null;
 
@@ -5194,34 +5271,51 @@ public class myGameView extends Activity {
                 mk15 = new boolean[m_Rows][m_Cols];
                 mk16 = new boolean[m_Rows][m_Cols];
                 mk14 = new short[m_Rows][m_Cols];
+                freezeBoxs = new byte[m_Rows][m_Cols];
+                intStack = new IntStack(200);  // 登记“Z型”冻结的箱子的位置，每个“Z型”线，最多箱子数
 
-                mArray = new char[m_Rows][m_Cols];  //临时地图，仅有墙壁和地板，正推中不能推动的箱子，也会看做墙壁
-                char[][] mArray0 = new char[m_Rows][m_Cols];  //地图副本，建立副本的目的，是避免异步进程正在计算的时候，玩家若切换了关卡，会造成 APP 出错崩溃（数组索引可能出现越界）
+                mArray = new char[m_Rows][m_Cols];   // 临时地图，正推根据目标数识别死锁时，也会用到
+                mArray0 = new char[m_Rows][m_Cols];  // 地图副本，建立副本的目的，是避免异步进程正在计算的时候，玩家若切换了关卡，会造成 APP 出错崩溃（数组索引可能出现越界）
 
-                //生成临时地图和空地图（仅含墙壁和地图）
+                // 生成临时关卡图
                 for (int i = 0; i < m_Rows; i++) {
                     for (int j = 0; j < m_Cols; j++) {
                         if (isCancelled()) return null;
-                        mArray0[i][j] = m_cArray[i][j];
+                        mArray0[i][j] = m_cArray0[i][j];  // 从关卡的初态数组取得关卡数据
+                        // 临时地图，只有墙壁和地板
                         if (mArray0[i][j] == '#' || mArray0[i][j] == '_') mArray[i][j] = '#';
                         else mArray[i][j] = '-';
                     }
                 }
 
-                // 检查关卡初态时，不能移动的箱子，把这些不能推动的箱子在临时地图中变成墙壁，也属于逆推死锁数据测算的准备
-                myBoard = new Board();
-                myBoard.setBoardFromArray(mArray0);
-                myBoard.isValid(new StringBuilder());
-                myBoard.prepareBoard();
-                FreezeDeadlockDetection freezeDeadlockDetection = new FreezeDeadlockDetection(myBoard);
+                setBlock4();  // 登记全部的“四块”冻结
+
+                // 检查并登记其“Z型”冻结
+                int pos, r, c;
                 for (int i = 0; i < m_Rows; i++) {
                     for (int j = 0; j < m_Cols; j++) {
                         if (isCancelled()) return null;
+                        // 若遇到没有检查过的箱子，检查并登记其“Z型”冻结情况
+                        if ((mArray0[i][j] == '$' || mArray0[i][j] == '*') && freezeBoxs[i][j] == 0) {
+                            if (isZ_Freeze(i, j)) {    // 若被“Z型”冻结，处理被冻结的箱子群
+                                while (!intStack.isEmpty()) {
+                                    pos = intStack.remove();
+                                    r = pos >>> 16;
+                                    c = pos & 0x0000ffff;
+                                    freezeBoxs[r][c] = 2;    // 冻结登记
+                                }
+                            }
+                        }
+                    }
+                }
 
-                        if ((mArray0[i][j] == '$' || mArray0[i][j] == '*') && freezeDeadlockDetection.isFrozenBoxes(i * m_Cols + j)) {  // 是否为正推不能动的箱子
-                            if (mArray0[i][j] == '$') m_bNoSolution = true;  // 检查是关卡初态否是无解
-
-                            mk15[i][j] = true;  //逆推死点
+                // 把正推初态中被冻结的箱子设置为逆推死点，同时，在逆推时，不允许移动这些箱子
+                for (int i = 0; i < m_Rows; i++) {
+                    for (int j = 0; j < m_Cols; j++) {
+                        if (isCancelled()) return null;
+                        if (isBox2(i, j) && freezeBoxs[i][j] > 0) {
+                            if (mArray0[i][j] == '$' && !m_bNoSolution) m_bNoSolution = true;  // 关卡是否无解
+                            mk15[i][j] = true;
                             mArray0[i][j] = '#';
                             mArray[i][j] = '#';
                         }
@@ -5233,7 +5327,7 @@ public class myGameView extends Activity {
                     for (int j = 0; j < m_Cols; j++) {
                         if (isCancelled()) return null;
 
-                        if (mArray0[i][j] == '*' && checkNet(mArray0, i, j)) {
+                        if (mArray0[i][j] == '*' && mArray[i][j] != '#' && checkNet(mArray0, i, j)) {
                             mk15[i][j] = true;
                             mk16[i][j] = true;
                             mArray0[i][j] = '#';
@@ -5243,11 +5337,11 @@ public class myGameView extends Activity {
                 }
 
                 publishProgress();
-                mark16 = mk16;  //真正正推时，不允许推动的箱子（即那些正推初态中，不能移动的箱子 -- 形成网锁的箱子）
                 mark15 = mk15;  //真正逆推时，不允许拉动的箱子（即那些正推初态中，不能移动的箱子 -- 正推时，初态本就死锁的箱子）
+                mark16 = mk16;  //真正正推时，不允许推动的箱子（即那些正推初态中，不能移动的箱子 -- 形成网锁的箱子）
 
-                //正推法，测算逆推区域箱子数（真正逆推时，该区域内的箱子总数不允许超出这个数值）
-                mPF = new myPathfinder(m_Rows, m_Cols);  //检查死锁之探路者
+                //正推法，测算逆推区域箱子数（区域的点位数）
+                mPF = new myPathfinder(m_Rows, m_Cols);  //检查死锁之探路者，正推根据目标数识别死锁时，也会用到
                 mPF.FindBlock(false, mArray, mRow, mCol);   //计算临时地图的割点，块
                 for (int i = 0; i < m_Rows; i++) {
                     for (int j = 0; j < m_Cols; j++) {
@@ -5255,11 +5349,11 @@ public class myGameView extends Activity {
                         //把正推中的箱子逐个放到临时（空）地图里，进行探查测算
                         if (mArray0[i][j] == '$' || mArray0[i][j] == '*') {
                             mArray[i][j] = '$';
-                            mPF.boxReachable(false, i, j, mRow, mCol, null);  //探查可达点
+                            mPF.boxReachable(false, i, j, mRow, mCol);  //探查可达点
 
                             //累计每个格子中，有多少个箱子可达，可达数相同的相邻格子，自动组成一个区域
-                            for (int r = 0; r < m_Rows; r++) {
-                                for (int c = 0; c < m_Cols; c++) {
+                            for (r = 0; r < m_Rows; r++) {
+                                for (c = 0; c < m_Cols; c++) {
                                     if (isCancelled()) return null;
                                     if (mPF.mark3[r][c]) mk14[r][c]++;  //不能到达的点，是不需计数的
                                 }
@@ -5268,11 +5362,6 @@ public class myGameView extends Activity {
                         }
                     }
                 }
-
-                //关卡刚刚打开时，若已经有了答案，自动为其加载一个最优移动答案
-                String s = mySQLite.m_SQL.load_Solution(myMaps.curMap.key, myMaps.curMap.L_CRC_Num);
-                if (s.length() > 0) formatPath(s, false);
-
             } catch (ArrayIndexOutOfBoundsException ex) {
                 return null;
             } catch (OutOfMemoryError ex) {
@@ -5301,24 +5390,121 @@ public class myGameView extends Activity {
                 mark14 = null;
                 mark15 = null;
                 mark16 = null;
-                board = null;
-                deadlockDetection = null;
+                mArray9 = null;
                 mk = null;
             }
 
             if (mViewReference != null) {
-                mark14 = mk;  //逆推的区域箱子数
+                mark14 = mk14;  //逆推的区域箱子数
+                mArray9 = mArray;  //空地图，正推根据目标数识别死锁时，也会用到
+
+//                System.out.println("===========================");
+//                for (int i = 0; i < m_Rows; i++) {
+//                    for (int j = 0; j < m_Cols; j++) {
+//                        if (m_cArray[i][j] == '#') System.out.print('#');
+//                        else if (mark14[i][j] > 0) System.out.print(mark14[i][j]);
+//                        else System.out.print('-');
+//                    }
+//                    System.out.println();
+//                }
             }
             super.onPostExecute(mk);
 
             bt_More.setTextColor(0xffffffff);
         }
 
-        // 检查陷于网锁的箱子
+        // 是否遇到墙壁、墙外或界外
+        private boolean isWall(int row, int col) {
+            return  row < 0 || col < 0 || row >= m_Rows || col >= m_Cols ||
+                    mArray0[row][col] == '#' || mArray0[row][col] == '_' ||
+                    freezeBoxs[row][col] == 4;  // 在“Z型”冻结检查时，“四块”视作墙壁
+        }
+
+        // 是否通道
+        private boolean isPass(int row, int col) {
+            if (row < 0 || col < 0 || row >= m_Rows || col >= m_Cols) return false;
+            return  mArray0[row][col] == '-' || mArray0[row][col] == '.' ||
+                    mArray0[row][col] == '@' || mArray0[row][col] == '+';
+        }
+
+        // 是否箱子或墙壁
+        private boolean isBoxOrWall(int row, int col) {
+            if (row < 0 || col < 0 || row >= m_Rows || col >= m_Cols ||
+                    mArray0[row][col] == '#' || mArray0[row][col] == '_' ||
+                    mArray0[row][col] == '$' || mArray0[row][col] == '*') return true;
+            return false;
+        }
+
+        // 是否箱子
+        private boolean isBox2(int row, int col) {
+            if (row < 0 || col < 0 || row >= m_Rows || col >= m_Cols) return false;
+            return mArray0[row][col] == '$'|| mArray0[row][col] == '*';
+        }
+
+        // 登记全部的“四块”冻结
+        private void setBlock4() {
+            for (int i = 0; i < m_Rows; i++) {
+                for (int j = 0; j < m_Cols; j++) {
+                    if (isBoxOrWall(i, j) && isBoxOrWall(i, j-1) && isBoxOrWall(i-1, j) && isBoxOrWall(i-1, j-1)) {
+                        if (isBox2(i, j)) freezeBoxs[i][j] = 4;
+                        if (isBox2(i, j-1)) freezeBoxs[i][j-1] = 4;
+                        if (isBox2(i-1, j)) freezeBoxs[i-1][j] = 4;
+                        if (isBox2(i-1, j-1)) freezeBoxs[i-1][j-1] = 4;
+                    }
+                    else freezeBoxs[i][j] = 0;
+                }
+            }
+        }
+
+        // 是否引发了“Z型”死锁
+        private final int[][] dA = {
+                { 0, -1, -1, 0 },  // 先左后上
+                { 0, -1,  1, 0 },  // 先左后下
+                { 0,  1, -1, 0 },  // 先右后上
+                { 0,  1,  1, 0 }   // 先右后下
+        };
+        private final int[][] dB = {
+                {  1, 0, 0,  1 },  // 先下后右
+                { -1, 0, 0,  1 },  // 先上后右
+                {  1, 0, 0, -1 },  // 先下后左
+                { -1, 0, 0, -1 }   // 先上后左
+        };
+        private boolean isZ_Freeze(int row, int col) {
+            intStack.clear();
+            if (isZ(row, col, dA[0]) && isZ(row, col, dB[0])) return true;  // 左上 - 下右
+            intStack.clear();
+            if (isZ(row, col, dA[1]) && isZ(row, col, dB[1])) return true;  // 左下 - 上右
+            intStack.clear();
+            if (isZ(row, col, dA[2]) && isZ(row, col, dB[2])) return true;  // 右上 - 下左
+            intStack.clear();
+            if (isZ(row, col, dA[3]) && isZ(row, col, dB[3])) return true;  // 右下 - 上左
+
+            return false;
+        }
+
+        // 是否形成单方向上的“Z型”冻结
+        private boolean isZ(int row, int col, int[] dDir) {
+            int r = row, c = col;
+            boolean flg = true;
+
+            while (true) {
+                intStack.add(r << 16 | c);                                     // 缓存被检查的箱子
+
+                if (flg) { r += dDir[0]; c += dDir[1]; }
+                else     { r += dDir[2]; c += dDir[3]; }
+
+                if (isPass(r, c)) break;                                       // 遇到通道，没有冻结
+                if (isWall(r, c)) return true;                                 // 遇到墙壁、“四块”、或界外
+                flg = !flg;                                                    // 折转
+            }
+            return false;
+        }
+
+        // 检查并标识陷于网锁的箱子
         private boolean checkNet(char[][] m_Arr, int b_new_Row, int b_new_Col) {
             int mRows = m_Arr.length, mCols = m_Arr[0].length;
 
-            //访问标志复位
+            // 访问标志复位
             for (int i = 0; i < mRows; i++) {
                 for (int j = 0; j < mCols; j++) {
                     mk0[i][j] = 0;
@@ -5326,14 +5512,15 @@ public class myGameView extends Activity {
             }
 
             Queue<Integer> Q = new LinkedList<Integer>();
+            Queue<Integer> Q2 = new LinkedList<Integer>();
 
             int P, r = b_new_Row, c = b_new_Col, r1, c1, r2, c2;
 
-            Q.offer(r << 16 | c);  //初始位置入队列，待查其四邻
+            Q.offer(r << 16 | c);  // 初始位置入队列，待查其四邻
             mk0[r][c] = 1;
 
             while (!Q.isEmpty()) {
-                P = Q.poll();//出队列
+                P = Q.poll();   // 出队列
                 r = P >>> 16;
                 c = P & 0x0000ffff;
 
@@ -5343,19 +5530,32 @@ public class myGameView extends Activity {
                     r2 = r + dr4[k] * 2;
                     c2 = c + dc4[k] * 2;
 
-                    if (isVisited(mk0, r2, c2) || isWall(m_Arr, r2, c2) || isWall(m_Arr, r1, c1)) {  //箱子的一侧临墙
+                    if (isVisited(mk0, r2, c2) || isWall(r2, c2) || isWall(r1, c1)) {  // 箱子的一侧临墙，已经包含了墙外和界外的处理
                         continue;
-                    } else if (isFloor2(m_Arr, r2, c2) || m_Arr[r2][c2] == '$') {  //有网口（应该是'.'、'-'、'+'、'@'）
+                    } else if (m_Arr[r2][c2] == '-' || m_Arr[r2][c2] == '.' || m_Arr[r2][c2] == '@' || m_Arr[r2][c2] == '+' || m_Arr[r2][c2] == '$') {  // 网口
                         return false;
                     } else {
                         Q.offer(r2 << 16 | c2);
+                        Q2.offer(r2 << 16 | c2);
                         mk0[r2][c2] = 1;
                     }
                 }
             }
 
+            // 此时，以形成网锁，将本位之外的箱子做“网锁”标识
+            while (!Q2.isEmpty()) {
+                P = Q2.poll();//出队列
+                r = P >>> 16;
+                c = P & 0x0000ffff;
+                mk15[r][c] = true;
+                mk16[r][c] = true;
+                m_Arr[r][c] = '#';
+                mArray[r][c] = '#';
+            }
+
             return true;
         }
+
     }
 
     //运行“宏”的异步任务

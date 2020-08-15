@@ -28,6 +28,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.ParseException;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 public class mySubmitList extends Activity {
@@ -54,7 +55,6 @@ public class mySubmitList extends Activity {
         
         //设置标题栏标题，并开启标题栏的返回键
 		setTitle("提交列表");
-		
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(false);
@@ -108,6 +108,19 @@ public class mySubmitList extends Activity {
 			dialog.dismiss();
 
 			if (msg.what == 1 && (mList1.size() > 0 || mList2.size() > 0)) {
+				// 列表下载成功，改变一下窗口的标题
+				if (!myMaps.mMatchNo.isEmpty() && !myMaps.mMatchDate2.isEmpty()) {
+					SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					try {
+						long d = dateFormat.parse(myMaps.mMatchDate2).getTime();
+						if (d > System.currentTimeMillis()) {  // 比赛尚未过期
+							String[] arr = myMaps.mMatchDate2.split("-| |:");
+							setTitle(myMaps.mMatchNo + "，" + (arr[1].charAt(0) == '0' ? arr[1].charAt(1) : arr[1]) + "月" + (arr[2].charAt(0) == '0' ? arr[2].charAt(1) : arr[2]) + "日结束");
+						}
+					} catch (java.text.ParseException e) {
+						e.printStackTrace();
+					}
+				}
 				if (mList1.size() > 0) submit_expView.expandGroup(0);
 				if (mList2.size() > 0) submit_expView.expandGroup(1);
 			} else {
