@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
@@ -49,7 +50,7 @@ public class myRecogViewMap extends View {
     public Matrix mCurrentMatrix = new Matrix();  //当前变换矩阵
     private Matrix mMapMatrix = new Matrix();     //onDraw()用的当前变换矩阵
     float m_fTop, m_fLeft, m_fScale, mScale;      //关卡图的当前上边界、左边界、缩放倍数；原始缩放倍数
-    public float mMaxScale = 15;                   //最大缩放级别
+    public float mMaxScale = 32;                   //最大缩放级别
     float[] values = new float[9];
 
     // 识别参数默认值
@@ -205,9 +206,9 @@ public class myRecogViewMap extends View {
                 if (m_Lamp >= 0) {          //长按了指示灯
                     m_Recog.setColor(-1);   // 取消底行 XSB 元素高亮
 
-                    isLamp = true;          // 仓管员闪烁 -- 是否亮起
+                    isLamp = false;         // 仓管员闪烁 -- 是否亮起
                     m_Recog.actNum = 5;     // 定时器功能选择 -- 仓管员闪烁
-                    m_Recog.UpData(1);   // 启动定时器
+                    m_Recog.UpData(1);  // 启动定时器
                 }
             }
 
@@ -218,7 +219,7 @@ public class myRecogViewMap extends View {
                 float y = (e.getY() - m_fTop ) / m_fScale;
 
                 if (m_nObj < 0) {    // 识别模式
-                    // 切换指示灯
+                    // 切换边线指示灯
                     if (L_Rect.contains(x, y) || T_Rect.contains(x, y)) {     // 左上边角
                         isLeftTop = true;
                         invalidate();
@@ -227,6 +228,7 @@ public class myRecogViewMap extends View {
                         invalidate();
                     }
                 }
+
                 int xx = (int) x, yy = (int) y;
 
                 // 有效区域之外
@@ -257,7 +259,22 @@ public class myRecogViewMap extends View {
                     m_Recog.myBackup();
                     if (isRecog) {              // 识别模式
                         if (m_nObj == 5) {      // 若选中的物件是“仓管员”
-                            m_Recog.m_cArray[cur_Row][cur_Col] = '@';
+                            for (int i = 0; i < m_Recog.m_cArray.length; i++) {
+                                for (int j = 0; j < m_Recog.m_cArray[0].length; j++) {
+                                    if (i != cur_Row || j != cur_Col) {
+                                        if (m_Recog.m_cArray[i][j] == '@') {
+                                            m_Recog.m_cArray[i][j] = '-';
+                                        } else if (m_Recog.m_cArray[i][j] == '+') {
+                                            m_Recog.m_cArray[i][j] = '.';
+                                        }
+                                    }
+                                }
+                            }
+                            if (m_Recog.m_cArray[cur_Row][cur_Col] == '+' || m_Recog.m_cArray[cur_Row][cur_Col] == '*' || m_Recog.m_cArray[cur_Row][cur_Col] == '.') {
+                                m_Recog.m_cArray[cur_Row][cur_Col] = '+';
+                            } else {
+                                m_Recog.m_cArray[cur_Row][cur_Col] = '@';
+                            }
                         } else {
                             m_Recog.doAction();
                         }
@@ -328,8 +345,8 @@ public class myRecogViewMap extends View {
                     mMode = MODE_NONE;
                 case MotionEvent.ACTION_UP:
                     m_Lamp = -1;          // 取消长按指示灯
+                    isLamp = true;
                     m_Recog.actNum = 0;   // 取消定时器功能
-                    m_Recog.bt_Player.setBackgroundColor(0xff334455);
                     reSetMatrix();
                     invalidate();
                     break;
@@ -556,14 +573,18 @@ public class myRecogViewMap extends View {
             myPaint.setARGB(159, 255, 255, 255);
             canvas.drawOval(R_Rect, myPaint);
             canvas.drawOval(B_Rect, myPaint);
-            myPaint.setARGB(159, 255, 0, 255);
+            if (isLamp) {
+                myPaint.setARGB(159, 255, 0, 255);
+            }
             canvas.drawOval(L_Rect, myPaint);
             canvas.drawOval(T_Rect, myPaint);
         } else {           // 点亮右、下边线指示灯
             myPaint.setARGB(159, 255, 255, 255);
             canvas.drawOval(L_Rect, myPaint);
             canvas.drawOval(T_Rect, myPaint);
-            myPaint.setARGB(159, 255, 0, 255);
+            if (isLamp) {
+                myPaint.setARGB(159, 255, 0, 255);
+            }
             canvas.drawOval(R_Rect, myPaint);
             canvas.drawOval(B_Rect, myPaint);
         }
@@ -582,14 +603,15 @@ public class myRecogViewMap extends View {
         canvas.drawOval(B_Rect, myPaint);
 
         myPaint.setStrokeWidth((float) 1);              //设置线宽
+//        myPaint.setPathEffect(new DashPathEffect(new float[]{8, 4}, 0));
         myPaint.setStyle(Paint.Style.STROKE);
 
         // 画边框
         rt.set(m_nMapLeft+1, m_nMapTop+1, m_nMapRight+1, m_nMapBottom+1);
-        myPaint.setARGB(159, 0, 0, 0);
+        myPaint.setARGB(255, 0, 0, 0);
         canvas.drawRect(rt, myPaint);
         rt.set(m_nMapLeft, m_nMapTop, m_nMapRight, m_nMapBottom);
-        myPaint.setARGB(159, 255, 255, 255);
+        myPaint.setARGB(255, 255, 255, 255);
         canvas.drawRect(rt, myPaint);
 
         // 画格线
@@ -601,28 +623,28 @@ public class myRecogViewMap extends View {
             // 画黑色竖线
             for (int k = 1; k < m_nCols; k++) {
                 xx = m_nMapLeft + k * m_nWidth;
-                myPaint.setARGB(159, 0, 0, 0);
+                myPaint.setARGB(255, 0, 0, 0);
                 canvas.drawLine((int) xx + 1, m_nMapTop + 1, (int) xx + 1, m_nMapBottom - 2, myPaint);
             }
 
             // 画黑色横线
             for (int k = 1; k < m_nRows; k++) {
                 yy = m_nMapTop + k * m_nWidth;
-                myPaint.setARGB(159, 0, 0, 0);
+                myPaint.setARGB(255, 0, 0, 0);
                 canvas.drawLine(m_nMapLeft + 1, (int) yy + 1, m_nMapRight - 2, (int) yy + 1, myPaint);
             }
 
             // 画白色竖线
             for (int k = 1; k < m_nCols; k++) {
                 xx = m_nMapLeft + k * m_nWidth;
-                myPaint.setARGB(159, 255, 255, 255);
+                myPaint.setARGB(255, 255, 255, 255);
                 canvas.drawLine((int) xx, m_nMapTop, (int) xx, m_nMapBottom - 1, myPaint);
             }
 
             // 画白色横线
             for (int k = 1; k < m_nRows; k++) {
                 yy = m_nMapTop + k * m_nWidth;
-                myPaint.setARGB(159, 255, 255, 255);
+                myPaint.setARGB(255, 255, 255, 255);
                 canvas.drawLine(m_nMapLeft, (int) yy, m_nMapRight - 1, (int) yy, myPaint);
             }
 
@@ -796,6 +818,7 @@ public class myRecogViewMap extends View {
                     } else {
                         rt1.set((int)x + 3, (int)y + 3, (int)x + 3 + ww, (int)y + 3 + ww);  // 格子范围
                         cvs1.drawBitmap(myMaps.edPict, rt1, rt2, myMaps.myPaint);                  // 格子图片
+//                        System.out.printf("============== 位置: %d, %d", c, r);
                         if (isSubimage(img1)) {
                             locs.add(c << 16 | r);
                         }
@@ -817,7 +840,9 @@ public class myRecogViewMap extends View {
 
         double v = calSimilarity(m_SampleArray0, m_SampleArray1) * 10;
 
-//        System.out.println("============== " + v);
+//        System.out.printf(", 相似度: %3.2f", v);
+//        System.out.print(", 色相: " + my_Color0 + ", " + my_Color1);
+//        System.out.print(", 平均灰度值误差: " + Math.abs(my_Grey0 - my_Grey1));
 
         return ((int)v >= mSimilarity && my_Color1 == my_Color0 && Math.abs(my_Grey0 - my_Grey1) < 5);
     }

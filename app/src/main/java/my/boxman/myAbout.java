@@ -24,7 +24,7 @@ public class myAbout extends Activity {
 		tv_help = (TextView)this.findViewById(R.id.tvHelp);
 		
 		String s = "《推箱快手》\n\n" +
-			   "  版本：9.93\n\n" +
+			   "  版本：9.94\n\n" +
 			   "  作者：愉翁    QQ：252804303\n\n" +
 			   "  策划：anian、愉翁\n\n" +
 			   "  特别感谢：anian老师和杨超教授及众多热心箱友，anian老师在游戏设计的全过程中，" +
@@ -36,8 +36,7 @@ public class myAbout extends Activity {
 				"还有，从网上淘到“衣旧”网友编写的一个“ini文件工具类”，用在了系统配置的存取；" +
 				"“闭口对角”死锁的检测代码和 XSB 的图像自动识别代码，移植于德国 Matthias Meger 大师的 JSoko；" +
 				"以及 Kevin Weiner, FM Software 的 GIF 合成代码。" +
-				"特此鸣谢！同时，也祝各位箱友都能很快的晋升到推箱子群中的快手之列！\n\n" +
-			   "  2018年冬";
+				"特此鸣谢！同时，也祝各位箱友都能很快的晋升到推箱子群中的快手之列！";
 
 		tv_help.setText(s);
 	 }

@@ -619,9 +619,18 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 				return true;
 			case R.id.menu_help:
 				//帮助
-				Intent intent1 = new Intent();
+				Intent intent1 = new Intent(this, Help.class);
+				//用Bundle携带数据
+				Bundle bundle = new Bundle();
+				bundle.putInt("m_Num", 0);  //传递参数，指示调用者
+				intent1.putExtras(bundle);
+
 				intent1.setClass(this, Help.class);
 				startActivity(intent1);
+
+//				Intent intent1 = new Intent();
+//				intent1.setClass(this, Help.class);
+//				startActivity(intent1);
 
 				return true;
 			case R.id.menu_about:
@@ -745,8 +754,10 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		myMaps.mMatchDate2 = file.get("比赛", "mmatchdate2", "").toString();
 
 		myMaps.myPathList[2] = file.get("识别", "sPicPath", "").toString();
+		myMaps.myPathList[3] = file.get("识别", "sPicPath2", "").toString();
+		myMaps.myPathList[4] = file.get("识别", "sPicPath3", "").toString();
 
-		if (myMaps.myPathList[2].trim().isEmpty()) {
+		if (myMaps.m_Sets[36] < 0 || myMaps.m_Sets[36] > 4) {
 			myMaps.m_Sets[36] = 0;
 		}
 	}
@@ -797,6 +808,8 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		file.set("比赛", "mmatchdate2", myMaps.mMatchDate2);
 
 		file.set("识别", "sPicPath", myMaps.myPathList[2]);
+		file.set("识别", "sPicPath2", myMaps.myPathList[3]);
+		file.set("识别", "sPicPath3", myMaps.myPathList[4]);
 
 		file.save(new File(myMaps.sRoot+myMaps.sPath + "BoxMan.ini"));
 	}

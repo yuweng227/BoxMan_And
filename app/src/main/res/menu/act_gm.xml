@@ -32,10 +32,10 @@
 
 	<item
 		android:id="@+id/act_micro_about"
-		android:title="关于“宏”"/>
+		android:title="“宏”功能说明"/>
 
 	<item
 		android:id="@+id/act_about"
-		android:title="关于“导入”"/>
+		android:title="“导入”说明"/>
 
 </menu>

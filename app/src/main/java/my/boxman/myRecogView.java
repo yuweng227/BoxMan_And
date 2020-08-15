@@ -407,6 +407,8 @@ public class myRecogView extends Activity {
                         myMaps.edPictTop  = mMap.m_nMapTop;
                         myMaps.edPictRight = mMap.m_nMapRight;
                         myMaps.edPictBottom = (int) (mMap.m_nMapTop + mMap.m_nRows * mMap.m_nWidth);
+                        myMaps.edRows = mMap.m_nRows;
+                        myMaps.edCols = mMap.m_nCols;
                         Intent intent2 = new Intent();
                         intent2.setClass(myRecogView.this, myEditView.class);
                         startActivity(intent2);
@@ -489,13 +491,9 @@ public class myRecogView extends Activity {
                 mMap.invalidate();
                 myTimer.sleep(20);
                 break;
-            case 5:                       // 长按指示灯时，底行仓管员闪烁
-                if (mMap.isLamp) {
-                    mMap.m_Recog.bt_Player.setBackgroundColor(0x9fff00ff);
-                } else {
-                    mMap.m_Recog.bt_Player.setBackgroundColor(0xff334455);
-                }
+            case 5:                       // 长按指示灯时，闪烁
                 mMap.isLamp = !mMap.isLamp;
+                mMap.invalidate();
                 myTimer.sleep(500);
             break;
         }
@@ -714,9 +712,15 @@ public class myRecogView extends Activity {
                 else exitDlg.show();  //有过识别动作，提示保存
                 return true;
             case R.id.recog_about:  // 关于
-                Intent intent1 = new Intent();
-                intent1.setClass(this, myAboutRecgo.class);
-                startActivity(intent1);
+                Intent intent0 = new Intent(this, Help.class);
+                //用Bundle携带数据
+                Bundle bundle0 = new Bundle();
+                bundle0.putInt("m_Num", 6);  //传递参数，指示调用者
+                intent0.putExtras(bundle0);
+
+                intent0.setClass(this, Help.class);
+                startActivity(intent0);
+
                 return true;
             case R.id.recog_shrink:  // 减少格子数
                 mMap.cur_Rect.top = -1;  // 取消焦点框

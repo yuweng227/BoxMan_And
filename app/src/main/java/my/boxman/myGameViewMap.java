@@ -32,8 +32,9 @@ public class myGameViewMap extends View {
     private myGameView m_Game;  //父控件指针，以便使用父控件的功能
 
     Paint myPaint = new Paint();
-    boolean m_lShowDst2 = false; //是否“在禁用逆推目标点”时，采用另外的方式提示（双目标点提示模式）
+    boolean m_lShowDst2 = false; //是否在“逆推时使用正推目标点”状态下，采用另外的方式提示（双目标点提示模式）
     boolean m_lShowAnsInf = false; //是否允许在开始推关卡之前显示答案信息
+    boolean m_lEven; //是否偶半位
     boolean m_lWallTop; //是否画墙顶
     boolean m_bBoxTo; //是否在提示箱子可达位置状态
     boolean m_bBoxTo2;
@@ -70,7 +71,7 @@ public class myGameViewMap extends View {
     private Rect m_rPre_BK;  //可以触发“上一个背景”的区域
     private Rect m_rNext_BK;  //可以触发“下一个背景”的区域
     private Rect m_rColor_BK;  //可以触发“背景色”的区域
-    private Rect m_rPre_Speed;  //可以触发“上一速度值”的区域
+    private Rect m_rProgress_Bar;  //可以触发“进度条”的区域
     private Rect m_rNext_Speed;  //可以触发“下一速度值”的区域
     private Rect m_rChangeBK;  //可以触发更改“背景”设置的区域
     private Rect m_rRecording;  //可以触发更改关闭“录制”设置的区域
@@ -132,18 +133,18 @@ public class myGameViewMap extends View {
 
         m_rRecording = new Rect();
         m_rTrans = new Rect();
-        m_rPre_Speed = new Rect();
+        m_rProgress_Bar = new Rect();
         m_rNext_Speed = new Rect();
         m_rChangeBK = new Rect();
 
         int w0 = m_rPre.right+8;
         int w = ((m_rNext.left-8) - w0) / 4;
         m_rTrans.set(w0, 0, w0+w, m_nArenaTop-2); //即景模式切换
-        m_rPre_Speed.set(w0+w, 0, w0+w*2-8, m_nArenaTop-2); //上一速度值
+        m_rProgress_Bar.set(w0+w, 0, w0+w*2-8, m_nArenaTop-2); //进度条
         m_rNext_Speed.set(w0+w*2, 0, w0+w*3-8, m_nArenaTop-2); //下一速度值
         m_rChangeBK.set(w0+w*3, 0, m_rNext.left-8, m_nArenaTop-2); //切换更改背景模式的区域
         ss = sp2px(myMaps.ctxDealFile, 16);
-        m_rRecording.set(0, m_nArenaTop+8, ss*2+ss/2, m_nArenaTop+ss+ss/2+8); //关闭“录制模式的区域
+        m_rRecording.set(0, m_nArenaTop+8, ss*4+ss/2, m_nArenaTop+ss+ss/2+8); //关闭“录制模式的区域
 
         bitPre = Bitmap.createBitmap(m_nArenaTop * 4 / 3, m_nArenaTop, myMaps.cfg); //上一关按钮图片
         Canvas cvs01 = new Canvas(bitPre);
@@ -285,17 +286,17 @@ public class myGameViewMap extends View {
                     m_Game.DoEvent(4);  //redo
                 } else if (m_rTrans.contains((int) e.getX(), (int) e.getY())) {
                     m_Game.DoEvent(12);  //“死锁提示”开关
-                } else if (m_rPre_Speed.contains((int) e.getX(), (int) e.getY())) {  //即景模式切换
+                } else if (m_rProgress_Bar.contains((int) e.getX(), (int) e.getY())) {  //即景模式转换
                     if (m_Game.mMicroTask != null) return;
                     m_Game.m_nStep = 0;
                     m_Game.m_bYanshi = false;
                     m_Game.m_bYanshi2 = false;
-                    m_Game.DoEvent(0);   //即景模式切换
+                    m_Game.DoEvent(0);   //即景模式转换
                 } else if (m_rNext_Speed.contains((int) e.getX(), (int) e.getY())) {  //“自动箱子编号”开关
                     myMaps.m_bBianhao = !myMaps.m_bBianhao;
                 } else if (m_rChangeBK.contains((int) e.getX(), (int) e.getY())) {  //“标尺”开关
                     myMaps.m_bBiaochi = !myMaps.m_bBiaochi;
-                } else if (mClickObj == '*' || myMaps.m_Sets[3] == 1 && (mClickObj == '.')) {  //长按点位上箱子，显示关联网点、网口
+                } else if (!m_Game.bt_BK.isChecked() && (mClickObj == '*' || myMaps.m_Sets[3] == 1 && mClickObj == '.')) {  //长按点位上箱子，显示关联网点、网口
                     m_Game.m_Net_Inf(m_Game.m_cArray, m_iR, m_iC);  //计算网点、网口
                     m_Game.m_bNetLock = true;
                 } else  if (mClickObj == '$') {  //长按非点位上的箱子，显示哪些箱子可以被推动
@@ -309,7 +310,7 @@ public class myGameViewMap extends View {
                     m_bManTo = false;  //关闭人的可达点状态
                     m_bManTo2 = false;
                     m_Game.boxCanMove();
-                } else if (mClickObj == '-' || mClickObj == '.' && myMaps.m_Sets[3] == 0) {  //长按空地，显示哪些箱子可以到这里
+                } else if (mClickObj == '-' || mClickObj == '.' && (myMaps.m_Sets[3] == 0 || m_Game.bt_BK.isChecked())) {  //长按空地，显示哪些箱子可以到这里
                     if (m_Game.mMicroTask != null) return;
                     m_iR2 = m_iR;
                     m_iC2 = m_iC;
@@ -322,10 +323,10 @@ public class myGameViewMap extends View {
                     if (m_Game.bt_BK.isChecked()) {
                         if (myMaps.m_Sets[32] == 1) {
                             myMaps.m_Sets[32] = 0;
-                            MyToast.showToast(m_Game, "开启逆推目标点！", Toast.LENGTH_SHORT);
+                            MyToast.showToast(m_Game, "启用逆推目标点！", Toast.LENGTH_SHORT);
                         } else {
                             myMaps.m_Sets[32] = 1;
-                            MyToast.showToast(m_Game, "禁用逆推目标点！", Toast.LENGTH_SHORT);
+                            MyToast.showToast(m_Game, "使用正推目标点！", Toast.LENGTH_SHORT);
                         }
                     } else {
                         if (m_Game.m_iStep[1] == 0) {  // 在关卡初态，即尚未任何动作
@@ -425,8 +426,8 @@ public class myGameViewMap extends View {
                 } else if (m_rTrans.contains((int) e.getX(), (int) e.getY())) {  //宏调试（单步执行）时，结束调试，否则加载并执行宏
                     m_Game.DoEvent(10);  //加载并执行宏
                     return true;
-                } else if (m_rPre_Speed.contains((int) e.getX(), (int) e.getY())) {  //逐级减速
-                    if (m_Game.mMicroTask == null) m_Game.DoEvent(11);   //进度条
+                } else if (m_rProgress_Bar.contains((int) e.getX(), (int) e.getY())) {   //进度条
+                    if (m_Game.mMicroTask == null) m_Game.DoEvent(11);
                     return true;
                 } else if (m_rNext_Speed.contains((int) e.getX(), (int) e.getY())) {  //逐级加速
                     if (myMaps.m_Sets[10] > 0) myMaps.m_Sets[10]--;
@@ -1333,7 +1334,7 @@ public class myGameViewMap extends View {
                         myPaint.setStrokeWidth(3);
                         canvas.drawCircle(rt.left + 25, rt.top + 25, 10, myPaint);
                     }
-                    //当“禁用逆推目标点”时，对逆推目标点做简单提示
+                    //当“逆推时使用正推目标点”时，对逆推目标点做简单提示
                     if (m_lShowDst2 && myMaps.m_Sets[32] == 1 && (m_Game.bk_cArray[i][j] == '.' || m_Game.bk_cArray[i][j] == '*' || m_Game.bk_cArray[i][j] == '+')) {
                         myPaint.setARGB(127, 255, 255, 0);
                         myPaint.setStyle(Paint.Style.FILL);
@@ -1638,6 +1639,11 @@ public class myGameViewMap extends View {
                 else
                     mStr = String.valueOf(mGetCur(m_iR, m_iC));
                 myPaint.getTextBounds(mStr, 0, mStr.length(), rt8);  //游标框
+                if (m_lEven) {
+                    myPaint.setARGB(255, 255, 255, 255);
+                } else {
+                    myPaint.setARGB(255, 0, 255, 255);
+                }
                 canvas.drawText(mStr, rt4.left + (rt6.width()-rt8.width())/2, rt8.height()+hh*2, myPaint);
             }
         }
@@ -1679,7 +1685,7 @@ public class myGameViewMap extends View {
             myPaint.setStyle(Paint.Style.FILL);
             canvas.drawRect(m_rRecording, myPaint);
             myPaint.setARGB(255, 255, 0, 0);
-            canvas.drawText("录制", m_rRecording.left+4, m_rRecording.top+ss+4, myPaint);
+            canvas.drawText("结束录制", m_rRecording.left+4, m_rRecording.top+ss+4, myPaint);
         }
 
         if (m_lShowAnsInf) {  //显示答案信息
@@ -2551,6 +2557,10 @@ public class myGameViewMap extends View {
         if (k > 64) s.append((char) (byte) k);
 
         s.append((char) ((byte) (c % 26 + 65))).append(String.valueOf(1 + r));
+
+        // 半位奇偶性
+
+        m_lEven = ((r + c) % 2 == 0);
 
         return s.toString();
     }

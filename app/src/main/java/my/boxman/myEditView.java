@@ -622,7 +622,6 @@ public class myEditView extends Activity {
                 ndAct.Act(9);
 
                 Normalize(m_cArray);
-                mMap.isShowBkPict = false;
                 mMap.initArena();
 
                 m_UnDoList.offer(ndAct);
@@ -786,6 +785,17 @@ public class myEditView extends Activity {
                 }).create().show();
 
                 return true;
+            case R.id.edit_help:  //操作说明
+                Intent intent0 = new Intent(this, Help.class);
+                //用Bundle携带数据
+                Bundle bundle0 = new Bundle();
+                bundle0.putInt("m_Num", 2);  //传递参数，指示调用者
+                intent0.putExtras(bundle0);
+
+                intent0.setClass(this, Help.class);
+                startActivity(intent0);
+
+                return true;
             case R.id.edit_inf:  //关卡作者、标题、说明等资料编辑
                 if (myMaps.curMap.Map == null) {
                     MyToast.showToast(myEditView.this, "做好关卡保存后才可以哦！", Toast.LENGTH_SHORT);
@@ -892,22 +902,72 @@ public class myEditView extends Activity {
         }
     }
 
-    //取得"关卡图/"文件夹下的文档列表
-    private void edPicList(String fn) {
-        File targetDir = new File(fn);
-        myMaps.mFile_List.clear();
-        if (!targetDir.exists()) targetDir.mkdirs();  //创建"关卡图/"文件夹
-        else {
-            String[] filelist = targetDir.list();
-            Arrays.sort(filelist, String.CASE_INSENSITIVE_ORDER);
-            for (int i = 0; i < filelist.length; i++) {
-                int dot = filelist[i].lastIndexOf('.');
-                if ((dot > -1) && (dot < (filelist[i].length()))) {
-                    String prefix = filelist[i].substring(filelist[i].lastIndexOf(".") + 1);
-                    if (prefix.equalsIgnoreCase("jpg") || prefix.equalsIgnoreCase("bmp") || prefix.equalsIgnoreCase("png"))
-                        myMaps.mFile_List.add(filelist[i]);
+    // 单边界的尺寸调整
+    public void My_ReSize(int m_nSide) {
+        ndAct = null;
+        ndAct = new ActNode(m_cArray, mMap.m_nMapLeft, mMap.m_nMapRight, mMap.m_nMapTop, mMap.m_nMapBottom, -1, -1, mMap.mMatrix, mMap.mCurrentMatrix, null, null);
+        ndAct.Act(4);
+
+        StringBuilder str = new StringBuilder();
+        boolean flg = true, flg4 = mMap.m_nMapRight-mMap.m_nMapLeft+1 >= myMaps.m_nMaxCol;
+        int newLeft = 0, newRight = 0, newTop = 0, newBottom = 0;
+
+        if (flg4 || 1 > mMap.m_nMapLeft-1) {
+            flg = false;
+            str.append("左侧空间不足（").append(mMap.m_nMapLeft-1).append("）\n");
+        }
+        if (flg4 || 1 > mMap.m_nMapTop-1) {
+            flg = false;
+            str.append("顶部空间不足（").append(mMap.m_nMapTop-1).append("）\n");
+        }
+        if (flg4 || 1 + mMap.m_nMapRight >= myMaps.m_nMaxCol*2-1) {
+            flg = false;
+            str.append("右侧空间不足（").append(myMaps.m_nMaxCol*2-1 - mMap.m_nMapRight).append("）\n");
+        }
+        if (flg4 || 1 + mMap.m_nMapBottom >= myMaps.m_nMaxRow*2-1) {
+            flg = false;
+            str.append("底部空间不足（").append(myMaps.m_nMaxRow*2-1 - mMap.m_nMapBottom).append("）\n");
+        }
+
+        if (flg) {  // 允许调整
+            switch (m_nSide) {
+                case 0:
+                    newLeft = 1;
+                    break;
+                case 1:
+                    newTop = 1;
+                    break;
+                case 2:
+                    newRight = 1;
+                    break;
+                case 3:
+                    newBottom = 1;
+                    break;
+            }
+
+            for (int i=mMap.m_nMapTop-newTop; i<=mMap.m_nMapBottom+newBottom; i++) {
+                for (int j=mMap.m_nMapLeft-newLeft; j<=mMap.m_nMapRight+newRight; j++) {
+                    if (i<mMap.m_nMapTop || i>mMap.m_nMapBottom || j<mMap.m_nMapLeft || j>mMap.m_nMapRight){
+                        m_cArray[i][j] = '-';
+                    }
                 }
             }
+            mMap.m_nMapLeft -= newLeft;
+            mMap.m_nMapTop  -= newTop;
+            mMap.m_nMapRight  += newRight;
+            mMap.m_nMapBottom += newBottom;
+
+            mMap.initArena();  //舞台初始化
+
+            mMap.selNode.row = -1;
+            mMap.isFistClick = true;
+            m_UnDoList.offer(ndAct);
+            bt_UnDo.setEnabled(true);
+            m_ReDoList.clear();
+            bt_ReDo.setEnabled(false);
+            bt_Save.setEnabled(true);
+        } else {
+            MyToast.showToast(this, str.toString(), Toast.LENGTH_SHORT);
         }
     }
 

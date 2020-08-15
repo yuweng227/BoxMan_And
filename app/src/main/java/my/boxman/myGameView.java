@@ -17,17 +17,10 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.media.AudioManager;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.media.SoundPool;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.InputType;
-import android.text.method.NumberKeyListener;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,7 +30,6 @@ import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
@@ -2646,7 +2638,7 @@ public class myGameView extends Activity {
         m_bNetLock = false;  //取消网型提示
         mMap.invalidate();
         switch (act) {
-            case 0:  //结束游戏，返回上一层
+            case 0:  //即景模式转换
                 if (bt_BK.isChecked()) {
                     if (myMaps.m_Sets[13] == 0) {
                         myMaps.m_Sets[13] = 1;
@@ -2760,11 +2752,18 @@ public class myGameView extends Activity {
                 if (myMaps.isMacroDebug) {
                     MyToast.showToast(myGameView.this, "“宏”调试时，不支持此功能！", Toast.LENGTH_SHORT);
                 } else {
-                    if (mMap.m_lGoto || mMap.m_lGoto2) {
-                        mMap.m_lGoto = false;
-                        mMap.m_lGoto2 = false;
-                    } else {
-                        mySetProgressBar();
+                    if (bt_BK.isChecked()) {  // 逆推
+                        if (mMap.m_lGoto2) {
+                            mMap.m_lGoto2 = false;
+                        } else {
+                            mySetProgressBar();
+                        }
+                    } else {  // 正推
+                        if (mMap.m_lGoto) {
+                            mMap.m_lGoto = false;
+                        } else {
+                            mySetProgressBar();
+                        }
                     }
                 }
                 break;
@@ -3505,6 +3504,17 @@ public class myGameView extends Activity {
     public boolean onOptionsItemSelected(MenuItem mt) {
 
         switch (mt.getItemId()) {
+            case R.id.player_help:  //操作说明
+                Intent intent0 = new Intent(this, Help.class);
+                //用Bundle携带数据
+                Bundle bundle0 = new Bundle();
+                bundle0.putInt("m_Num", 1);  //传递参数，指示调用者
+                intent0.putExtras(bundle0);
+
+                intent0.setClass(this, Help.class);
+                startActivity(intent0);
+
+                return true;
             case R.id.player_about:  //关卡描述
                 Intent intent = new Intent();
                 intent.setClass(myGameView.this, myAbout2.class);
@@ -3649,13 +3659,6 @@ public class myGameView extends Activity {
                 }
 
                 return true;
-            case R.id.player_GoBack:  //进度条...
-                if (myMaps.isMacroDebug) {
-                    MyToast.showToast(myGameView.this, "“宏”调试时，不支持此功能！", Toast.LENGTH_SHORT);
-                } else {
-                    mySetProgressBar();
-                }
-                return true;
             case R.id.player_Yass_Solver:  //YASS求解
                 if (!bt_BK.isChecked()) {
                     mySolution();  //YASS求解
@@ -3671,13 +3674,13 @@ public class myGameView extends Activity {
                         "更换背景"
                 };
                 Builder builder2 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
-                builder2.setTitle("场景设置").setSingleChoiceItems(m_menu2, -1, new OnClickListener() {
+                builder2.setTitle("设置").setSingleChoiceItems(m_menu2, -1, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which) {
                             case 0:   //速度设置
                                 Builder builder4 = new Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK);
-                                builder4.setTitle("速度设置").setSingleChoiceItems(m_sSleep, myMaps.m_Sets[10], new OnClickListener() {
+                                builder4.setTitle("移动速度").setSingleChoiceItems(m_sSleep, myMaps.m_Sets[10], new OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         myMaps.m_Sets[10] = which;
@@ -3801,9 +3804,10 @@ public class myGameView extends Activity {
                         "仓管员转向动画",
                         "长按点位提示关联网",
                         "自动加载最新状态",
-                        "禁用逆推目标点",
+                        "逆推时使用正推目标点",
                         "允许穿越",
                         "单步进退",
+                        "进度条",
                         "自动爬阶梯",
                         "系统导航键",
                         "禁用全屏",
@@ -3822,6 +3826,7 @@ public class myGameView extends Activity {
                         myMaps.m_Sets[32] == 1,  //禁用逆推目标点
                         myMaps.m_Sets[17] == 1,  //允许穿越
                         myMaps.m_Sets[23] == 1,  //单步进退
+                        !bt_BK.isChecked() && mMap.m_lGoto || bt_BK.isChecked() && mMap.m_lGoto2,  //进度条
                         myMaps.m_Sets[29] == 1,  //自动爬阶梯
                         myMaps.m_Sets[16] == 1,  //显示系统虚拟按键
                         myMaps.m_Sets[20] == 1,  //禁用全屏
@@ -3911,12 +3916,27 @@ public class myGameView extends Activity {
                         if (mChk[10]) myMaps.m_Sets[23] = 1;
                         else myMaps.m_Sets[23] = 0;
 
+                        //是否显示进度条
+                        if (mChk[11]) {
+                            if (bt_BK.isChecked()) {  //逆推
+                                mMap.m_lGoto2 = true;
+                            } else {
+                                mMap.m_lGoto = true;
+                            }
+                        } else {
+                            if (bt_BK.isChecked()) {  //逆推
+                                mMap.m_lGoto2 = false;
+                            } else {
+                                mMap.m_lGoto = false;
+                            }
+                        }
+
                         //自动爬阶梯
-                        if (mChk[11]) myMaps.m_Sets[29] = 1;
+                        if (mChk[12]) myMaps.m_Sets[29] = 1;
                         else myMaps.m_Sets[29] = 0;
 
                         //显示系统导航键
-                        if (mChk[12]) {
+                        if (mChk[13]) {
                             myMaps.m_Sets[16] = 1;
                             showSystemUI();
                         } else {
@@ -3925,15 +3945,15 @@ public class myGameView extends Activity {
                         }
 
                         //禁用全屏
-                        if (mChk[13]) myMaps.m_Sets[20] = 1;
+                        if (mChk[14]) myMaps.m_Sets[20] = 1;
                         else myMaps.m_Sets[20] = 0;
 
                         //演示时仅推动
-                        if (mChk[14]) myMaps.m_Sets[28] = 1;
+                        if (mChk[15]) myMaps.m_Sets[28] = 1;
                         else myMaps.m_Sets[28] = 0;
 
                         //使用音量键选择关卡
-                        if (mChk[15]) myMaps.m_Sets[15] = 1;
+                        if (mChk[16]) myMaps.m_Sets[15] = 1;
                         else myMaps.m_Sets[15] = 0;
 
                         BoxMan.saveSets();  //保存设置
@@ -4037,7 +4057,7 @@ public class myGameView extends Activity {
                     for (int j = 0; j < myMaps.curMap.Cols; j++) {
                         my_Rule[myMaps.curMap.Cols*i+j] = mark44[i][j];
                         if (m_iBoxNum2[i][j] > 0 && (m_cArray[i][j] == '$' || m_cArray[i][j] == '*')) {
-                            my_BoxNum[m_iBoxNum2[i][j]-1] = m_iBoxNum[i][j];   //自动箱子编号与人工箱子编号建立关联
+                            my_BoxNum[m_iBoxNum2[i][j]-1] = myMaps.m_bBianhao ? m_iBoxNum2[i][j] : m_iBoxNum[i][j];   //自动箱子编号与人工箱子编号建立关联
                         }
                     }
                 }

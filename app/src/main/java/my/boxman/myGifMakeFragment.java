@@ -1308,7 +1308,7 @@ public class myGifMakeFragment extends DialogFragment {
 
         //画箱子编号
         private void drawBoxNum(Canvas canvas, Rect rt, int num) {
-            String str = String.valueOf(mGetBoxNum(num));
+            String str = String.valueOf(myMaps.m_bBianhao ? num : mGetBoxNum(num));
             myPaint.setTextSize(m_PicWidth / 2);
             myPaint.getTextBounds(str, 0, str.length(), rt0);  //文字框
             myPaint.setARGB(255, 255, 255, 255);

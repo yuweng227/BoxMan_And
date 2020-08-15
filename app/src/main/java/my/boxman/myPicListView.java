@@ -142,42 +142,47 @@ public class myPicListView extends Activity implements OnScrollListener {
 				this.finish();
 				return true;
 			case R.id.pic_path:  // 浏览位置
-				final String[] m_menu;
-				if (myMaps.myPathList[2].isEmpty() || myMaps.myPathList[2].equals("/")) {
-					m_menu = new String[] {
-							"快手默认位置",
-							"QQ 图片接收文件夹",
-							"自定义"
-					};
-				} else {
-					m_menu = new String[] {
-							"快手默认位置",
-							"QQ 图片接收文件夹",
-							myMaps.myPathList[2],
-							"自定义"
-					};
-				}
+				final String[] m_menu = new String[] {
+					"快手默认位置",
+					"QQ 图片接收文件夹",
+					myMaps.myPathList[2],
+					myMaps.myPathList[3],
+					myMaps.myPathList[4]
+				};
 				int m = myMaps.m_Sets[36];
-				final int len = m_menu.length;
-				if (m < 0 || m > 2) m = -1;
+				if (m < 0 || m > 4) m = 0;
 				AlertDialog.Builder builder = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK);
-				builder.setTitle("截图位置").setSingleChoiceItems(m_menu, m, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.dismiss();
-								if ((which == 0 || which == 1 || which == 2 && len == 4) && which != myMaps.m_Sets[36]) {
-									recycleBitmapCaches(0, myMaps.mFile_List.size());
-									myMaps.m_Sets[36] = which;
-									myMaps.edPicList(myMaps.sRoot + myMaps.myPathList[myMaps.m_Sets[36]]);
-									setTitle(myMaps.myPathList[myMaps.m_Sets[36]]);
-									adapter.notifyDataSetChanged();
-								} else if (which == len-1) {
-									Intent intent1 = new Intent();
-									intent1.setClass(myPicListView.this, myFileExplorerActivity.class);
-									startActivityForResult(intent1, 999);
-								}
-							}
-						}).setPositiveButton("取消", null);
+				builder.setTitle("图片位置").setSingleChoiceItems(m_menu, m, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						myMaps.m_Sets[36] = which;
+					}}).setNeutralButton("修改", new DialogInterface.OnClickListener(){
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if (myMaps.m_Sets[36] > 1 && myMaps.m_Sets[36] < 5) {
+							dialog.dismiss();
+							Intent intent1 = new Intent();
+							intent1.setClass(myPicListView.this, myFileExplorerActivity.class);
+							startActivityForResult(intent1, 999);
+						} else {
+							MyToast.showToast(myPicListView.this, "这个位置不能修改！", Toast.LENGTH_SHORT);
+						}
+					}}).setPositiveButton("打开", new DialogInterface.OnClickListener(){
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if (myMaps.myPathList[myMaps.m_Sets[36]].trim().isEmpty()) {
+							myMaps.myPathList[myMaps.m_Sets[36]] = "/";
+						}
+						try {
+							dialog.dismiss();
+							recycleBitmapCaches(0, myMaps.mFile_List.size());
+							myMaps.edPicList(myMaps.sRoot + myMaps.myPathList[myMaps.m_Sets[36]]);
+							setTitle(myMaps.myPathList[myMaps.m_Sets[36]]);
+							adapter.notifyDataSetChanged();
+						} catch (Exception e) {
+							MyToast.showToast(myPicListView.this, "错误的位置！", Toast.LENGTH_SHORT);
+						}
+					}}).setNegativeButton("取消", null);
 				builder.setCancelable(false).show();
 
 				return true;

@@ -2,15 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 	<item
 	    android:id="@+id/player_Setup1"
-		android:title="场景设置..."/>
+		android:title="设置..."/>
 
 	<item
 	    android:id="@+id/player_Setup2"
 		android:title="开关选项..."/>
-
-	<item
-		android:id="@+id/player_GoBack"
-		android:title="进度条..."/>
 
 	<item
 		android:id="@+id/player_ReStart"
@@ -43,9 +39,13 @@
 	<item
         android:id="@+id/player_save"
         android:title="保存状态"/>
-    
-	<item 
+
+	<item
 		android:id="@+id/player_about"
 		android:title="关于"/>
+
+	<item
+		android:id="@+id/player_help"
+		android:title="操作说明"/>
 
 </menu>

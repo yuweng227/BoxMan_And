@@ -57,7 +57,7 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 	private static final String TAG_PROGRESS_DIALOG_FRAGMENT = "gif_make_progress_fragment";
 
 	String[] s_groups = { "状态", "答案" };
-	String[] s_sort = { "  【移动优先】", "  【推动优先】" };
+	String[] s_sort = { "  【移动优先】", "  【推动优先】", "  【时间优先】" };
 	static int my_Sort = 0;  // 答案列表的默认排序 -- 移动优先
 	Comparator comp = new SortComparator();
 
@@ -131,9 +131,11 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 
 				if (c_Pos < 0) {
 					if (g_Pos == 1 && myMaps.mState2.size() > 1) {  // 答案多于1个，且长按了答案分组项
-						if (my_Sort == 0) {    // 置推动优先
+						if (my_Sort == 0) {           // 置推动优先
 							my_Sort = 1;
-						} else {               // 置移动优先
+						} else if (my_Sort == 1) {    // 置时间优先
+							my_Sort = 2;
+						} else {                      // 置移动优先
 							my_Sort = 0;
 						}
 						Collections.sort(myMaps.mState2, comp);
@@ -1414,9 +1416,29 @@ class SortComparator implements Comparator {
 		if (myStateBrow.my_Sort == 0) {
 			if (a.moves == b.moves) return (a.pushs - b.pushs);
 			else return (a.moves - b.moves);
-		} else {
+		} else if (myStateBrow.my_Sort == 1) {
 			if (a.pushs == b.pushs) return (a.moves - b.moves);
 			else return (a.pushs - b.pushs);
+		} else {
+			int n1 = a.time.indexOf('-');
+			int n2 = b.time.indexOf('-');
+			String t1, t2;
+			if (n1 >= 0) {
+				t1 = a.time.substring(n1-4);
+			} else {
+				t1 = b.time;
+			}
+			if (n2 >= 0) {
+				t2 = b.time.substring(n2-4);
+			} else {
+				t2 = b.time;
+			}
+			if (t1.equals(t2)) {
+				if (a.moves == b.moves) return (a.pushs - b.pushs);
+				else return (a.moves - b.moves);
+			} else {
+				return t1.compareTo(t2);
+			}
 		}
 	}
 }

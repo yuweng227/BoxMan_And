@@ -486,7 +486,8 @@ public class myActGMView extends Activity {
 
 	 //保存
 	 private void saveAct(String name, String value) {
-		 if (!name.equals("reg0") && !myMaps.isLURD(value)) {
+		 if (myMaps.isRecording && value.isEmpty()) {  // 录制模式下的清理动作
+		 } else if (!name.equals("reg0") && !myMaps.isLURD(value)) {
 			 MyToast.showToast(this, "遇到无效字符，保存失败!", Toast.LENGTH_SHORT);
 			 return;
 		 }
@@ -494,7 +495,10 @@ public class myActGMView extends Activity {
 			SharedPreferences.Editor editor = getSharedPreferences("BoxMan", Context.MODE_PRIVATE).edit();
 			editor.putString(name, value);
 			editor.commit();
-			MyToast.showToast(myActGMView.this, "已存储！", Toast.LENGTH_SHORT);
+			if (myMaps.isRecording && value.isEmpty()) {  // 录制模式下的清理动作
+			} else {
+				MyToast.showToast(myActGMView.this, "已存储！", Toast.LENGTH_SHORT);
+			}
 			flg = false;  //编辑框内容是否改动
 		} catch (Exception e){ }
 	 }
@@ -654,16 +658,27 @@ public class myActGMView extends Activity {
 				if (flg && et_Action.getText().toString().replaceAll("[ \n\r\t]", "").length() > 0) isSaveDlg.show();
 				else finish();
 				return true;
-			case R.id.act_about:  //关于“导入”
-				Intent intent2 = new Intent();
-				intent2.setClass(this, myAboutImport.class);
-				startActivity(intent2);
+			case R.id.act_about:  //“导入”说明
+				Intent intent0 = new Intent(this, Help.class);
+				//用Bundle携带数据
+				Bundle bundle0 = new Bundle();
+				bundle0.putInt("m_Num", 4);  //传递参数，指示调用者
+				intent0.putExtras(bundle0);
+
+				intent0.setClass(this, Help.class);
+				startActivity(intent0);
 
 				return true;
-			case R.id.act_micro_about:  //关于“宏”
-				Intent intent1 = new Intent();
-				intent1.setClass(this, myAboutMicro.class);
+			case R.id.act_micro_about:  //“宏”功能说明
+				Intent intent1 = new Intent(this, Help.class);
+				//用Bundle携带数据
+				Bundle bundle1 = new Bundle();
+				bundle1.putInt("m_Num", 5);  //传递参数，指示调用者
+				intent1.putExtras(bundle1);
+
+				intent1.setClass(this, Help.class);
 				startActivity(intent1);
+
 
 				return true;
 			case R.id.act_L_90:  //左旋90度（Lurd）

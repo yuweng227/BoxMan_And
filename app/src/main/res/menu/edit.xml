@@ -45,5 +45,8 @@
 		android:id="@+id/edit_inf"
 		android:title="关卡资料"/>
 
+	<item
+		android:id="@+id/edit_help"
+		android:title="操作说明"/>
 
 </menu>

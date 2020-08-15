@@ -57,9 +57,11 @@ public class myMaps {
 	static String sPath;    //根目录
 	static String sFile;    //关卡集文档名
 	static String[] myPathList = {  //关卡截图根目录列表
-			"",
-			"/tencent/qq_images/",
-			""
+			"",                         // 默认位置
+			"/tencent/qq_images/",      // QQ 图片接收位置
+			"/",                        // 自定义 1
+			"/",                        // 自定义 2
+			"/"                         // 自定义 3
 	};
 
 	static String[] sAction;  //动作寄存器缓存
@@ -136,8 +138,9 @@ public class myMaps {
 	static Bitmap skinGif = null; //GIF皮肤
 	static Bitmap skinBit = null; //皮肤
 	static Bitmap bkPict = null; //背景图片
-	static Bitmap edPict = null; //关卡编辑界面的背景图片
+	static Bitmap edPict = null;  //关卡编辑界面的背景图片
 	static int edPictLeft, edPictTop, edPictRight, edPictBottom;  // 关卡编辑界面的背景图片的四至
+	static int edRows, edCols;                                    // 识别时的关卡尺寸
 	static android.graphics.Bitmap.Config cfg = Bitmap.Config.ARGB_4444;
 	static Paint myPaint = new Paint();
 	static Resources res;  //资源

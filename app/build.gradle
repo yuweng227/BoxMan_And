@@ -7,7 +7,7 @@ android {
         applicationId 'my.boxman'
         minSdkVersion 17
         versionCode 9
-        versionName "9.93"
+        versionName "9.94"
     }
     buildTypes {
         release {

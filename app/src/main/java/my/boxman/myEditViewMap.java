@@ -37,7 +37,7 @@ public class myEditViewMap extends View {
     Paint myPaint = new Paint();
     public selNode selNode = new selNode(), selNode2 = new selNode(); //选择区域对角点
 
-    public int m_nArenaTop;  //舞台 Top 距屏幕顶的距离
+    public int m_nArenaTop;      //舞台 Top 距屏幕顶的距离
     int m_nPicWidth, m_nPicHeight;  //关卡图的像素尺寸
     public int m_nMapLeft, m_nMapRight, m_nMapTop, m_nMapBottom;  //关卡四至
     int m_PicWidth = 50;   //素材尺寸，即关卡图每个格子的像素尺寸
@@ -317,9 +317,27 @@ public class myEditViewMap extends View {
 
             public boolean onDoubleTap(MotionEvent e) {
                 // 双击顶部素材行，打开或关闭识别时的背景图片
-                if (e.getRawY() < m_nArenaTop && myMaps.curMapNum == -4 && myMaps.edPict != null) {
-                    isShowBkPict = !isShowBkPict;
-                    invalidate();
+                if (e.getRawY() < m_nArenaTop) {
+                    if (myMaps.curMapNum == -4 && myMaps.edPict != null) {
+                        isShowBkPict = !isShowBkPict;
+                        invalidate();
+                    }
+                } else {      // 双击编辑区域
+                    if (mMod == MOD_SELECT) {    // 若为块模式，双击边界，关卡尺寸自动增 1
+                        if (m_iR > 0 && m_iR < m_nMapBottom - m_nMapTop) {
+                            if (m_iC == 0) {                                     // 双击的是左边界
+                                m_Edit.My_ReSize(0);
+                            } else if (m_iC == m_nMapRight-m_nMapLeft) {          // 双击的是右边界
+                                m_Edit.My_ReSize(2);
+                            }
+                        } else  if (m_iC > 0 && m_iC < m_nMapRight - m_nMapLeft) {
+                            if (m_iR == 0) {                                     // 双击的是上边界
+                                m_Edit.My_ReSize(1);
+                            } else if (m_iR == m_nMapBottom-m_nMapTop) {         // 双击的是下边界
+                                m_Edit.My_ReSize(3);
+                            }
+                        }
+                    }
                 }
                 return true;
             }
@@ -597,8 +615,10 @@ public class myEditViewMap extends View {
 
         if (isShowBkPict && myMaps.curMapNum == -4 && myMaps.edPict != null) {  // 来自图像识别
             myPaint.setARGB(127, 0, 0, 0);
+//            canvas.drawBitmap(myMaps.edPict, new Rect(myMaps.edPictLeft, myMaps.edPictTop, myMaps.edPictRight, myMaps.edPictBottom),
+//                    new Rect(0, 0, m_nPicWidth, m_nPicHeight), myPaint);
             canvas.drawBitmap(myMaps.edPict, new Rect(myMaps.edPictLeft, myMaps.edPictTop, myMaps.edPictRight, myMaps.edPictBottom),
-                                             new Rect(0, 0, m_nPicWidth, m_nPicHeight), myPaint);
+                     new Rect((myMaps.m_nMaxCol-m_nMapLeft)*m_PicWidth, (myMaps.m_nMaxRow-m_nMapTop)*m_PicWidth, (myMaps.m_nMaxCol-m_nMapLeft)*m_PicWidth + m_PicWidth*myMaps.edCols, (myMaps.m_nMaxRow-m_nMapTop)*m_PicWidth + m_PicWidth*myMaps.edRows), myPaint);
         }
 
         for (int r = m_nMapTop, i, j; r <= m_nMapBottom; r++) {
@@ -614,7 +634,8 @@ public class myEditViewMap extends View {
                 //第一层显示————地板
                 if (ch == '#') {
                     canvas.drawBitmap(myMaps.skinBit, rtKF, rt, myPaint);
-                } else if (ch != '-' || !isShowBkPict || myMaps.curMapNum != -4 || myMaps.edPict == null) {
+                } else if (ch != '-' || !isShowBkPict || myMaps.curMapNum != -4 || myMaps.edPict == null ||
+                            c < myMaps.m_nMaxCol || r < myMaps.m_nMaxRow || c >= myMaps.m_nMaxCol+myMaps.edCols || r >= myMaps.m_nMaxRow+myMaps.edRows) {
                     canvas.drawBitmap(myMaps.skinBit, rtKF, rt, myPaint);
                 }
 

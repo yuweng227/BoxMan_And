@@ -597,6 +597,17 @@ public class myFindView extends Activity {
                 startActivity(intent1);
 
                 return true;
+            case R.id.find_help:  //操作说明
+                Intent intent0 = new Intent(this, Help.class);
+                //用Bundle携带数据
+                Bundle bundle0 = new Bundle();
+                bundle0.putInt("m_Num", 3);  //传递参数，指示调用者
+                intent0.putExtras(bundle0);
+
+                intent0.setClass(this, Help.class);
+                startActivity(intent0);
+
+                return true;
             default:
                 return super.onOptionsItemSelected(mt);
         }

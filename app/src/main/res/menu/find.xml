@@ -32,4 +32,8 @@
 		android:id="@+id/find_about"
 		android:title="关于..."/>
 
+	<item
+		android:id="@+id/find_help"
+		android:title="操作说明"/>
+
 </menu>

@@ -825,7 +825,7 @@ public class mySQLite {
 
 		try {
 			cursor = mSDB.query("G_Level", null, where, whereValue, null, null, null);
-			if (cursor.moveToNext()){
+			while (cursor.moveToNext()){
 				mapNode nd = new mapNode(1,
 						p_id,
 						cursor.getLong(cursor.getColumnIndex("L_id")),

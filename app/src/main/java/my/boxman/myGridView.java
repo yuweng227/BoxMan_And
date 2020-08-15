@@ -721,6 +721,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 							dialog.dismiss();
 							setSelectAll();  //设置全选开关状态
 							adapter.notifyDataSetChanged();
+							my_SetTitle();
 						}
 					}).setCancelable(false).create().show();
 				}
@@ -957,6 +958,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 			}
 			m_list = null;
 		}
+		my_SetTitle();
 
 		//导入统计提示
 		if (andOpen && myMaps.m_Sets[31] == 1 && myMaps.m_Nums[2] == 1) {  //导入后打开（长按关卡集的导入，仅导入了一个有效的关卡时）
@@ -1202,6 +1204,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 									recycleBitmapCaches(0, len);
 									setSelectAll();  //设置全选开关状态
 									adapter.notifyDataSetChanged();
+									my_SetTitle();
 									MyToast.showToast(myGridView.this, "迁出成功！", Toast.LENGTH_SHORT);
 								} catch (Exception e) {
 									MyToast.showToast(myGridView.this, "出错了，迁出失败！", Toast.LENGTH_SHORT);
@@ -1475,6 +1478,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 								recycleBitmapCaches(0, len);
 								setSelectAll();  //设置全选开关状态
 								adapter.notifyDataSetChanged();
+								my_SetTitle();
 
 							}}).create().show();
 

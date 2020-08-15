@@ -140,8 +140,8 @@ public class myFileExplorerActivity extends Activity {
 				// 保存自定义位置
 				String str = textView.getText().toString();
 //				if (!str.isEmpty()) {
-					myMaps.myPathList[2] = str + '/';
-					myMaps.m_Sets[36] = 2;
+					myMaps.myPathList[myMaps.m_Sets[36]] = str + '/';
+//					myMaps.m_Sets[36] = 2;
 					Intent intent = new Intent();
 					setResult(999, intent);
 //				}
