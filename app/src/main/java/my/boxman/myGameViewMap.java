@@ -241,7 +241,7 @@ public class myGameViewMap extends View {
         private static final int MODE_ZOOM = 2;  //缩放模式
         private int mMode = MODE_NONE;      //当前模式
 
-        float mMaxScale = 3;   //最大缩放级别
+        float mMaxScale = 5;   //最大缩放级别
         private float mStartDis;  //缩放开始时的手指间距
         private PointF mStartPoint = new PointF(), mClickPoint = new PointF();  //第一触点，相对及绝对坐标
         private PointF mid = new PointF();  //手势中心点

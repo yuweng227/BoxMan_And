@@ -82,12 +82,12 @@ public class myGameView extends Activity {
     CheckBox bt_BK = null;
 
     //正推，目标数、完成数、仓管员初始位置
-    public int m_nDstNum;
-    int m_nDstOK;
+    public int m_nGoals;
+    int m_nGoals_OK;
     public int m_nRow, m_nCol;
     //逆推，目标数、完成数、仓管员初始位置
-    int m_nDstNum2;
-    int m_nDstOK2;
+    int m_nGoals_2;
+    int m_nGoals_OK_2;
     int m_nRow2;
     int m_nCol2;
     int m_nRow0;  //逆推时，记录仓管员初始占位，周转用
@@ -116,7 +116,6 @@ public class myGameView extends Activity {
     boolean m_bYanshi, m_bYanshi2;  //是否演示
     String m_imPort_YASS;  //是否做过动作“导入”或“YASS”过动作
     int m_iStep[] = new int[4];    //记录"推"、"移"的步数
-//    boolean m_Path_Formating;  //是否正在格式化路径（仅yass求解返回后使用）
     boolean m_bACT_ERROR;  //执行动作时是否遇到错误
     boolean m_bACT_IgnoreCase;  //执行动作时是否忽略大小写
     boolean m_bMoved;  //有新动作
@@ -691,7 +690,7 @@ public class myGameView extends Activity {
                 m_cArray[i2][j2] = '$';
             else {
                 m_cArray[i2][j2] = '*';
-                m_nDstOK++;
+                m_nGoals_OK++;
             }
             //箱子编号
             m_iBoxNum[i2][j2] = m_iBoxNum[i][j];
@@ -703,7 +702,7 @@ public class myGameView extends Activity {
                 m_cArray[i][j] = '@';
             else {
                 m_cArray[i][j] = '+';
-                m_nDstOK--;
+                m_nGoals_OK--;
             }
             if (m_cArray[m_nRow][m_nCol] == '@')
                 m_cArray[m_nRow][m_nCol] = '-';
@@ -840,13 +839,13 @@ public class myGameView extends Activity {
                     m_cArray[m_nRow][m_nCol] = '$';
                 else {
                     m_cArray[m_nRow][m_nCol] = '*';
-                    m_nDstOK++;
+                    m_nGoals_OK++;
                 }
                 if (m_cArray[i2][j2] == '$')
                     m_cArray[i2][j2] = '-';
                 else {
                     m_cArray[i2][j2] = '.';
-                    m_nDstOK--;
+                    m_nGoals_OK--;
                 }
                 //箱子编号
                 m_iBoxNum[m_nRow][m_nCol] = m_iBoxNum[i2][j2];
@@ -1019,13 +1018,13 @@ public class myGameView extends Activity {
                 bk_cArray[m_nRow2][m_nCol2] = '$';
             else {
                 bk_cArray[m_nRow2][m_nCol2] = '*';
-                m_nDstOK2++;
+                m_nGoals_OK_2++;
             }
             if (bk_cArray[i2][j2] == '$')
                 bk_cArray[i2][j2] = '-';
             else {
                 bk_cArray[i2][j2] = '.';
-                m_nDstOK2--;
+                m_nGoals_OK_2--;
             }
 
             m_iR10 = m_nRow2;  //决定是否有必要进行死锁判断
@@ -1150,14 +1149,14 @@ public class myGameView extends Activity {
                     bk_cArray[i2][j2] = '$';
                 else {
                     bk_cArray[i2][j2] = '*';
-                    m_nDstOK2++;
+                    m_nGoals_OK_2++;
                 }
                 //再动人
                 if (bk_cArray[i][j] == '$')
                     bk_cArray[i][j] = '@';
                 else {
                     bk_cArray[i][j] = '+';
-                    m_nDstOK2--;
+                    m_nGoals_OK_2--;
                 }
                 if (bk_cArray[m_nRow2][m_nCol2] == '@')
                     bk_cArray[m_nRow2][m_nCol2] = '-';
@@ -1791,7 +1790,7 @@ public class myGameView extends Activity {
         if (flg) ls_cArray = bk_cArray;  //即景正推模式且尚未正逆相合
         else ls_cArray = m_cArray0;  //标准正推模式
 
-        m_nDstOK = 0;
+        m_nGoals_OK = 0;
         char ch;
         boolean flg2;
         for (int i = 0; i < myMaps.curMap.Rows; i++) {
@@ -1833,7 +1832,7 @@ public class myGameView extends Activity {
                         if (!flg2) m_cArray[i][j] = '@';
                         break;
                 }
-                if (m_cArray[i][j] == '*') m_nDstOK++;
+                if (m_cArray[i][j] == '*') m_nGoals_OK++;
             }
         }
     }
@@ -1849,7 +1848,7 @@ public class myGameView extends Activity {
         if (flg) ls_cArray = m_cArray;  //即景逆推模式
         else ls_cArray = m_cArray0;  //标准逆推模式
 
-        m_nDstOK2 = 0;
+        m_nGoals_OK_2 = 0;
         char ch;
         boolean flg2;
         for (int i = 0; i < myMaps.curMap.Rows; i++) {
@@ -1885,7 +1884,7 @@ public class myGameView extends Activity {
                         if (!flg2) bk_cArray[i][j] = '@';
                         break;
                 }
-                if (bk_cArray[i][j] == '*') m_nDstOK2++;
+                if (bk_cArray[i][j] == '*') m_nGoals_OK_2++;
             }
         }
     }
@@ -1966,10 +1965,10 @@ public class myGameView extends Activity {
 
         //箱子自动编号，统计目标点及完成数
         short box_Num = 0;
-        m_nDstNum = 0;
-        m_nDstOK = 0;
-        m_nDstNum2 = 0;
-        m_nDstOK2 = 0;
+        m_nGoals = 0;
+        m_nGoals_OK = 0;
+        m_nGoals_2 = 0;
+        m_nGoals_OK_2 = 0;
         for (int i = 0; i < nRows; i++) {
             for (j = 0; j < nCols; j++) {
                 switch (level[i][j]) {
@@ -1978,21 +1977,21 @@ public class myGameView extends Activity {
                             box_Num++;
                             m_iBoxNum2[i][j] = box_Num;
                         }
-                        m_nDstNum2++;
+                        m_nGoals_2++;
                         break;
                     case '*':
                         if (Mark[i][j]) {
                             box_Num++;
                             m_iBoxNum2[i][j] = box_Num;
                         }
-                        m_nDstOK++;
-                        m_nDstNum++;
-                        m_nDstOK2++;
-                        m_nDstNum2++;
+                        m_nGoals_OK++;
+                        m_nGoals++;
+                        m_nGoals_OK_2++;
+                        m_nGoals_2++;
                         break;
                     case '.':
                     case '+':
-                        m_nDstNum++;
+                        m_nGoals++;
                         break;
                 }
             }
@@ -2073,7 +2072,7 @@ public class myGameView extends Activity {
                             bk_cArray[i][j] = '$';
                             break;
                         case '.':
-                            m_nDstNum++;
+                            m_nGoals++;
                             m_cArray[i][j] = ch;
                             m_cArray0[i][j] = ch;
                             bk_cArray[i][j] = '$';
@@ -2583,7 +2582,7 @@ public class myGameView extends Activity {
     //正推通关
     private boolean myClearance() {
         //判断是否过关
-        if ((myMaps.m_Sets[25] == 0 || m_iStep[2] <= 0) && m_nDstOK == m_nDstNum && m_iStep[0] > 0)
+        if ((myMaps.m_Sets[25] == 0 || m_iStep[2] <= 0) && m_nGoals_OK == m_nGoals && m_iStep[0] > 0)
             return true;
         return false;
     }
@@ -2591,7 +2590,7 @@ public class myGameView extends Activity {
     //逆推通关
     private boolean myClearance2() {
         //判断是否过关，逆推时，需要仓管员最后能回到正推地图中仓管员的初始位置
-        if ((myMaps.m_Sets[13] == 0 || m_iStep[0] <= 0) && m_nDstOK2 == m_nDstNum2 && m_iStep[2] > 0 && mPathfinder.manTo2(true, bk_cArray, -1, -1, m_nRow2, m_nCol2, m_nRow3, m_nCol3))
+        if ((myMaps.m_Sets[13] == 0 || m_iStep[0] <= 0) && m_nGoals_OK_2 == m_nGoals_2 && m_iStep[2] > 0 && mPathfinder.manTo2(true, bk_cArray, -1, -1, m_nRow2, m_nCol2, m_nRow3, m_nCol3))
             return true;
         return false;
     }
@@ -2860,7 +2859,7 @@ public class myGameView extends Activity {
 
     //解析正推 reDo 动作节点 -- 每推一个箱子为一个动作
     private int getStep(LinkedList<Byte> m_lstMove) {
-        if (m_nDstNum == 1) return m_lstMove.size();
+        if (m_nGoals == 1) return m_lstMove.size();
 
         int len = m_lstMove.size();
 
@@ -2945,7 +2944,7 @@ public class myGameView extends Activity {
 
     //解析正推 unDo 动作节点 -- 每推一个箱子为一个动作
     private int getStep2(LinkedList<Byte> m_lstMove) {
-        if (m_nDstNum == 1) return m_lstMove.size();
+        if (m_nGoals == 1) return m_lstMove.size();
 
         int len = m_lstMove.size();
 
@@ -3572,7 +3571,7 @@ public class myGameView extends Activity {
                 return true;
             case R.id.player_save:  //保存状态
                 if (m_lstMovUnDo.size() > 0 || m_lstMovUnDo2.size() > 0) {
-                    if ((myMaps.m_Sets[25] == 0 || m_iStep[2] <= 0) && m_nDstOK == m_nDstNum && m_iStep[0] > 0 && myMaps.curMap.Level_id > 0)  //箱子 == 目标 && 动过箱子，非试推状态
+                    if ((myMaps.m_Sets[25] == 0 || m_iStep[2] <= 0) && m_nGoals_OK == m_nGoals && m_iStep[0] > 0 && myMaps.curMap.Level_id > 0)  //箱子 == 目标 && 动过箱子，非试推状态
                         saveAns(1);
                     else
                         saveAns(0);
@@ -3982,7 +3981,7 @@ public class myGameView extends Activity {
                 StringBuilder s_XSB1 = new StringBuilder();  //关卡正推现场
                 StringBuilder s_XSB8 = new StringBuilder();  //关卡正推现场 -- 旋转
                 StringBuilder s_Lurd = new StringBuilder();  //Lurd
-                boolean isANS = (m_nDstOK == m_nDstNum);
+                boolean isANS = (m_nGoals_OK == m_nGoals);
 
                 //关卡初态
                 s_XSB.append(myMaps.curMap.Map).append("\nTitle: ").append(myMaps.curMap.Title).append("\nAuthor: ").append(myMaps.curMap.Author);
@@ -4067,7 +4066,7 @@ public class myGameView extends Activity {
                 }
 
                 boolean[] my_Rule = new boolean[myMaps.curMap.Cols * myMaps.curMap.Rows];
-                short[] my_BoxNum = new short[m_nDstNum];  //按箱子数定义一个数字，记录“自动箱子编号”，以方便转换“人工箱子编号”
+                short[] my_BoxNum = new short[m_nGoals];  //按箱子数定义一个数字，记录“自动箱子编号”，以方便转换“人工箱子编号”
                 for (int i = 0; i < myMaps.curMap.Rows; i++) {
                     for (int j = 0; j < myMaps.curMap.Cols; j++) {
                         my_Rule[myMaps.curMap.Cols*i+j] = mark44[i][j];

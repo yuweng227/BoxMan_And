@@ -1721,7 +1721,7 @@ public class myEditView extends Activity {
             }
         }
         StringBuilder str = new StringBuilder();
-        str.append(" $:").append(m_nBoxs).append(" ·:").append(m_nDsts);
+        str.append(" B-").append(m_nBoxs).append(" G-").append(m_nDsts);
         return str.toString();
     }
 

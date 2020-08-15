@@ -175,15 +175,17 @@ public class DiagonalLock {
 
 						if (isAllGoalsAndWallsSequence) {
 							// 传入的是顶点行，且顶点行处存在特殊的死锁组合时
-							if (isTopBottomStarting && isNoGoalBox(neighborPosition + dy) && isNoGoalBox(boxPosition)) {
-								char ch = level[boxPosition / nWidth][boxPosition % nWidth];
-								level[boxPosition / nWidth][boxPosition % nWidth] = '-';
-								if (isZFreeze(boxPosition + dy, neighborPosition + dy)) {
-									level[boxPosition / nWidth][boxPosition % nWidth] = ch;
-									return true;
-								}
-								level[boxPosition / nWidth][boxPosition % nWidth] = ch;
-							}
+                            // 有时有误报，暂时屏蔽这个检查
+//							if (isTopBottomStarting && isNoGoalBox(neighborPosition + dy) && isNoGoalBox(boxPosition)) {
+//								char ch = level[boxPosition / nWidth][boxPosition % nWidth];
+//								level[boxPosition / nWidth][boxPosition % nWidth] = '-';
+//								if (isZFreeze(boxPosition + dy, neighborPosition + dy)) {
+//									level[boxPosition / nWidth][boxPosition % nWidth] = ch;
+//									System.out.println("============================= ");
+//									return true;
+//								}
+//								level[boxPosition / nWidth][boxPosition % nWidth] = ch;
+//							}
 							break cur_Diagonal;
 						}
 

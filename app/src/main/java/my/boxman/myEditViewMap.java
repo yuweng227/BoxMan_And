@@ -45,7 +45,7 @@ public class myEditViewMap extends View {
     public Matrix mCurrentMatrix = new Matrix();  //当前变换矩阵
     private Matrix mMapMatrix = new Matrix();  //onDraw()用的当前变换矩阵
     float m_fTop, m_fLeft, m_fScale, mScale;  //关卡图的当前上边界、左边界、缩放倍数；原始缩放倍数
-    public float mMaxScale = 3;   //最大缩放级别
+    public float mMaxScale = 5;   //最大缩放级别
     float[] values = new float[9];
 
     Rect rtKW    = new Rect();  //皮肤中，墙（通用）
@@ -667,7 +667,7 @@ public class myEditViewMap extends View {
                     ch == '.' && (myMaps.m_Sets[22] & 4) > 0 ||
                     (ch == '$' || ch == '*') && (myMaps.m_Sets[22] & 8) > 0 ||
                     (ch == '@' || ch == '+') && (myMaps.m_Sets[22] & 16) > 0) {
-                    mStr = String.valueOf(mGetCur2(i, j));  //标尺
+                    mStr = mGetCur2(i, j);  //标尺
                     myPaint.setTextSize(m_PicWidth /3);
                     myPaint.getTextBounds(mStr, 0, mStr.length(), rt0);
                     myPaint.setColor(myMaps.m_Sets[21]);
@@ -725,7 +725,7 @@ public class myEditViewMap extends View {
                 mStr = (m_nMapRight-m_nMapLeft+1)  + "列" + (m_nMapBottom-m_nMapTop+1) + "行" + m_Edit.getBoxs();  //关卡尺寸
             } else {
                 if (m_iR < 0 || m_iC < 0 || m_iR > (m_nMapBottom-m_nMapTop) || m_iC > (m_nMapRight-m_nMapLeft)) mStr = " ";
-                else mStr = String.valueOf(mGetCur(m_iR, m_iC));  //游标
+                else mStr = mGetCur(m_iR, m_iC);  //游标
             }
 
             //写关卡尺寸、游标
@@ -742,7 +742,7 @@ public class myEditViewMap extends View {
         int k = c / 26 + 64;
         if (k > 64) s.append((char) (byte) k);
 
-        s.append((char) ((byte) (c % 26 + 65))).append(String.valueOf(1 + r));
+        s.append((char) ((byte) (c % 26 + 65))).append(1 + r);
 
         return s.toString();
     }
@@ -755,7 +755,7 @@ public class myEditViewMap extends View {
         int k = c / 26 + 64;
         if (k > 64) s.append((char) (byte) k);
 
-        s.append((char) ((byte) (c % 26 + 65))).append(String.valueOf(1 + r));
+        s.append((char) ((byte) (c % 26 + 65))).append(1 + r);
 
         s.append(" [ ").append(c+1).append(", ").append(r+1).append(" ]");
 
