@@ -17,8 +17,10 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.TimeZone;
 
@@ -1727,29 +1729,19 @@ public class myGameViewMap extends View {
 
         // 在背景上显示当前时间
         if (myMaps.m_Sets[25] == 1) {
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
-
-            String week = myWeek[cal.get(Calendar.DAY_OF_WEEK)];
-            String hour;
-            if (cal.get(Calendar.AM_PM) == 0)
-                hour = String.valueOf(cal.get(Calendar.HOUR));
-            else
-                hour = String.valueOf(cal.get(Calendar.HOUR) + 12);
-            String minute = String.valueOf(cal.get(Calendar.MINUTE));
-//            String second = String.valueOf(cal.get(Calendar.SECOND));
-
-            String my_time = hour + ":" + minute + " 周" + week; // + ":" + second
+            Date dt = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm E");
+            String str_time = sdf.format(dt);
 
             myPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             ss = sp2px(myMaps.ctxDealFile, 30);
             myPaint.setTextSize(ss);
             myPaint.setStrokeWidth(3);
             myPaint.setARGB(255, 0, 0, 0);
-            canvas.drawText(my_time, 10, m_nArenaTop + ss + 30, myPaint);
+            canvas.drawText(str_time, 10, m_nArenaTop + ss + 30, myPaint);
             myPaint.setStrokeWidth(1);
             myPaint.setARGB(255, 255, 255, 255);
-            canvas.drawText(my_time, 10, m_nArenaTop + ss + 30, myPaint);
+            canvas.drawText(str_time, 10, m_nArenaTop + ss + 30, myPaint);
         }
 
         ss = sp2px(myMaps.ctxDealFile, 16);

@@ -6,7 +6,6 @@ package my.boxman;
  	private void showSystemUI() { ... }
  */
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -69,7 +68,7 @@ public class myGameView extends Activity {
     AlertDialog exitDlg3;
     AlertDialog lockDlg;
 
-    Timer myTimer;  // 背景时间定时器
+    Handler mHandler;  // 背景时间定时器
     RefreshHandler1 myTimer1;
     RefreshHandler2 myTimer2;
     RefreshHandler3 myTimer3;
@@ -1219,24 +1218,24 @@ public class myGameView extends Activity {
 
         hideSystemUI();  // 隐藏系统的那三个按钮
 
-        // 背景时间定时器
+        // 背景时间定时器，每3秒触发一次
         MyMINUTE = 0;
-        TimerTask task = new TimerTask() {
+        mHandler = new Handler();
+        mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (myMaps.m_Sets[25] == 1) {
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+            if (myMaps.m_Sets[25] == 1) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
 
-                    if (MyMINUTE != cal.get(Calendar.MINUTE)) {
-                        MyMINUTE = cal.get(Calendar.MINUTE);
-                        mMap.invalidate();
-                    }
+                if (MyMINUTE != cal.get(Calendar.MINUTE)) {
+                    MyMINUTE = cal.get(Calendar.MINUTE);
+                    if (mMap != null) mMap.invalidate();
                 }
             }
-        };
-        myTimer = new Timer();
-        myTimer.schedule(task,0,1000);                //启动定时器
+            mHandler.postDelayed(this, 3000);
+            }
+        }, 3000);
 
         myTimer1 = new RefreshHandler1();
         myTimer2 = new RefreshHandler2();
@@ -4896,9 +4895,9 @@ public class myGameView extends Activity {
             mTask = null;
         }
         StopMicro();
-        if (myTimer != null) {
-            myTimer.cancel();
-            myTimer = null;
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+            mHandler = null;
         }
         if (myTimer1 != null) {
             myTimer1.removeCallbacksAndMessages(null);
