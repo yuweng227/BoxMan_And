@@ -838,29 +838,9 @@ public class myEditView extends Activity {
                 final boolean checkedItems[] = {(myMaps.m_Sets[22] & 1) > 0, (myMaps.m_Sets[22] & 2) > 0, (myMaps.m_Sets[22] & 4) > 0, (myMaps.m_Sets[22] & 8) > 0, (myMaps.m_Sets[22] & 16) > 0};
                 Builder dlg2 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 dlg2.setView(view2).setCancelable(true);
-                dlg2.setOnKeyListener(new DialogInterface.OnKeyListener() {
-                    @Override
-                    public boolean onKey(DialogInterface di, int keyCode, KeyEvent event) {
-                        if(keyCode == KeyEvent.KEYCODE_ENTER){
-                            try {
-                                myMaps.m_Sets[21] = (mColor[0] << 16) | (mColor[0] << 8) | mColor[0] | 0xff000000;
-                                //关闭输入法
-                                InputMethodManager imm = (InputMethodManager)input_color.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                                if(imm.isActive()) imm.hideSoftInputFromWindow(input_color.getApplicationWindowToken(), 0 );
-                            } catch (Exception e) {
-                                MyToast.showToast(myEditView.this, "请按“AARRGGBB”格式输入颜色值！", Toast.LENGTH_SHORT);
-                            }
-                            return true;
-                        }
-                        return false;
-                    }
-                });
                 dlg2.setTitle("显示标尺的元素").setMultiChoiceItems(items, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                        //关闭输入法
-                        InputMethodManager imm = (InputMethodManager)input_color.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        if(imm.isActive()) imm.hideSoftInputFromWindow(input_color.getApplicationWindowToken(), 0 );
                         switch (which) {
                             case 0:
                                 if (isChecked) myMaps.m_Sets[22] |= 1;
@@ -892,7 +872,6 @@ public class myEditView extends Activity {
                             mMap.invalidate();
                             dialog.dismiss();
                         } catch (Exception e) {
-                            MyToast.showToast(myEditView.this, "请按“AARRGGBB”格式输入颜色值！", Toast.LENGTH_SHORT);
                         }
                     }
                 }).setCancelable(false).create().show();
@@ -1725,7 +1704,7 @@ public class myEditView extends Activity {
     public String getBoxs() {
         int m_nBoxs = 0, m_nDsts = 0;  //箱子数、目标数记录
         for (int r = mMap.m_nMapTop; r <= mMap.m_nMapBottom; r++) {
-            for (int c = mMap.m_nMapLeft; c < mMap.m_nMapRight; c++) {
+            for (int c = mMap.m_nMapLeft; c <= mMap.m_nMapRight; c++) {
                 switch (m_cArray[r][c]){
                     case '$':
                         m_nBoxs++;

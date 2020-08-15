@@ -65,7 +65,7 @@ public class myGameViewMap extends View {
     private Rect m_rPre;
     private Bitmap bitNext;
     private Bitmap bitPre;
-    private Rect m_rTrans;  //可以触发“即景模式切换”的区域
+    private Rect m_rTrans;  //可以触发“选择宏”的区域
     private Rect m_rPre_Skin;  //可以触发“上一个皮肤”的区域
     private Rect m_rNext_Skin;  //可以触发“下一个皮肤”的区域
     private Rect m_rPre_BK;  //可以触发“上一个背景”的区域
@@ -92,6 +92,10 @@ public class myGameViewMap extends View {
 
     public ArrayList<Integer> myMacro = new ArrayList<Integer>();
     public String myMacroInf = "";
+
+    //奇偶格位明暗度调整
+    boolean m_lParityBrightnessShade = false;
+    private Rect mrBrightnessShade, mrBrightnessShade2;
 
     //进度条
     boolean m_lGoto = false, m_lGoto2 = false;
@@ -139,7 +143,7 @@ public class myGameViewMap extends View {
 
         int w0 = m_rPre.right+8;
         int w = ((m_rNext.left-8) - w0) / 4;
-        m_rTrans.set(w0, 0, w0+w, m_nArenaTop-2); //即景模式切换
+        m_rTrans.set(w0, 0, w0+w, m_nArenaTop-2); //选择宏
         m_rProgress_Bar.set(w0+w, 0, w0+w*2-8, m_nArenaTop-2); //进度条
         m_rNext_Speed.set(w0+w*2, 0, w0+w*3-8, m_nArenaTop-2); //下一速度值
         m_rChangeBK.set(w0+w*3, 0, m_rNext.left-8, m_nArenaTop-2); //切换更改背景模式的区域
@@ -186,8 +190,6 @@ public class myGameViewMap extends View {
         m_rPre_BK.set(myMaps.m_nWinWidth-m_nArenaTop*4, m_nArenaTop*3/2, myMaps.m_nWinWidth-m_nArenaTop*2, m_nArenaTop*2+m_nArenaTop*3/2); //上一个背景
         m_rColor_BK.set(m_rPre_BK.left, m_rPre_BK.bottom, m_rPre_BK.right, m_rPre_BK.bottom+m_nArenaTop*2); //背景色
         m_rNext_BK.set(m_rPre_BK.left, m_rColor_BK.bottom, m_rPre_BK.right, m_rColor_BK.bottom+m_nArenaTop*2); //下一个背景
-//        m_rNext_BK.set(m_rPre_BK.left, m_rPre_BK.bottom, m_rPre_BK.right, m_rPre_BK.bottom+m_nArenaTop*2); //下一个背景
-//        m_rColor_BK.set(m_rPre_BK.left, m_rNext_BK.bottom, m_rPre_BK.right, m_rNext_BK.bottom+m_nArenaTop*2); //背景色
         m_rPre_Skin.set(m_rPre_BK.left-m_nArenaTop*2, m_rPre_BK.top+m_nArenaTop*2, m_rPre_BK.left, m_rPre_BK.top+m_nArenaTop*4); //上一个皮肤
         m_rNext_Skin.set(m_rPre_BK.right, m_rColor_BK.top, myMaps.m_nWinWidth, m_rColor_BK.bottom); //下一个皮肤
 
@@ -285,7 +287,7 @@ public class myGameViewMap extends View {
                     m_Game.m_bNetLock = false;  //取消网型提示
                     m_Game.DoEvent(4);  //redo
                 } else if (m_rTrans.contains((int) e.getX(), (int) e.getY())) {
-                    m_Game.DoEvent(12);  //“死锁提示”开关
+                    m_Game.DoEvent(12);  //“奇偶格位显示”开关
                 } else if (m_rProgress_Bar.contains((int) e.getX(), (int) e.getY())) {  //即景模式转换
                     if (m_Game.mMicroTask != null) return;
                     m_Game.m_nStep = 0;
@@ -1064,6 +1066,7 @@ public class myGameViewMap extends View {
                         rt.left = m_PicWidth * i;
                         rt.top = m_PicWidth * j;
                 }
+
                 rt.right = rt.left + m_PicWidth;
                 rt.bottom = rt.top + m_PicWidth;
                 if (m_Game.bt_BK.isChecked()) {
@@ -1107,23 +1110,21 @@ public class myGameViewMap extends View {
                 if (ch != '_' && ch != '#') {
                     rt1.set(0, 250-myMaps.isSkin_200, 50, 300-myMaps.isSkin_200);  //地板————第一层
                     canvas.drawBitmap(myMaps.skinBit, rt1, rt, myPaint);
+                    if (myMaps.m_Sets[38] == 1) {  // 区分奇偶格位显示
+                        if ((i + j) % 2 == 1) {    // 奇格位
+                            myPaint.setARGB(myMaps.m_Sets[40] * 5, 0, 0, 0);
+                        } else {                   // 偶格位
+                            myPaint.setARGB(myMaps.m_Sets[39] * 5, 255, 255, 255);
+                        }
+                        canvas.drawRect(rt, myPaint);
+                    }
+                    myPaint.setARGB(255, 0, 0, 0);
                     if (m_Game.bt_BK.isChecked()) {  //逆推水印————第二层
                         rt1.set(50, 200-myMaps.isSkin_200, 100, 250-myMaps.isSkin_200);
                         canvas.drawBitmap(myMaps.skinBit, rt1, rt, myPaint);
                     }
                     if (ch == '-' && myMaps.curMap.Title.equals("无效关卡")) {
                         canvas.drawBitmap(bitInvalid, rt.left, rt.top, myPaint);
-
-//                        mStr = j == 0 ? "无" : "效";
-//                        myPaint.setTextSize(m_PicWidth/2);
-//                        myPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-//                        myPaint.setARGB(255, 255, 255, 255);
-//                        myPaint.setStrokeWidth(5);
-//                        canvas.drawText(mStr, rt.left+m_PicWidth/4, rt.bottom-m_PicWidth/3, myPaint);
-//                        myPaint.setARGB(255, 0, 0, 0);
-//                        myPaint.setStrokeWidth(3);
-//                        canvas.drawText(mStr, rt.left+m_PicWidth/4, rt.bottom-m_PicWidth/3, myPaint);
-
                         continue;
                     }
                 }
@@ -1140,12 +1141,6 @@ public class myGameViewMap extends View {
                             rt1.set(0, 0, 50, 50);
                             canvas.drawBitmap(myMaps.skinBit, rt1, rt, myPaint);
                             myPaint.setARGB(127, 63, 63, 63);
-//                            myPaint.setStyle(Paint.Style.FILL);
-//                            rt3.set(rt.left + m_PicWidth / 6, rt.top + m_PicWidth / 4, rt.right - m_PicWidth / 6, rt.bottom - m_PicWidth / 4);
-//                            canvas.drawRect(rt3, myPaint);
-//                            myPaint.setARGB(255, 255, 255, 255);
-//                            myPaint.setTextSize(m_PicWidth / 4);
-//                            canvas.drawText(mGetCur(i, j), rt.left + m_PicWidth / 6 + (4 - mGetCur(i, j).length()) * m_PicWidth / 10, rt.bottom - m_PicWidth / 5 * 2, myPaint);
                         } else {
                             rt1 = getWall(rt1, i, j);  //计算使用哪个“墙”图
                             if (myMaps.isSkin_200 == 200 && myMaps.isHengping) {
@@ -1266,10 +1261,6 @@ public class myGameViewMap extends View {
                 } //end switch
 
                 if (myMaps.m_bBiaochi && (i == 0 || j == 0 || i == m_nRows-1 || j == m_nCols-1 || m_Game.mark44[i][j] && (!m_Game.bt_BK.isChecked() && m_Game.m_cArray[i][j] != '$' && m_Game.m_cArray[i][j] != '*'|| m_Game.bt_BK.isChecked() && m_Game.bk_cArray[i][j] != '$' && m_Game.bk_cArray[i][j] != '*'))) {   //标尺开关
-//                    myPaint.setARGB(127, 63, 63, 63);
-//                    myPaint.setStyle(Paint.Style.FILL);
-//                    rt3.set(rt.left + m_PicWidth / 6, rt.top + m_PicWidth / 4, rt.right - m_PicWidth / 6, rt.bottom - m_PicWidth / 4);
-//                    canvas.drawRect(rt3, myPaint);
                     if (i == 0 || j == 0 || i == m_nRows-1 || j == m_nCols-1) {
                         myPaint.setTextSize(m_PicWidth / 4);
                     } else {
@@ -1288,14 +1279,6 @@ public class myGameViewMap extends View {
                 }
 
                 myPaint.setARGB(255, 0, 0, 0);
-
-//                //格子分割线
-//                if (ch != '_' && ch != '#') {
-//                    myPaint.setARGB(255, 80, 80, 80);          //设置画笔颜色
-//                    myPaint.setStrokeWidth((float) 1.0);              //设置线宽
-//                    canvas.drawLine(rt.left, rt.top, rt.left, rt.bottom, myPaint);
-//                    canvas.drawLine(rt.left, rt.bottom, rt.right, rt.bottom, myPaint);
-//                }
 
                 //第五层显示————各类提示、标示等
                 if (m_Game.bt_BK.isChecked()) {  //逆推
@@ -1484,6 +1467,30 @@ public class myGameViewMap extends View {
             canvas.drawLine(stLeft, stTop+20, stLeft + cur, stTop+20, myPaint);
             myPaint.setStyle(Paint.Style.FILL);
             canvas.drawCircle(stLeft + cur, stTop + 20, 15, myPaint);
+        }
+
+        //奇偶格位明暗度调整条
+        if (m_lParityBrightnessShade) {
+            ss = sp2px(myMaps.ctxDealFile, 16);
+            myPaint.setARGB(255, 255, 255, 255);  //设置字体颜色
+            canvas.drawText("偶位格: ", 20, m_nArenaTop + mrBrightnessShade.top - ss / 2, myPaint);
+            canvas.drawText("奇位格: ", 20, m_nArenaTop + mrBrightnessShade2.top - ss / 2, myPaint);
+            myPaint.setARGB(223, 255, 255, 255);
+            canvas.drawRect(mrBrightnessShade, myPaint);
+            canvas.drawRect(mrBrightnessShade2, myPaint);
+            myPaint.setARGB(255, 0, 0, 150);
+            canvas.drawRect(mrBrightnessShade.left, mrBrightnessShade.top, mrBrightnessShade.left + (myMaps.m_Sets[39]+1) * 40, mrBrightnessShade.bottom, myPaint);
+            canvas.drawRect(mrBrightnessShade2.left, mrBrightnessShade2.top, mrBrightnessShade2.left + (myMaps.m_Sets[40]+1) * 40, mrBrightnessShade2.bottom, myPaint);
+            myPaint.setARGB(255, 255, 255, 255);  //设置字体颜色
+            canvas.drawText("" + myMaps.m_Sets[39], mrBrightnessShade.right + 15, m_nArenaTop + mrBrightnessShade.top - ss / 2, myPaint);
+            canvas.drawText("" + myMaps.m_Sets[40], mrBrightnessShade.right + 15, m_nArenaTop + mrBrightnessShade2.top - ss / 2, myPaint);
+
+            int c = m_nArenaTop + mrBrightnessShade.top + 15;
+            myPaint.setARGB(127, 255, 0, 255);  //设置字体颜色
+            canvas.drawRect(mrBrightnessShade.right + 90, mrBrightnessShade.top, mrBrightnessShade.right + ss + 150, mrBrightnessShade2.bottom, myPaint);
+            myPaint.setARGB(255, 255, 255, 255);  //设置字体颜色
+            canvas.drawText("默", mrBrightnessShade.right + 120, c - ss / 2, myPaint);
+            canvas.drawText("认", mrBrightnessShade.right + 120, c + ss / 2 + 30, myPaint);
         }
 
         //全屏时，在底部显示 undo、redo 两个按钮
@@ -1911,13 +1918,36 @@ public class myGameViewMap extends View {
                 }
             }
             return;
+        } else if (m_lParityBrightnessShade) {  // 奇偶位明暗度调整条
+            int v;
+            ss = sp2px(myMaps.ctxDealFile, 16);
+            if (mrBrightnessShade.contains(i, j)) {         // 偶位明暗度调整条
+                v = (i - mrBrightnessShade.left) / 40;
+                myMaps.m_Sets[39] = v;
+            } else if (mrBrightnessShade2.contains(i, j)) {  // 奇位明暗度调整条
+                v = (i - mrBrightnessShade2.left) / 40;
+                myMaps.m_Sets[40] = v;
+            } else if (i > mrBrightnessShade.right + 90 && i < mrBrightnessShade.right + ss + 150 && j > mrBrightnessShade.top && j < mrBrightnessShade2.bottom) {
+                myMaps.m_Sets[39] = 0;
+                myMaps.m_Sets[40] = 5;
+            } else if (i < mrBrightnessShade.left && j > mrBrightnessShade.top && j < mrBrightnessShade.bottom) {
+                if (i > mrBrightnessShade.left-30) myMaps.m_Sets[39] = 0;
+            } else if (i < mrBrightnessShade.left && j > mrBrightnessShade2.top && j < mrBrightnessShade2.bottom) {
+                if (i > mrBrightnessShade.left-30) myMaps.m_Sets[40] = 0;
+            } else if (i > mrBrightnessShade.right && j > mrBrightnessShade.top && j < mrBrightnessShade.bottom) {
+                if (i < mrBrightnessShade.right+30) myMaps.m_Sets[39] = 15;
+            } else if (i > mrBrightnessShade.right && j > mrBrightnessShade2.top && j < mrBrightnessShade2.bottom) {
+                if (i < mrBrightnessShade.right+30) myMaps.m_Sets[40] = 15;
+            }
+
+            if (j < mrBrightnessShade.top-30 || j > mrBrightnessShade2.bottom+30) {
+                m_lParityBrightnessShade = false;
+            } else {
+                return;
+            }
         } else if (j < m_nArenaTop) {
             mClickObj = '_';  //顶行信息栏内
             return;
-//        } else if (m_lChangeBK) {  //更换背景模式
-//            m_iC = -1;
-//            m_iR = -1;
-//            return;
         } else if (i < m_fLeft || j < m_fTop) {  //界外
             m_iC = -1;
             m_iR = -1;
@@ -2501,6 +2531,10 @@ public class myGameViewMap extends View {
         stBottom = stTop+60;
         mrProgressBar = new Rect(stLeft, stTop, stRight, stBottom);
 
+        // 明暗度调整条
+        mrBrightnessShade  = new Rect(220, m_nArenaTop + 50,  859, m_nArenaTop + 120);
+        mrBrightnessShade2 = new Rect(220, m_nArenaTop + 150, 859, m_nArenaTop + 220);
+
         invalidate();
     }
 
@@ -2558,8 +2592,7 @@ public class myGameViewMap extends View {
 
         s.append((char) ((byte) (c % 26 + 65))).append(String.valueOf(1 + r));
 
-        // 半位奇偶性
-
+        // 格子的奇偶性
         m_lEven = ((r + c) % 2 == 0);
 
         return s.toString();

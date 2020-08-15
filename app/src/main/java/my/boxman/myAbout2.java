@@ -168,43 +168,43 @@ public class myAbout2 extends Activity {
     		    	   	rt1.set(0, 0, 50, 50);
     		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
     			       	break;
-    			   case '-':
-    		    	   	rt1.set(0, 250, 50, 300);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
-    		           	break;
-    			   case '.':
-    		    	   	rt1.set(0, 250, 50, 300);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
-    		    	   	rt1.set(0, 300, 50, 350);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
-    		           	break;
-    			   case '$':
-    		    	   	rt1.set(0, 250, 50, 300);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
-    		    	   	rt1.set(50, 250, 100, 300);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
-    		           	break;
-    			   case '*':
-    		    	   	rt1.set(0, 250, 50, 300);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
-    		    	   	rt1.set(0, 300, 50, 350);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
-    		    	   	rt1.set(50, 300, 100, 350);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
-    		           	break;
-    			   case '@':
-    		    	   	rt1.set(0, 250, 50, 300);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
-    		    	   	rt1.set(100, 250, 150, 300);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
-    		           	break;
-    			   case '+':
-    		    	   	rt1.set(0, 250, 50, 300);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
-    		    	   	rt1.set(0, 300, 50, 350);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
-    		    	   	rt1.set(100, 300, 150, 350);
-    		    	   	cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+				   case '-':
+					   rt1.set(0, 250-myMaps.isSkin_200, 50, 300-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+					   break;
+				   case '.':
+					   rt1.set(0, 250-myMaps.isSkin_200, 50, 300-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+					   rt1.set(0, 300-myMaps.isSkin_200, 50, 350-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+					   break;
+				   case '$':
+					   rt1.set(0, 250-myMaps.isSkin_200, 50, 300-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+					   rt1.set(50, 250-myMaps.isSkin_200, 100, 300-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+					   break;
+				   case '*':
+					   rt1.set(0, 250-myMaps.isSkin_200, 50, 300-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+					   rt1.set(0, 300-myMaps.isSkin_200, 50, 350-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+					   rt1.set(50, 300-myMaps.isSkin_200, 100, 350-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+					   break;
+				   case '@':
+					   rt1.set(0, 250-myMaps.isSkin_200, 50, 300-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+					   rt1.set(100, 250-myMaps.isSkin_200, 150, 300-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+					   break;
+				   case '+':
+					   rt1.set(0, 250-myMaps.isSkin_200, 50, 300-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+					   rt1.set(0, 300-myMaps.isSkin_200, 50, 350-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
+					   rt1.set(100, 300-myMaps.isSkin_200, 150, 350-myMaps.isSkin_200);
+					   cvs.drawBitmap(myMaps.skinBit, rt1, rt, null);
     			   } //end switch
     			   rt.left = rt.left + m_Width;
     		   	}  //end for j

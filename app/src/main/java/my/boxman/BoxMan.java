@@ -16,7 +16,11 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.SpannedString;
 import android.text.method.NumberKeyListener;
+import android.text.style.AbsoluteSizeSpan;
 import android.util.DisplayMetrics;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -73,6 +77,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 	boolean andOpen = false;  //导入后是否允许打开关卡
 
 	private static String url = "http://sokoban.ws/api/competition/";
+	private static String url_Num;
 	private ProgressDialog dialog;
 
 	private mySplitLevelsFragment mDialog;
@@ -94,7 +99,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		setContentView(R.layout.main);
 
 		myMaps.res = getResources();
-		myMaps.m_Sets = new int[38]; //系统参数设置数组
+		myMaps.m_Sets = new int[41]; //系统参数设置数组
 
 		//路径设置
 		myMaps.sRoot = Environment.getExternalStorageDirectory().getPath();
@@ -696,7 +701,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 			myMaps.m_Sets[22] = 1;
 			myMaps.m_Sets[30] = 1;
 			myMaps.m_Sets[31] = 1;
-			myMaps.m_Sets[36] = 0;
+			myMaps.m_Sets[40] = 5;
 			myMaps.skin_File = "默认皮肤";
 			myMaps.bk_Pic = "使用背景色";
 			myMaps.nickname = "";
@@ -740,6 +745,9 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		myMaps.m_Sets[30] = Integer.parseInt(file.get("操作", "导出答案的注释信息", "1").toString());
 		myMaps.m_Sets[31] = Integer.parseInt(file.get("操作", "自动打开导入关卡", "1").toString());
 		myMaps.m_Sets[32] = Integer.parseInt(file.get("操作", "禁用逆推目标点", "0").toString());
+		myMaps.m_Sets[38] = Integer.parseInt(file.get("操作", "区分奇偶地板格", "0").toString());
+		myMaps.m_Sets[39] = Integer.parseInt(file.get("操作", "偶格位明暗度", "0").toString());
+		myMaps.m_Sets[40] = Integer.parseInt(file.get("操作", "奇格位明暗度", "5").toString());
 
 		myMaps.m_Sets[21] = Integer.parseInt(file.get("编辑", "关卡编辑中，图中标尺的字体颜色", "1677721600").toString());
 		myMaps.m_Sets[22] = Integer.parseInt(file.get("编辑", "关卡编辑中，携带标尺的元素", "1").toString());
@@ -759,6 +767,16 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 
 		if (myMaps.m_Sets[36] < 0 || myMaps.m_Sets[36] > 4) {
 			myMaps.m_Sets[36] = 0;
+		}
+		if (myMaps.m_Sets[39] < 0) {
+			myMaps.m_Sets[39] = 0;
+		} else if (myMaps.m_Sets[39] > 15) {
+			myMaps.m_Sets[39] = 15;
+		}
+		if (myMaps.m_Sets[40] < 0) {
+			myMaps.m_Sets[40] = 5;
+		} else if (myMaps.m_Sets[40] > 15) {
+			myMaps.m_Sets[40] = 15;
 		}
 	}
 
@@ -794,6 +812,9 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		file.set("操作", "导出答案的注释信息", myMaps.m_Sets[30]);
 		file.set("操作", "自动打开导入关卡", myMaps.m_Sets[31]);
 		file.set("操作", "禁用逆推目标点", myMaps.m_Sets[32]);
+		file.set("操作", "区分奇偶地板格", myMaps.m_Sets[38]);
+		file.set("操作", "偶格位明暗度", myMaps.m_Sets[39]);
+		file.set("操作", "奇格位明暗度", myMaps.m_Sets[40]);
 
 		file.set("编辑", "关卡编辑中，图中标尺的字体颜色", myMaps.m_Sets[21]);
 		file.set("编辑", "关卡编辑中，携带标尺的元素", myMaps.m_Sets[22]);
@@ -1557,13 +1578,76 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
                 read_Plate();
                 break;
             case 9:  //导入比赛关卡
-                myMaps.m_Set_id = myMaps.mSets3.get(childPos).id;
+				View view = View.inflate(this, R.layout.goto_dialog, null);
+				final EditText input_steps = (EditText) view.findViewById(R.id.dialog_steps);
+				final TextView input_steps_text = (TextView) view.findViewById(R.id.dialog_steps_text);
+				input_steps_text.setText("比赛期号：");
+				input_steps.setKeyListener(getNumber);
+				// 新建一个可以添加属性的文本对象
+				SpannableString ss = new SpannableString("默认最新一期的比赛");
+				// 新建一个属性对象,设置文字的大小
+				AbsoluteSizeSpan ass = new AbsoluteSizeSpan(15,true);
+				// 附加属性到文本
+				ss.setSpan(ass, 0, ss.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+				// 设置hint
+				input_steps.setHint(new SpannedString(ss)); // 一定要进行转换,否则属性会消失
 
-                dialog = new ProgressDialog(this);
-                dialog.setMessage("下载中...");
-                dialog.setCancelable(true);
-                new Thread(new MyThread()).start();
-                dialog.show();
+				AlertDialog.Builder dlg = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK);
+				dlg.setView(view).setCancelable(true);
+				dlg.setOnKeyListener(new DialogInterface.OnKeyListener() {
+					@Override
+					public boolean onKey(DialogInterface di, int keyCode, KeyEvent event) {
+						if(keyCode == KeyEvent.KEYCODE_ENTER){
+							try {
+								int n = Integer.parseInt(input_steps.getText().toString());
+								if (n > 0) {
+									url_Num = "?id=" + String.valueOf(n);
+								} else {
+									url_Num = "";
+								}
+							} catch (Exception e) {
+								url_Num = "";
+							}
+
+							di.dismiss();
+
+							myMaps.m_Set_id = myMaps.mSets3.get(childPos).id;
+
+							dialog = new ProgressDialog(BoxMan.this);
+							dialog.setMessage("下载中...");
+							dialog.setCancelable(true);
+							new Thread(new MyThread()).start();
+							dialog.show();
+							return true;
+						}
+						return false;
+					}
+				});
+				dlg.setTitle("导入比赛关卡").setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface di, int which) {
+						try {
+							int n = Integer.parseInt(input_steps.getText().toString());
+							if (n > 0) {
+								url_Num = "?id=" + String.valueOf(n);
+							} else {
+								url_Num = "";
+							}
+						} catch (Exception e) {
+							url_Num = "";
+						}
+
+						di.dismiss();
+
+						myMaps.m_Set_id = myMaps.mSets3.get(childPos).id;
+
+						dialog = new ProgressDialog(BoxMan.this);
+						dialog.setMessage("下载中...");
+						dialog.setCancelable(true);
+						new Thread(new MyThread()).start();
+						dialog.show();
+					}
+				}).setCancelable(false).create().show();
 
                 break;
 			case 10:  // 详细 == 关卡集的“关于...”
@@ -1622,7 +1706,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		@Override
 		public void run() {
 			HttpClient httpClient = new DefaultHttpClient();
-			HttpGet httpGet = new HttpGet(url);  // + "?id=112"
+			HttpGet httpGet = new HttpGet(url + url_Num);  // + "?id=112"
 			try {
 				HttpResponse httpResponse = httpClient.execute(httpGet);
 				int code = httpResponse.getStatusLine().getStatusCode();

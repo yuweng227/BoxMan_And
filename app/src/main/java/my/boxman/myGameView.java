@@ -1600,9 +1600,10 @@ public class myGameView extends Activity {
                 m_bYanshi = false;
                 m_bYanshi2 = false;
                 m_bBusing = false;
-                //关闭进度条
-                mMap.m_lGoto = false;
-                mMap.m_lGoto2 = false;
+                //关闭进度条、奇偶位明暗度调整条
+                mMap.m_lGoto = false;                   // 正推“跳至”
+                mMap.m_lGoto2 = false;                  // 逆推“跳至”
+                mMap.m_lParityBrightnessShade = false;  // 奇偶位明暗度调整
 
                 //计数控制
                 mMap.m_Count[0] = 0;  //正推箱子数
@@ -2126,8 +2127,10 @@ public class myGameView extends Activity {
             mMap.m_boxNoUsed = false;  //关闭未使用地板提示状态
             mMap.m_boxCanCome = false; //是否在提示可推过来的箱子状态
             mMap.m_boxCanCome2 = false;
-            mMap.m_lGoto = false;  //进度条
-            mMap.m_lGoto2 = false;
+            //关闭进度条、奇偶位明暗度调整条
+            mMap.m_lGoto = false;                   // 正推“跳至”
+            mMap.m_lGoto2 = false;                  // 逆推“跳至”
+            mMap.m_lParityBrightnessShade = false;  // 奇偶位明暗度调整
             myMaps.m_bBiaochi = false;
             myMaps.m_bBianhao = false;
 
@@ -2767,13 +2770,13 @@ public class myGameView extends Activity {
                     }
                 }
                 break;
-            case 12:  //“死锁提示”开关
-                if (myMaps.m_Sets[11] == 1) {
-                    myMaps.m_Sets[11] = 0;
-                    MyToast.showToast(myGameView.this, "死锁嗅探 - 关", Toast.LENGTH_SHORT);
+            case 12:  //“奇偶格模式”开关
+                if (myMaps.m_Sets[38] == 1) {
+                    myMaps.m_Sets[38] = 0;
+                    MyToast.showToast(myGameView.this, "奇偶格模式 - 关", Toast.LENGTH_SHORT);
                 } else {
-                    myMaps.m_Sets[11] = 1;
-                    MyToast.showToast(myGameView.this, "死锁嗅探 - 开", Toast.LENGTH_SHORT);
+                    myMaps.m_Sets[38] = 1;
+                    MyToast.showToast(myGameView.this, "奇偶格模式 - 开", Toast.LENGTH_SHORT);
                 }
                 break;
         }
@@ -3277,7 +3280,7 @@ public class myGameView extends Activity {
                     myMaps.curMap.Solved |= (m_Solution == 1);
                     MyToast.showToast(this, "答案有重复，未再保存！\n移动：" + (m_iStep[1] + m_lstMovReDo.size()) + "，推动：" + (m_iStep[0] + m_iStep[2]), Toast.LENGTH_LONG);
                 } else {
-                    MyToast.showToast(this, "状态有重复！", Toast.LENGTH_LONG);
+                    MyToast.showToast(this, "有重复，已重排！", Toast.LENGTH_LONG);
                 }
             } else {
                 myMaps.curMap.Solved |= (m_Solution == 1);
@@ -3671,7 +3674,8 @@ public class myGameView extends Activity {
                 String[] m_menu2 = {
                         "速度设置",
                         "更换皮肤",
-                        "更换背景"
+                        "更换背景",
+                        "奇偶格位明暗度"
                 };
                 Builder builder2 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 builder2.setTitle("设置").setSingleChoiceItems(m_menu2, -1, new OnClickListener() {
@@ -3783,6 +3787,11 @@ public class myGameView extends Activity {
                                     MyToast.showToast(myGameView.this, "没找到图片文档", Toast.LENGTH_SHORT);
                                 }
                                 break;
+                            case 3:   //奇偶格位明暗度条
+                                dialog.dismiss();
+                                mMap.m_lParityBrightnessShade = true;
+                                mMap.invalidate();
+                                break;
                         }  //end switch
                     }
                 }).setPositiveButton("返回", new OnClickListener() {
@@ -3799,6 +3808,7 @@ public class myGameView extends Activity {
                         "自动箱子编号",
                         "标尺",
                         "标尺不随关卡旋转",
+                        "区分奇偶地板格",
                         "死锁嗅探",
                         "可达提示",
                         "仓管员转向动画",
@@ -3818,6 +3828,7 @@ public class myGameView extends Activity {
                         myMaps.m_bBianhao,       //自动箱子编号
                         myMaps.m_bBiaochi,       //显示标尺
                         myMaps.m_Sets[9] == 1,   //标尺不随关卡旋转
+                        myMaps.m_Sets[38] == 1,   //区分奇偶地板格
                         myMaps.m_Sets[11] == 1,  //死锁提示
                         myMaps.m_Sets[8] == 1,   //显示可达提示
                         myMaps.m_Sets[27] == 1,  //仓管员转向动画
@@ -3858,12 +3869,16 @@ public class myGameView extends Activity {
                         if (mChk[2]) myMaps.m_Sets[9] = 1;
                         else myMaps.m_Sets[9] = 0;
 
+                        //区分奇偶地板格
+                        if (mChk[3]) myMaps.m_Sets[38] = 1;
+                        else myMaps.m_Sets[38] = 0;
+
                         //死锁提示
-                        if (mChk[3]) myMaps.m_Sets[11] = 1;
+                        if (mChk[4]) myMaps.m_Sets[11] = 1;
                         else myMaps.m_Sets[11] = 0;
 
                         //显示可达提示
-                        if (mChk[4]) {
+                        if (mChk[5]) {
                             myMaps.m_Sets[8] = 1;
                         } else {
                             myMaps.m_Sets[8] = 0;
@@ -3876,23 +3891,23 @@ public class myGameView extends Activity {
                         }
 
                         //仓管员转向动画
-                        if (mChk[5]) myMaps.m_Sets[27] = 1;
+                        if (mChk[6]) myMaps.m_Sets[27] = 1;
                         else myMaps.m_Sets[27] = 0;
 
                         //长按目标点提示关联网点及网口
-                        if (mChk[6]) myMaps.m_Sets[3] = 1;
+                        if (mChk[7]) myMaps.m_Sets[3] = 1;
                         else myMaps.m_Sets[3] = 0;
 
                         //是否“自动加载最新状态”
-                        if (mChk[7]) myMaps.m_Sets[37] = 1;
+                        if (mChk[8]) myMaps.m_Sets[37] = 1;
                         else myMaps.m_Sets[37] = 0;
 
                         //禁用逆推目标点
-                        if (mChk[8]) myMaps.m_Sets[32] = 1;
+                        if (mChk[9]) myMaps.m_Sets[32] = 1;
                         else myMaps.m_Sets[32] = 0;
 
                         //是否允许穿越
-                        if (mChk[9]) {
+                        if (mChk[10]) {
                             myMaps.m_Sets[17] = 1;
                             mMap.m_bManTo = false;
                             mMap.m_bManTo2 = false;
@@ -3913,11 +3928,11 @@ public class myGameView extends Activity {
                         }
 
                         //是否单步进退
-                        if (mChk[10]) myMaps.m_Sets[23] = 1;
+                        if (mChk[11]) myMaps.m_Sets[23] = 1;
                         else myMaps.m_Sets[23] = 0;
 
                         //是否显示进度条
-                        if (mChk[11]) {
+                        if (mChk[12]) {
                             if (bt_BK.isChecked()) {  //逆推
                                 mMap.m_lGoto2 = true;
                             } else {
@@ -3932,11 +3947,11 @@ public class myGameView extends Activity {
                         }
 
                         //自动爬阶梯
-                        if (mChk[12]) myMaps.m_Sets[29] = 1;
+                        if (mChk[13]) myMaps.m_Sets[29] = 1;
                         else myMaps.m_Sets[29] = 0;
 
                         //显示系统导航键
-                        if (mChk[13]) {
+                        if (mChk[14]) {
                             myMaps.m_Sets[16] = 1;
                             showSystemUI();
                         } else {
@@ -3945,15 +3960,15 @@ public class myGameView extends Activity {
                         }
 
                         //禁用全屏
-                        if (mChk[14]) myMaps.m_Sets[20] = 1;
+                        if (mChk[15]) myMaps.m_Sets[20] = 1;
                         else myMaps.m_Sets[20] = 0;
 
                         //演示时仅推动
-                        if (mChk[15]) myMaps.m_Sets[28] = 1;
+                        if (mChk[16]) myMaps.m_Sets[28] = 1;
                         else myMaps.m_Sets[28] = 0;
 
                         //使用音量键选择关卡
-                        if (mChk[16]) myMaps.m_Sets[15] = 1;
+                        if (mChk[17]) myMaps.m_Sets[15] = 1;
                         else myMaps.m_Sets[15] = 0;
 
                         BoxMan.saveSets();  //保存设置
@@ -4178,14 +4193,6 @@ public class myGameView extends Activity {
                 formatPath(data.getStringExtra("SOLUTION"), false);
                 MyToast.showToast(this, "答案已经载！", Toast.LENGTH_SHORT);
                 m_imPort_YASS = "[YASS]";
-//                mMap.invalidate();
-//                do {} while (m_Path_Formating);
-//                m_nStep = m_lstMovReDo.size();
-//                mMap.Box_Row0 = -1;  //记录箱子移动前的位置
-//                m_bYanshi = true;
-//                m_bYanshi2 = false;
-//                mMap.curMoves = 0;
-//                UpData1(1);
             } else {
                 MyToast.showToast(this, "未能完成求解！", Toast.LENGTH_SHORT);
             }
@@ -4216,7 +4223,7 @@ public class myGameView extends Activity {
             }
 
             //自动保存一下当前状态（自动查重），避免yass闪退造成丢失
-            if ((m_iStep[1] > 0 || m_iStep[3] > 0) && !mySQLite.m_SQL.count_S(myMaps.curMap.Level_id, m_iStep[1], m_iStep[0], m_iStep[3], m_iStep[2], m_nRow0, m_nCol0, myMaps.getCRC32(s1.toString()+s2.toString()))) {
+            if ((m_iStep[1] > 0 || m_iStep[3] > 0) && mySQLite.m_SQL.count_S(myMaps.curMap.Level_id, m_iStep[1], m_iStep[0], m_iStep[3], m_iStep[2], m_nRow0, m_nCol0, myMaps.getCRC32(s1.toString()+s2.toString())) <= 0) {
                 if (m_imPort_YASS.toLowerCase().indexOf("yass") >= 0) {
                     m_imPort_YASS = "[YASS]" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
                 } else if (m_imPort_YASS.toLowerCase().indexOf("导入") >= 0) {
@@ -4290,8 +4297,9 @@ public class myGameView extends Activity {
     protected void onStart() {
         super.onStart();
 
-        mMap.m_lGoto = false;
-        mMap.m_lGoto2 = false;
+        mMap.m_lGoto = false;                   // 正推“跳至”
+        mMap.m_lGoto2 = false;                  // 逆推“跳至”
+        mMap.m_lParityBrightnessShade = false;  // 奇偶位明暗度调整
         if (myMaps.m_StateIsRedy) {  //打开状态回来
 //            long exitTime = System.currentTimeMillis();
             OpenState();  //处理打开的状态
@@ -4435,7 +4443,9 @@ public class myGameView extends Activity {
             MyToast.showToast(this, "逆推不支持宏功能！", Toast.LENGTH_SHORT);
         } else {
             m_nItemSelect = -1;
-            mMap.m_lGoto = false;
+            //关闭进度条、奇偶位明暗度调整条
+            mMap.m_lGoto = false;                   // 正推“跳至”
+            mMap.m_lParityBrightnessShade = false;  // 奇偶位明暗度调整
             myMaps.mMacroList();
             if (myMaps.mFile_List.size() > 0) {
                 new Builder(this, AlertDialog.THEME_HOLO_DARK).setTitle("选择：宏").setCancelable(false)
@@ -4508,7 +4518,6 @@ public class myGameView extends Activity {
                         mMap.myMacro.clear();
                         mMap.myMacro.add(0);  //从第 0 行开始执行
                         myMaps.isMacroDebug = false;
-//                        myDo_Block(0, myMaps.sAction.length - 1, false, false);     //这里延迟较长
                         StopMicro();
                         mMicroTask = new RunMicroTask(myGameView.this);
                         mMicroTask.execute(0, myMaps.sAction.length - 1);

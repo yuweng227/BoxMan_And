@@ -24,9 +24,11 @@ public class myAbout extends Activity {
 		tv_help = (TextView)this.findViewById(R.id.tvHelp);
 		
 		String s = "《推箱快手》\n\n" +
-			   "  版本：9.94\n\n" +
+			   "  版本：9.95\n\n" +
 			   "  作者：愉翁    QQ：252804303\n\n" +
 			   "  策划：anian、愉翁\n\n" +
+			   "  网站：sokoban.cn\n\n" +
+			   "  QQ群：92017135\n\n" +
 			   "  特别感谢：anian老师和杨超教授及众多热心箱友，anian老师在游戏设计的全过程中，" +
 				"给出了大量的指导性意见，并进行了繁重的开发期测试，尤其在“割点”寻径及“穿越”寻径等算法方面，" +
 				"更是得到了两位老师不遗余力的支持和帮助，许多算法都是直接移植于杨超教授的“SokoPlayer HTML5”。" +

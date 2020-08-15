@@ -119,14 +119,22 @@ public class DiagonalLock {
 
 						if (isAllGoalsAndWallsSequence && isWall_Goal(current_Position)) {
 							// 传入的是顶点行，且顶点行处存在特殊的死锁组合时
-							if (isTopBottomStarting && isNoGoalBox(neighborPosition + dy) && isNoGoalBox(boxPosition)) {
+							int pos = neighborPosition + dy;
+							if (isTopBottomStarting && isNoGoalBox(pos) && isNoGoalBox(boxPosition)) {
 								char ch = level[boxPosition / nWidth][boxPosition % nWidth];
 								level[boxPosition / nWidth][boxPosition % nWidth] = '-';
-								if (isZFreeze(boxPosition + dy, neighborPosition + dy)) {
-									level[boxPosition / nWidth][boxPosition % nWidth] = ch;
-									return true;
-								}
+								boolean flg = isZFreeze(boxPosition + dy, pos);
 								level[boxPosition / nWidth][boxPosition % nWidth] = ch;
+
+								if (flg) {
+									ch = level[pos / nWidth][pos % nWidth];
+									level[pos / nWidth][pos % nWidth] = '-';
+									if (isZFreeze(boxPosition + dy, boxPosition)) {
+										level[pos / nWidth][pos % nWidth] = ch;
+										return true;
+									}
+									level[pos / nWidth][pos % nWidth] = ch;
+								}
 							}
 							break cur_Diagonal;
 						}

@@ -1075,8 +1075,19 @@ public class mySQLite {
 		} else {
 			m_crc = myMaps.getCRC32(Ans + bk_Ans);  //计算CRC最小转关卡的答案CRC
 			if (Solution == 0) {  //正常的状态保存，yass求解前的自动保存，Solution == 3
-				if (m_SQL.count_S(id, Moves, Pushs, Moves2, Pushs2, Row2, Col2, m_crc)) {
-					return 0L;  //状态已有过保存，不需要重复保存
+				long t_id = m_SQL.count_S(id, Moves, Pushs, Moves2, Pushs2, Row2, Col2, m_crc);
+				if (t_id > 0) {
+					//找到重复状态
+					Cursor cursor = mSDB.rawQuery("PRAGMA synchronous=OFF", null);
+					String sql = "UPDATE G_State SET G_DateTime = ? WHERE S_id = ?";
+					try {
+						cursor = mSDB.rawQuery(sql, new String[]{ Comment, String.valueOf(t_id) });
+						cursor.moveToNext();
+					} catch (Exception e) {
+					} finally {
+						if (cursor != null) cursor.close();
+					}
+					return 0L;  //状态已有过保存，仅更新一下保存时间，使它排到最前面
 				}
 			} else Solution = 0;
 		}
@@ -1122,7 +1133,7 @@ public class mySQLite {
 	}
 
 	//计数状态数  -- 检查状态有无重复
-	public boolean count_S(long l_id, int moves, int pushes, int moves2, int pushes2, int row2, int col2, long CRC) {
+	public long count_S(long l_id, int moves, int pushes, int moves2, int pushes2, int row2, int col2, long CRC) {
 		Cursor cursor = mSDB.rawQuery("PRAGMA synchronous=OFF", null);
 		String where = "P_id = ? AND G_Moves = ? AND G_Pushs = ? AND G_Moves2 = ? AND G_Pushs2 = ? AND G_Row2 = ? AND G_Col2 = ? AND S_CRC = ? AND G_Solution = 0";
 		String[] whereValue = {Long.toString(l_id), Integer.toString(moves), Integer.toString(pushes), Integer.toString(moves2), Integer.toString(pushes2), Integer.toString(row2), Integer.toString(col2), Long.toString(CRC)};
@@ -1130,12 +1141,12 @@ public class mySQLite {
 		long num = 0;
 		try {
 			cursor = mSDB.query("G_State", null, where, whereValue, null, null, null);
-			if (cursor.moveToNext()) num = cursor.getCount();
+			if (cursor.moveToNext()) num = cursor.getLong(cursor.getColumnIndex("S_id"));   //.getCount();
 		} catch (Exception e) {
 		} finally {
 			if (cursor != null) cursor.close();
 		}
-		return num > 0;
+		return num;
 	}
 
 	//计数状态数
