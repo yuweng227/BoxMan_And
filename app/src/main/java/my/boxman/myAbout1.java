@@ -25,7 +25,9 @@ public class myAbout1 extends Activity {
 	 
 	 boolean flg = false;
 
-	 private TextWatcher watcher = new TextWatcher(){
+	private String  mMessage;
+
+	private TextWatcher watcher = new TextWatcher(){
 		@Override
 		public void afterTextChanged(Editable arg0) {
 			flg = true;
@@ -41,8 +43,12 @@ public class myAbout1 extends Activity {
 	 @Override
 	 protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		setContentView(R.layout.about);
+
+		//接收数据
+		Bundle bundle = this.getIntent ().getExtras ();
+		mMessage = bundle.getString ("mMessage");  //关卡数量
+
+	    setContentView(R.layout.about);
 		
         //开启标题栏的返回键
         ActionBar actionBar = getActionBar();
@@ -125,7 +131,7 @@ public class myAbout1 extends Activity {
 	@Override 
 	protected void onResume() {
 		super.onResume();
-		tv_Count.setText("关卡数: " + myMaps.m_lstMaps.size());
+		tv_Count.setText("关卡完成情况: " + mMessage);
 	}
 
 	@Override    

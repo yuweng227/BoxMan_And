@@ -432,6 +432,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 	};
 
 	public boolean onOptionsItemSelected(MenuItem mt) {
+		String msg;
 		switch (mt.getItemId()) {
 			//标题栏返回键功能
 			case android.R.id.home:
@@ -771,6 +772,18 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 			case R.id.levels_about:
 				//关卡集描述
 				Intent intent1 = new Intent();
+
+				//用Bundle携带数据
+				int n = 0, m = myMaps.m_lstMaps.size();
+				for(int i = 0; i < m; i++) {
+					if (myMaps.m_lstMaps.get(i).Solved) n++;
+				}
+				msg = n + "/" + m;
+
+				Bundle bundle = new Bundle();
+				bundle.putString("mMessage", msg);              //关卡数量
+				intent1.putExtras(bundle);
+
 				intent1.setClass(this, myAbout1.class);
 				startActivity(intent1);
 				return true;

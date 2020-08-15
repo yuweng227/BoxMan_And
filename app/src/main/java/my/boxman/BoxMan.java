@@ -367,7 +367,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 								if (input.equals("")) {
 									MyToast.showToast(BoxMan.this, "无效的名称！" + input, Toast.LENGTH_SHORT);
 								} else {
-									if (mySQLite.m_SQL.find_Set(input, myMaps.mSets3.get(childPos).id) > 0) {
+									if (mySQLite.m_SQL.find_Set(input, myMaps.mSets3.get(0).id) > 0) {
 										MyToast.showToast(BoxMan.this, "此名称已经存在！\n" + input, Toast.LENGTH_SHORT);
 										et.setText(input);
 										et.setSelection(input.length());
@@ -404,7 +404,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 							if (input.equals("")) {
 								MyToast.showToast(BoxMan.this, "无效的名称！\n" + input, Toast.LENGTH_SHORT);
 							} else {
-								if (myMaps.mSets3.size() > 0 && mySQLite.m_SQL.find_Set(input, myMaps.mSets3.get(childPos).id) > 0) {
+								if (myMaps.mSets3.size() > 0 && mySQLite.m_SQL.find_Set(input, myMaps.mSets3.get(0).id) > 0) {
 									MyToast.showToast(BoxMan.this, "此名称已经存在！\n" + input, Toast.LENGTH_SHORT);
 									et.setText(input);
 									et.setSelection(input.length());
@@ -700,6 +700,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 			myMaps.m_Sets[22] = 1;
 			myMaps.m_Sets[30] = 1;
 			myMaps.m_Sets[31] = 1;
+			myMaps.m_Sets[25] = 1;
 			myMaps.m_Sets[40] = 5;
 			myMaps.skin_File = "默认皮肤";
 			myMaps.bk_Pic = "使用背景色";
@@ -726,6 +727,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		myMaps.m_Sets[4] = Integer.parseInt(file.get("界面", "背景色", "0").toString());
 		myMaps.skin_File = file.get("界面", "皮肤", "默认皮肤").toString();
 		myMaps.bk_Pic = file.get("界面", "背景图片", "使用背景色").toString();
+		myMaps.m_Sets[25] = Integer.parseInt(file.get("界面", "背景时间", "1").toString());
 
 		myMaps.m_Sets[6] = Integer.parseInt(file.get("速度", "瞬移状态", "0").toString());
 		myMaps.m_Sets[10] = Integer.parseInt(file.get("速度", "移动速度", "3").toString());
@@ -793,6 +795,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		file.set("界面", "背景色", myMaps.m_Sets[4]);
 		file.set("界面", "皮肤", myMaps.skin_File);
 		file.set("界面", "背景图片", myMaps.bk_Pic);
+		file.set("界面", "背景时间", myMaps.m_Sets[25]);
 
 		file.set("速度", "瞬移状态", myMaps.m_Sets[6]);
 		file.set("速度", "移动速度", myMaps.m_Sets[10]);
@@ -1651,6 +1654,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
                 break;
 			case 10:  // 详细 == 关卡集的“关于...”
 				long m_id = -1;
+				String msg;
 				switch (groupPos){
 					case 0:
 						m_id = myMaps.mSets0.get(childPos).id;
@@ -1669,8 +1673,15 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 						myMaps.sFile = myMaps.mSets3.get(childPos).title;
 				}
 				mySQLite.m_SQL.get_Set(m_id);
+				msg = mySQLite.m_SQL.count_Sovled(m_id) + "/" + mySQLite.m_SQL.count_Level(m_id);
 				//关卡集描述
 				Intent intent1 = new Intent();
+
+				//用Bundle携带数据
+				Bundle bundle = new Bundle();
+				bundle.putString("mMessage", msg);              //关卡数量
+				intent1.putExtras(bundle);
+
 				intent1.setClass(this, myAbout1.class);
 				startActivity(intent1);
 				break;

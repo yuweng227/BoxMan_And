@@ -6,6 +6,7 @@ package my.boxman;
  	private void showSystemUI() { ... }
  */
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -39,6 +40,7 @@ import java.io.FileOutputStream;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -46,6 +48,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Queue;
+import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,6 +69,7 @@ public class myGameView extends Activity {
     AlertDialog exitDlg3;
     AlertDialog lockDlg;
 
+    Timer myTimer;  // 背景时间定时器
     RefreshHandler1 myTimer1;
     RefreshHandler2 myTimer2;
     RefreshHandler3 myTimer3;
@@ -147,6 +153,8 @@ public class myGameView extends Activity {
     int m_nRow4;  //导入用，记录仓管员逆推地图之初始占位
     int m_nCol4;
     int m_nItemSelect;  //对话框中的出item选择前的记忆
+
+    int MyMINUTE;   // 记忆时钟的分钟数，用于更新背景时间
 
     class RefreshHandler1 extends Handler {
 
@@ -1211,6 +1219,25 @@ public class myGameView extends Activity {
 
         hideSystemUI();  // 隐藏系统的那三个按钮
 
+        // 背景时间定时器
+        MyMINUTE = 0;
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                if (myMaps.m_Sets[25] == 1) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+
+                    if (MyMINUTE != cal.get(Calendar.MINUTE)) {
+                        MyMINUTE = cal.get(Calendar.MINUTE);
+                        mMap.invalidate();
+                    }
+                }
+            }
+        };
+        myTimer = new Timer();
+        myTimer.schedule(task,0,1000);                //启动定时器
+
         myTimer1 = new RefreshHandler1();
         myTimer2 = new RefreshHandler2();
         myTimer3 = new RefreshHandler3();
@@ -2046,8 +2073,8 @@ public class myGameView extends Activity {
         mMap.m_lChangeBK = false;  //是否显示更换背景按钮
         myMaps.isRecording = false;  //关闭录制模式
         mMap.d_Moves = mMap.m_PicWidth;
-        myMaps.m_Sets[13] = 0;  //加载新的关卡时，关闭即景正推
-        levelReset(false);  //因为有了即景正推，计算静态死锁点中有正逆推的临时转换，影响正推箱子目标的复位，故此处特别进行正推关卡复位
+        myMaps.m_Sets[13] = 0;  //加载新的关卡时，关闭“互动双推”模式
+        levelReset(false);  //因为有了“互动双推”模式，计算静态死锁点中有正逆推的临时转换，影响正推箱子目标的复位，故此处特别进行正推关卡复位
 
         //舞台初始化
         mMap.initArena();
@@ -2504,7 +2531,7 @@ public class myGameView extends Activity {
                 mMap.m_iR = m_nRow;
                 mMap.m_iC = m_nCol;
             }
-            myMaps.m_Sets[13] = 0;  //正逆相合后，即可取消即景，否则影响正推答案演示
+            myMaps.m_Sets[13] = 0;  //正逆相合后，立刻关闭“互动双推”模式，否则影响正推答案演示
         }
         return flg;
     }
@@ -2519,7 +2546,7 @@ public class myGameView extends Activity {
         m_bNetLock = false;  //取消网型提示
         mMap.invalidate();
         switch (act) {
-            case 0:  //即景模式转换
+            case 0:  //“互动双推”模式切换
                 if (myMaps.m_Sets[13] == 0) {
                     myMaps.m_Sets[13] = 1;
                 } else {
@@ -3271,7 +3298,7 @@ public class myGameView extends Activity {
         myMaps.m_StateIsRedy = false;
         try {
             levelReset(false);  //正推复位
-            myMaps.m_Sets[13] = 0;  //求解后，关闭即景正推
+            myMaps.m_Sets[13] = 0;  //求解后，关闭“互动双推”模式
 
             int len = myMaps.m_State.ans.length();
             if (len > 0) {
@@ -3678,6 +3705,7 @@ public class myGameView extends Activity {
                         "系统导航键",
                         "禁用全屏",
                         "演示时仅推动",
+                        "在背景上显示当前时间",
                         "音量键选择关卡"
                 };
                 final boolean[] mChk = {
@@ -3698,6 +3726,7 @@ public class myGameView extends Activity {
                         myMaps.m_Sets[16] == 1,  //显示系统虚拟按键
                         myMaps.m_Sets[20] == 1,  //禁用全屏
                         myMaps.m_Sets[28] == 1,  //演示时仅推动
+                        myMaps.m_Sets[25] == 1,  //在背景上显示当前时间
                         myMaps.m_Sets[15] == 1   //音量键选择关卡
                 };
 
@@ -3823,8 +3852,12 @@ public class myGameView extends Activity {
                         if (mChk[16]) myMaps.m_Sets[28] = 1;
                         else myMaps.m_Sets[28] = 0;
 
+                        //在背景上显示当前时间
+                        if (mChk[17]) myMaps.m_Sets[25] = 1;
+                        else myMaps.m_Sets[25] = 0;
+
                         //使用音量键选择关卡
-                        if (mChk[17]) myMaps.m_Sets[15] = 1;
+                        if (mChk[18]) myMaps.m_Sets[15] = 1;
                         else myMaps.m_Sets[15] = 0;
 
                         BoxMan.saveSets();  //保存设置
@@ -4411,6 +4444,7 @@ public class myGameView extends Activity {
             {"d", "r", "u", "l", "D", "R", "U", "L"},
             {"l", "d", "r", "u", "L", "D", "R", "U"},
             {"u", "l", "d", "r", "U", "L", "D", "R"}};
+
     private void doACT(String myACT){
         if (myMaps.m_ActionIsTrun) {  //根据关卡的旋转状态，转换动作串
 
@@ -4862,6 +4896,10 @@ public class myGameView extends Activity {
             mTask = null;
         }
         StopMicro();
+        if (myTimer != null) {
+            myTimer.cancel();
+            myTimer = null;
+        }
         if (myTimer1 != null) {
             myTimer1.removeCallbacksAndMessages(null);
             myTimer1 = null;
@@ -5523,6 +5561,8 @@ public class myGameView extends Activity {
         private final WeakReference<myGameView> mViewReference2;
         private long myTime, myTime0;  //计算两次刷新时间间隔及总耗时
         private final int[] mySpeed = {0, 200, 300, 500, 1000};
+        private final String[] msg = {"", "正推通关！", "正逆相合！", "逆推通关！"};
+        private int type;
 
         public RunMicroTask(myGameView mView) {
             super();
@@ -5534,6 +5574,7 @@ public class myGameView extends Activity {
             super.onPreExecute();
             myTime0 = System.currentTimeMillis();  //开始时间
             myTime  = myTime0;
+            type = 0;
         }
 
         @SuppressLint("WrongThread")
@@ -5586,6 +5627,30 @@ public class myGameView extends Activity {
                         publishProgress();
                     }
                 }
+                if (myMaps.curMap.Level_id > 0) {  // 常规推关卡时，导入动作后检查是否解关
+                    if (bt_BK.isChecked()) {  // 逆推
+                        if (myClearance2()) {  // 逆推通关
+                            zhengniHE2();  // 逆推答案转为正推答案并保存
+                            saveAns2();
+                            type = 3;
+                        } else if (myMeet()) {  // 正逆相合
+                            zhengniHE();  // 合并正逆合答案并保存
+                            saveAns2();
+                            type = 2;
+                        }
+                    } else {
+                        if (myClearance()) {
+                            if (myMaps.curMap.Level_id > 0) {
+                                saveAns(1);  // 解关答案的保存
+                                type = 1;
+                            }
+                        } else if (myMeet()) {  // 正逆相合
+                            zhengniHE();  // 合并正逆合答案并保存
+                            saveAns2();
+                            type = 2;
+                        }
+                    }
+                }
                 return null;
             } catch (ArrayIndexOutOfBoundsException ex) {
             } catch (OutOfMemoryError ex) {
@@ -5606,7 +5671,7 @@ public class myGameView extends Activity {
                 mMap.invalidate();
                 m_bBusing = false;
                 myMaps.m_ActionIsRedy = false;
-                MyToast.showToast(myGameView.this, "耗时 " + ((myTime - myTime0) / 1000) + " 秒", Toast.LENGTH_SHORT);
+                MyToast.showToast(myGameView.this, msg[type] + "耗时 " + ((myTime - myTime0) / 1000) + " 秒", Toast.LENGTH_SHORT);
                 if (!m_lstMovReDo.isEmpty()) {  //仅正推
                     m_lstMovReDo.clear();
                 }

@@ -1,1 +1,20 @@
-[{"outputType":{"type":"APK"},"apkData":{"type":"MAIN","splits":[],"versionCode":9,"versionName":"9.98","enabled":true,"outputFile":"BoxMan9.98_20191122.apk","fullName":"release","baseName":"release"},"path":"BoxMan9.98_20191122.apk","properties":{}}]
+{
+  "version": 1,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "my.boxman",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "properties": [],
+      "versionCode": 9,
+      "versionName": "9",
+      "enabled": true,
+      "outputFile": "BoxMan9.99d_20200604.apk"
+    }
+  ]
+}

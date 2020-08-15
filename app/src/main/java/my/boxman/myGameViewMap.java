@@ -18,7 +18,9 @@ import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedList;
+import java.util.TimeZone;
 
 public class myGameViewMap extends View {
 
@@ -288,16 +290,20 @@ public class myGameViewMap extends View {
                     m_Game.DoEvent(4);  //redo
                 } else if (m_rTrans.contains((int) e.getX(), (int) e.getY())) {
                     m_Game.DoEvent(12);  //“奇偶格位显示”开关
-                } else if (m_rProgress_Bar.contains((int) e.getX(), (int) e.getY())) {  //即景模式转换
+                } else if (m_rProgress_Bar.contains((int) e.getX(), (int) e.getY())) {  //“互动双推”模式转换
                     if (m_Game.mMicroTask != null) return;
                     m_Game.m_nStep = 0;
                     m_Game.m_bYanshi = false;
                     m_Game.m_bYanshi2 = false;
-                    m_Game.DoEvent(0);   //即景模式转换
+                    m_Game.DoEvent(0);   //“互动双推”模式转换
                 } else if (m_rNext_Speed.contains((int) e.getX(), (int) e.getY())) {  //“自动箱子编号”开关
                     myMaps.m_bBianhao = !myMaps.m_bBianhao;
                 } else if (m_rChangeBK.contains((int) e.getX(), (int) e.getY())) {  //“标尺”开关
                     myMaps.m_bBiaochi = !myMaps.m_bBiaochi;
+                } else if (m_lChangeBK && m_rColor_BK.contains((int) e.getX(), (int) e.getY())) {  //背景时间
+                    if (myMaps.m_Sets[25] == 0) myMaps.m_Sets[25] = 1;
+                    else myMaps.m_Sets[25] = 0;
+                    invalidate();
                 } else if (!m_Game.bt_BK.isChecked() && (mClickObj == '*' || myMaps.m_Sets[3] == 1 && mClickObj == '.')) {  //长按点位上箱子，显示关联网点、网口
                     m_Game.m_Net_Inf(m_Game.m_cArray, m_iR, m_iC);  //计算网点、网口
                     m_Game.m_bNetLock = true;
@@ -1005,6 +1011,10 @@ public class myGameViewMap extends View {
             {0, 1, 4, 3, 2},
             {0, 2, 1, 4, 3}};
 
+    String[] myWeek = {
+            "","日","一","二","三","四","五","六"
+    };
+
     @Override
     public void onDraw(Canvas canvas) {
 
@@ -1012,6 +1022,7 @@ public class myGameViewMap extends View {
 
         if (myMaps.curMap == null) return;
 
+        // 显示背景色或背景图片
         if (myMaps.bk_Pic == null || myMaps.bk_Pic.length() <= 0 || myMaps.bk_Pic.equals("使用背景色")) {
             setBackgroundColor(myMaps.m_Sets[4]);  //设置背景色
         } else {
@@ -1022,6 +1033,8 @@ public class myGameViewMap extends View {
                 }
             }
         }
+
+        // 显示地图
         canvas.save();
         mCurrentMatrix.getValues(values);
         values[Matrix.MTRANS_Y] += m_nArenaTop;
@@ -1070,7 +1083,7 @@ public class myGameViewMap extends View {
                 rt.right = rt.left + m_PicWidth;
                 rt.bottom = rt.top + m_PicWidth;
 
-                if (myMaps.m_Sets[13] == 1) {  //即景模式
+                if (myMaps.m_Sets[13] == 1) {  //“互动双推”模式
                     if (m_Game.bt_BK.isChecked()) {
                         ch = m_Game.bk_cArray[i][j];  //逆推迷宫
                         if (m_Game.m_cArray[i][j] == '$' || m_Game.m_cArray[i][j] == '*'){
@@ -1122,7 +1135,7 @@ public class myGameViewMap extends View {
                             }
                         }
                     }
-                } else {   //非即景模式
+                } else {   //非“互动双推”模式
                     if (m_Game.bt_BK.isChecked()) {
                         ch = m_Game.bk_cArray[i][j];  //逆推迷宫
                         if (myMaps.m_Sets[32] == 1) {  //逆推时使用正推的目标点
@@ -1711,17 +1724,44 @@ public class myGameViewMap extends View {
                 canvas.drawText(mStr, rt4.left + (rt6.width()-rt8.width())/2, rt8.height()+hh*2, myPaint);
             }
         }
+
+        // 在背景上显示当前时间
+        if (myMaps.m_Sets[25] == 1) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+
+            String week = myWeek[cal.get(Calendar.DAY_OF_WEEK)];
+            String hour;
+            if (cal.get(Calendar.AM_PM) == 0)
+                hour = String.valueOf(cal.get(Calendar.HOUR));
+            else
+                hour = String.valueOf(cal.get(Calendar.HOUR) + 12);
+            String minute = String.valueOf(cal.get(Calendar.MINUTE));
+//            String second = String.valueOf(cal.get(Calendar.SECOND));
+
+            String my_time = hour + ":" + minute + " 周" + week; // + ":" + second
+
+            myPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+            ss = sp2px(myMaps.ctxDealFile, 30);
+            myPaint.setTextSize(ss);
+            myPaint.setStrokeWidth(3);
+            myPaint.setARGB(255, 0, 0, 0);
+            canvas.drawText(my_time, 10, m_nArenaTop + ss + 30, myPaint);
+            myPaint.setStrokeWidth(1);
+            myPaint.setARGB(255, 255, 255, 255);
+            canvas.drawText(my_time, 10, m_nArenaTop + ss + 30, myPaint);
+        }
+
         ss = sp2px(myMaps.ctxDealFile, 16);
         myPaint.setTextSize(ss);
-        if (myMaps.m_Sets[13] == 1) {  //即景模式
-            rt.set(getWidth()-ss*2-ss/2, m_nArenaTop, getWidth(), m_nArenaTop+ss+ss/2);
+        if (myMaps.m_Sets[13] == 1) {  //“互动双推”模式
+            rt.set(getWidth()-ss*4-ss/2, m_nArenaTop, getWidth(), m_nArenaTop+ss+ss/2);
             myPaint.setARGB(127, 0, 0, 0);
             myPaint.setStyle(Paint.Style.FILL);
             canvas.drawRect(rt, myPaint);
             myPaint.setARGB(255, 255, 255, 255);
-            canvas.drawText("即景", getWidth()-ss*2-4, m_nArenaTop+ss+4, myPaint);
+            canvas.drawText("互动双推", getWidth()-ss*4-4, m_nArenaTop+ss+4, myPaint);
         }
-
 
         if (!m_Game.bt_BK.isChecked() && m_Game.m_Gif_Start > 0) {
             mStr = "GIF 开始点：" + m_Game.m_Gif_Start;
