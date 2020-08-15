@@ -1331,9 +1331,6 @@ public class myGameView extends Activity {
                 } else {            //正推
                     if (myMaps.isMacroDebug) {
                         levelReset(false);  //正推关卡复位
-                        if (myMaps.m_Sets[25] == 1) {
-                            load_Level(true);  //加载即景正推目标点
-                        }
                         if (myMaps.m_ActionIsPos) {  //若执行“宏”选择了从当前点执行，则先将地图回复到当前点局面
                             Iterator myItr = m_lstMovedHistory.iterator();
                             m_lstMovReDo.clear();
@@ -1397,15 +1394,10 @@ public class myGameView extends Activity {
                 if (bt_BK.isChecked()) {  //逆推
                     MyToast.showToast(myGameView.this, "重新开始！", Toast.LENGTH_SHORT);
                     levelReset(true);  //逆推关卡复位
-                    if (myMaps.m_Sets[13] == 1)
-                        load_BK_Level(true);  //加载即景逆推目标点
 
                 } else {  //正推
                     MyToast.showToast(myGameView.this, "重新开始！", Toast.LENGTH_SHORT);
                     levelReset(false);  //正推关卡复位
-                    if (myMaps.m_Sets[25] == 1) {
-                        load_Level(true);  //加载即景正推目标点
-                    }
 
                     if (myMaps.m_ActionIsPos && myMaps.isMacroDebug) {  //若执行“宏”选择了从当前点执行，则先将地图回复到当前点局面
                         Iterator myItr = m_lstMovedHistory.iterator();
@@ -1569,7 +1561,6 @@ public class myGameView extends Activity {
                 m_bYanshi2 = false;
                 m_bACT_ERROR = false;  //执行动作时是否遇到错误
                 if (isChecked) {
-                    load_BK_Level(myMaps.m_Sets[13] == 1);  //加载逆推目标点（区分是否即景）
                     buttonView.setBackgroundColor(0xff445566);
                     if (m_nRow2 < 0 || m_nCol2 < 0) {  //首次进入逆推模式，需要确定仓管员位置
                         mMap.m_iR = m_nRow2;
@@ -1577,7 +1568,6 @@ public class myGameView extends Activity {
                         MyToast.showToast(myGameView.this, "需要给出仓管员的位置！", Toast.LENGTH_SHORT);
                     }
                 } else {
-                    load_Level(myMaps.m_Sets[25] == 1);  //加载正推目标点（区分是否即景）
                     buttonView.setBackgroundColor(0xff778899);
                     mMap.m_iR = m_nRow;
                     mMap.m_iC = m_nCol;
@@ -1777,116 +1767,6 @@ public class myGameView extends Activity {
         bt_TR.setText(myMaps.m_nTrun + " 转");
         initMap();
         ls_bk_cArray = bk_cArray;
-    }
-
-    //加载正推关卡目标点，flg 是否即景
-    private void load_Level(boolean flg) {
-        bt_Sel.setChecked(false);  //关闭计数状态
-        //复位进度条
-        mMap.curMoves = 0;
-
-        char[][] ls_cArray;
-
-        if (flg) ls_cArray = bk_cArray;  //即景正推模式且尚未正逆相合
-        else ls_cArray = m_cArray0;  //标准正推模式
-
-        m_nGoals_OK = 0;
-        char ch;
-        boolean flg2;
-        for (int i = 0; i < myMaps.curMap.Rows; i++) {
-            for (int j = 0; j < myMaps.curMap.Cols; j++) {
-                //扫描新现场目标点
-                flg2 = false;
-                ch = ls_cArray[i][j];
-                switch (ch) {
-                    case '*':  //一定是目标点
-                        flg2 = true;
-                        break;
-                    case '$':  //即景时，是目标点
-                        if (flg) flg2 = true;
-                        break;
-                    case '.':  //非即景时，是目标点
-                    case '+':
-                        if (!flg) flg2 = true;
-                        break;
-                }
-                //调整现场目标点
-                ch = m_cArray[i][j];
-                switch (ch) {
-                    case '-':
-                        if (flg2) m_cArray[i][j] = '.';
-                        break;
-                    case '$':
-                        if (flg2) m_cArray[i][j] = '*';
-                        break;
-                    case '@':
-                        if (flg2) m_cArray[i][j] = '+';
-                        break;
-                    case '.':
-                        if (!flg2) m_cArray[i][j] = '-';
-                        break;
-                    case '*':
-                        if (!flg2) m_cArray[i][j] = '$';
-                        break;
-                    case '+':
-                        if (!flg2) m_cArray[i][j] = '@';
-                        break;
-                }
-                if (m_cArray[i][j] == '*') m_nGoals_OK++;
-            }
-        }
-    }
-
-    //加载逆推关卡目标点，flg 标识是否即景
-    private void load_BK_Level(boolean flg) {
-        bt_Sel.setChecked(false);  //关闭计数状态
-        //复位进度条
-        mMap.curMoves2 = 0;
-
-        char[][] ls_cArray;
-
-        if (flg) ls_cArray = m_cArray;  //即景逆推模式
-        else ls_cArray = m_cArray0;  //标准逆推模式
-
-        m_nGoals_OK_2 = 0;
-        char ch;
-        boolean flg2;
-        for (int i = 0; i < myMaps.curMap.Rows; i++) {
-            for (int j = 0; j < myMaps.curMap.Cols; j++) {
-                //扫描新现场目标点
-                flg2 = false;
-                ch = ls_cArray[i][j];
-                switch (ch) {
-                    case '*':
-                    case '$':
-                        flg2 = true;
-                        break;
-                }
-                //调整现场目标点
-                ch = bk_cArray[i][j];
-                switch (ch) {
-                    case '-':
-                        if (flg2) bk_cArray[i][j] = '.';
-                        break;
-                    case '$':
-                        if (flg2) bk_cArray[i][j] = '*';
-                        break;
-                    case '@':
-                        if (flg2) bk_cArray[i][j] = '+';
-                        break;
-                    case '.':
-                        if (!flg2) bk_cArray[i][j] = '-';
-                        break;
-                    case '*':
-                        if (!flg2) bk_cArray[i][j] = '$';
-                        break;
-                    case '+':
-                        if (!flg2) bk_cArray[i][j] = '@';
-                        break;
-                }
-                if (bk_cArray[i][j] == '*') m_nGoals_OK_2++;
-            }
-        }
     }
 
     //标准正逆推关卡复位，用 flg 区分正逆推
@@ -2166,7 +2046,7 @@ public class myGameView extends Activity {
         mMap.m_lChangeBK = false;  //是否显示更换背景按钮
         myMaps.isRecording = false;  //关闭录制模式
         mMap.d_Moves = mMap.m_PicWidth;
-        myMaps.m_Sets[25] = 0;  //加载新的关卡时，关闭即景正推
+        myMaps.m_Sets[13] = 0;  //加载新的关卡时，关闭即景正推
         levelReset(false);  //因为有了即景正推，计算静态死锁点中有正逆推的临时转换，影响正推箱子目标的复位，故此处特别进行正推关卡复位
 
         //舞台初始化
@@ -2582,7 +2462,7 @@ public class myGameView extends Activity {
     //正推通关
     private boolean myClearance() {
         //判断是否过关
-        if ((myMaps.m_Sets[25] == 0 || m_iStep[2] <= 0) && m_nGoals_OK == m_nGoals && m_iStep[0] > 0)
+        if ((myMaps.m_Sets[13] == 0 || m_iStep[2] <= 0) && m_nGoals_OK == m_nGoals && m_iStep[0] > 0)
             return true;
         return false;
     }
@@ -2624,8 +2504,7 @@ public class myGameView extends Activity {
                 mMap.m_iR = m_nRow;
                 mMap.m_iC = m_nCol;
             }
-            myMaps.m_Sets[25] = 0;  //正逆相合后，即可取消即景正推，否则影响正推答案演示
-            load_Level(false);  //加载正常正推目标点（取消即景）
+            myMaps.m_Sets[13] = 0;  //正逆相合后，即可取消即景，否则影响正推答案演示
         }
         return flg;
     }
@@ -2641,23 +2520,12 @@ public class myGameView extends Activity {
         mMap.invalidate();
         switch (act) {
             case 0:  //即景模式转换
-                if (bt_BK.isChecked()) {
-                    if (myMaps.m_Sets[13] == 0) {
-                        myMaps.m_Sets[13] = 1;
-                        load_BK_Level(true);  //加载即景逆推关卡目标点
-                    } else {
-                        myMaps.m_Sets[13] = 0;
-                        load_BK_Level(false);  //加载标准逆推关卡目标点
-                    }
+                if (myMaps.m_Sets[13] == 0) {
+                    myMaps.m_Sets[13] = 1;
                 } else {
-                    if (myMaps.m_Sets[25] == 0) {
-                        myMaps.m_Sets[25] = 1;
-                        load_Level(true);  //加载即景正推目标点
-                    } else {
-                        myMaps.m_Sets[25] = 0;
-                        load_Level(false);  //加载标准正推目标点
-                    }
+                    myMaps.m_Sets[13] = 0;
                 }
+
                 mMap.invalidate();
                 break;
             case 1:  //推、移  -- 正推
@@ -2735,9 +2603,6 @@ public class myGameView extends Activity {
                             public void onClick(DialogInterface dialog, int which) {
                                 if (isBack.isChecked()) {  //回到宏打开前的关卡状态
                                     levelReset(false);  //正推关卡复位
-                                    if (myMaps.m_Sets[25] == 1) {
-                                        load_Level(true);  //加载即景正推目标点
-                                    }
                                 }
                                 myMaps.isMacroDebug = false;
                                 mMap.invalidate();
@@ -3406,8 +3271,7 @@ public class myGameView extends Activity {
         myMaps.m_StateIsRedy = false;
         try {
             levelReset(false);  //正推复位
-            myMaps.m_Sets[25] = 0;  //求解后，关闭即景正推
-            load_Level(false);  //加载即景正推目标点
+            myMaps.m_Sets[13] = 0;  //求解后，关闭即景正推
 
             int len = myMaps.m_State.ans.length();
             if (len > 0) {
@@ -3555,9 +3419,6 @@ public class myGameView extends Activity {
                                 public void onClick(DialogInterface dialog, int which) {
                                     if (isBack.isChecked()) {  //回到宏打开前的关卡状态
                                         levelReset(false);  //正推关卡复位
-                                        if (myMaps.m_Sets[25] == 1) {
-                                            load_Level(true);  //加载即景正推目标点
-                                        }
                                     }
                                     myMaps.isMacroDebug = false;
                                     mMap.invalidate();
@@ -3571,7 +3432,7 @@ public class myGameView extends Activity {
                 return true;
             case R.id.player_save:  //保存状态
                 if (m_lstMovUnDo.size() > 0 || m_lstMovUnDo2.size() > 0) {
-                    if ((myMaps.m_Sets[25] == 0 || m_iStep[2] <= 0) && m_nGoals_OK == m_nGoals && m_iStep[0] > 0 && myMaps.curMap.Level_id > 0)  //箱子 == 目标 && 动过箱子，非试推状态
+                    if ((myMaps.m_Sets[13] == 0 || m_iStep[2] <= 0) && m_nGoals_OK == m_nGoals && m_iStep[0] > 0 && myMaps.curMap.Level_id > 0)  //箱子 == 目标 && 动过箱子，非试推状态
                         saveAns(1);
                     else
                         saveAns(0);
@@ -3593,14 +3454,10 @@ public class myGameView extends Activity {
                             if (bt_BK.isChecked()) {  //逆推
                                 MyToast.showToast(myGameView.this, "重新开始！", Toast.LENGTH_SHORT);
                                 levelReset(true);  //逆推关卡复位
-                                if (myMaps.m_Sets[13] == 1)
-                                    load_BK_Level(true);  //加载即景逆推目标点
 
                             } else {  //正推
                                 MyToast.showToast(myGameView.this, "重新开始！", Toast.LENGTH_SHORT);
                                 levelReset(false);  //正推关卡复位
-                                if (myMaps.m_Sets[25] == 1)
-                                    load_Level(true);  //加载即景正推目标点
 
                                 if (myMaps.isMacroDebug) {
                                     mMap.myMacro.clear();
@@ -4310,12 +4167,12 @@ public class myGameView extends Activity {
                 int index2 = myMaps.sAction[0].indexOf("]");
 
                 int[] m_iPlayer2 = {-1, -1};  //记忆导入的坐标
-                if (index >= 0 && index2 >= 0) {  //解去除仓管员坐标，待用
+                if (index >= 0 && index2 >= 0) {  //解析仓管员坐标，待用
                     try {
                         String s = myMaps.sAction[0].substring(index + 1, index2);
                         String[] Arr = s.split(",");
-                        m_iPlayer2[0] = Integer.parseInt(Arr[1]);  // y -- 行
-                        m_iPlayer2[1] = Integer.parseInt(Arr[0]);  // x -- 列
+                        m_iPlayer2[0] = Integer.parseInt(Arr[1])-1;  // y -- 行
+                        m_iPlayer2[1] = Integer.parseInt(Arr[0])-1;  // x -- 列
 
                         //检查导入的坐标是否有效（须在图内且可以放置仓管员 -- 墙内、不是箱子）
                         if (m_iPlayer2[0] < 0 || m_iPlayer2[1] < 0 || m_iPlayer2[0] >= myMaps.curMap.Rows || m_iPlayer2[1] >= myMaps.curMap.Cols ||
@@ -4344,6 +4201,15 @@ public class myGameView extends Activity {
                             m_nRow0 = m_iPlayer2[0];
                             m_nCol0 = m_iPlayer2[1];
 
+                            //保险起见，清理逆推地图中的仓管员
+                            for (int i = 0; i < myMaps.curMap.Rows; i++) {
+                                for (int j = 0; j < myMaps.curMap.Cols; j++) {
+                                    if (bk_cArray[m_nRow2][m_nCol2] == '+')
+                                        bk_cArray[m_nRow2][m_nCol2] = '.';
+                                    else if (bk_cArray[m_nRow2][m_nCol2] == '@')
+                                        bk_cArray[m_nRow2][m_nCol2] = '-';
+                                }
+                            }
                             //此时一定能够放置仓管员，不能放置的情况，前面已经排除
                             if (bk_cArray[m_nRow2][m_nCol2] == '.')
                                 bk_cArray[m_nRow2][m_nCol2] = '+';
@@ -4363,6 +4229,15 @@ public class myGameView extends Activity {
                         m_nRow0 = m_iPlayer2[0];
                         m_nCol0 = m_iPlayer2[1];
 
+                        //保险起见，清理逆推地图中的仓管员
+                        for (int i = 0; i < myMaps.curMap.Rows; i++) {
+                            for (int j = 0; j < myMaps.curMap.Cols; j++) {
+                                if (bk_cArray[m_nRow2][m_nCol2] == '+')
+                                    bk_cArray[m_nRow2][m_nCol2] = '.';
+                                else if (bk_cArray[m_nRow2][m_nCol2] == '@')
+                                    bk_cArray[m_nRow2][m_nCol2] = '-';
+                            }
+                        }
                         //此时一定能够放置仓管员，不能放置的情况，前面已经排除
                         if (bk_cArray[m_nRow2][m_nCol2] == '.')
                             bk_cArray[m_nRow2][m_nCol2] = '+';
@@ -4381,9 +4256,6 @@ public class myGameView extends Activity {
                     //不是从当前点开始执行，则逆推关卡复位
                     if (!myMaps.m_ActionIsPos) {
                         levelReset(true);
-                        if (myMaps.m_Sets[13] == 1) {
-                            load_BK_Level(true);  //加载即景逆推目标点
-                        }
                     }
                     doACT(myMaps.sAction[0]);  //执行导入的动作
                 } else {  //不能为仓管员定位，导入作废
@@ -4408,9 +4280,6 @@ public class myGameView extends Activity {
 
                 if (!myMaps.m_ActionIsPos) {
                     levelReset(false);  //正推关卡复位
-                    if (myMaps.m_Sets[25] == 1) {
-                        load_Level(true);  //加载即景正推目标点
-                    }
                 }
 
                 //正推时，“宏”功能之初，记忆的仓管员坐标
@@ -4506,9 +4375,6 @@ public class myGameView extends Activity {
                         }
                         if (!myMaps.m_ActionIsPos) {
                             levelReset(false);  //正推关卡复位
-                            if (myMaps.m_Sets[25] == 1) {
-                                load_Level(true);  //加载即景正推目标点
-                            }
                         }
 
                         //正推时，“宏”功能之初，记忆的仓管员坐标

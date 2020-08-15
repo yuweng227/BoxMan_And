@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,7 +59,6 @@ public class mySubmitList extends Activity {
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(false);
-        actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title));
 
 		submit_expView = (ExpandableListView) findViewById(R.id.submit_explist);
 		submit_Adapter = new MyExpandableListView();
@@ -115,7 +115,7 @@ public class mySubmitList extends Activity {
 						long d = dateFormat.parse(myMaps.mMatchDate2).getTime();
 						if (d > System.currentTimeMillis()) {  // 比赛尚未过期
 							String[] arr = myMaps.mMatchDate2.split("-| |:");
-							setTitle(myMaps.mMatchNo + "，" + (arr[1].charAt(0) == '0' ? arr[1].charAt(1) : arr[1]) + "月" + (arr[2].charAt(0) == '0' ? arr[2].charAt(1) : arr[2]) + "日结束");
+							setTitle(myMaps.mMatchNo.substring(1, 5) + "，" + (arr[1].charAt(0) == '0' ? arr[1].charAt(1) : arr[1]) + "月" + (arr[2].charAt(0) == '0' ? arr[2].charAt(1) : arr[2]) + "日结束");
 						}
 					} catch (java.text.ParseException e) {
 						e.printStackTrace();
@@ -382,11 +382,27 @@ public class mySubmitList extends Activity {
 		}
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.submit_list, menu);
+		return true;
+	}
+
 	public boolean onOptionsItemSelected(MenuItem mt) {
 	    switch (mt.getItemId()) {
 		//菜单栏返回键功能
 		case android.R.id.home:
 			this.finish();
+
+			return true;
+		case R.id.submit_list_reload:  //刷新
+			mList1.clear();
+			mList2.clear();
+			dialog = new ProgressDialog(this);
+			dialog.setMessage("下载中...");
+			dialog.setCancelable(true);
+			new Thread(new mySubmitList.MyThread()).start();
+			dialog.show();
 
 			return true;
        default:

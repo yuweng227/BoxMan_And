@@ -42,8 +42,7 @@ public class mySolutionBrow extends Activity {
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(false);
-        actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title));
-        
+
         s_expView = (ExpandableListView) findViewById(R.id.s_explist);
         s_Adapter = new MyExpandableListView();
         s_expView.setAdapter(s_Adapter);

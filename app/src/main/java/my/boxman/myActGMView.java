@@ -76,7 +76,6 @@ public class myActGMView extends Activity {
          ActionBar actionBar = getActionBar();
          actionBar.setDisplayHomeAsUpEnabled(true);
          actionBar.setDisplayShowHomeEnabled(false);
-         actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title));
 		 setTitle("导入");
 
 		 //界面初始化

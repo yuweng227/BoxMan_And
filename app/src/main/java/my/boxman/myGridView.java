@@ -88,7 +88,6 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 
 		//开启标题栏的返回键
 		ActionBar actionBar = getActionBar();
-		actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title));
 		actionBar.setDisplayHomeAsUpEnabled(true);
 		actionBar.setDisplayShowHomeEnabled(false);
 
@@ -1325,7 +1324,12 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 						if(keyCode == KeyEvent.KEYCODE_ENTER){
 							try {
 								int n = Integer.parseInt(input_steps.getText().toString());
-								if (n > mGridView.getCount()) n = mGridView.getCount();
+								if (myMaps.m_Sets[2] == 0) {
+									if (n > mGridView.getCount()) n = mGridView.getCount();
+								} else {
+									if (n > mListView.getCount()) n = mListView.getCount();
+								}
+
 								if (n > 0 && n-1 != m_Num) {
 									try {
 										swap(myMaps.m_lstMaps, m_Num, n-1);
@@ -1336,7 +1340,11 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 										}
 										updateNO();  //关卡顺序改变
 										adapter.notifyDataSetChanged();
-										mGridView.setSelection(n-1);
+										if (myMaps.m_Sets[2] == 0) {
+											mGridView.setSelection(n - 1);
+										} else {
+											mListView.setSelection(n - 1);
+										}
 									} catch (Exception e) {
 										MyToast.showToast(myGridView.this, "出错了，移动失败！", Toast.LENGTH_SHORT);
 									}
@@ -1353,7 +1361,11 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 					public void onClick(DialogInterface dialog, int which) {
 						try {
 							int n = Integer.parseInt(input_steps.getText().toString());
-							if (n > mGridView.getCount()) n = mGridView.getCount();
+							if (myMaps.m_Sets[2] == 0) {
+								if (n > mGridView.getCount()) n = mGridView.getCount();
+							} else {
+								if (n > mListView.getCount()) n = mListView.getCount();
+							}
 							if (n > 0 && n-1 != m_Num) {
 								try {
 									swap(myMaps.m_lstMaps, m_Num, n-1);
@@ -1364,7 +1376,11 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 									}
 									updateNO();  //关卡顺序改变
 									adapter.notifyDataSetChanged();
-									mGridView.setSelection(n-1);
+									if (myMaps.m_Sets[2] == 0) {
+										mGridView.setSelection(n - 1);
+									} else {
+										mListView.setSelection(n - 1);
+									}
 								} catch (Exception e) {
 									MyToast.showToast(myGridView.this, "出错了，移动失败！", Toast.LENGTH_SHORT);
 								}

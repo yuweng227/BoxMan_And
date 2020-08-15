@@ -1069,42 +1069,98 @@ public class myGameViewMap extends View {
 
                 rt.right = rt.left + m_PicWidth;
                 rt.bottom = rt.top + m_PicWidth;
-                if (m_Game.bt_BK.isChecked()) {
-                    ch = m_Game.bk_cArray[i][j];  //逆推迷宫
-                    if (myMaps.m_Sets[32] == 1) {  //禁用逆推目标点
-                        switch (m_Game.m_cArray[i][j]) {
-                            case '.':
-                            case '*':
-                            case '+':
-                                switch (ch) {
-                                    case '-':
-                                        ch = '.';
-                                        break;
-                                    case '$':
-                                        ch = '*';
-                                        break;
-                                    case '@':
-                                        ch = '+';
-                                }
-                                break;
-                            case '-':
-                            case '$':
-                            case '@':
-                                switch (ch) {
-                                    case '.':
-                                        ch = '-';
-                                        break;
-                                    case '*':
-                                        ch = '$';
-                                        break;
-                                    case '+':
-                                        ch = '@';
-                                }
+
+                if (myMaps.m_Sets[13] == 1) {  //即景模式
+                    if (m_Game.bt_BK.isChecked()) {
+                        ch = m_Game.bk_cArray[i][j];  //逆推迷宫
+                        if (m_Game.m_cArray[i][j] == '$' || m_Game.m_cArray[i][j] == '*'){
+                            switch (ch) {
+                                case '-':
+                                    ch = '.';
+                                    break;
+                                case '$':
+                                    ch = '*';
+                                    break;
+                                case '@':
+                                    ch = '+';
+                            }
+                        } else {
+                            switch (ch) {
+                                case '.':
+                                    ch = '-';
+                                    break;
+                                case '*':
+                                    ch = '$';
+                                    break;
+                                case '+':
+                                    ch = '@';
+                            }
+                        }
+                    } else {
+                        ch = m_Game.m_cArray[i][j];  //正推迷宫
+                        if (m_Game.bk_cArray[i][j] == '$' || m_Game.bk_cArray[i][j] == '*'){
+                            switch (ch) {
+                                case '-':
+                                    ch = '.';
+                                    break;
+                                case '$':
+                                    ch = '*';
+                                    break;
+                                case '@':
+                                    ch = '+';
+                            }
+                        } else {
+                            switch (ch) {
+                                case '.':
+                                    ch = '-';
+                                    break;
+                                case '*':
+                                    ch = '$';
+                                    break;
+                                case '+':
+                                    ch = '@';
+                            }
                         }
                     }
-                } else {
-                    ch = m_Game.m_cArray[i][j];   //正推迷宫
+                } else {   //非即景模式
+                    if (m_Game.bt_BK.isChecked()) {
+                        ch = m_Game.bk_cArray[i][j];  //逆推迷宫
+                        if (myMaps.m_Sets[32] == 1) {  //逆推时使用正推的目标点
+                            switch (m_Game.m_cArray[i][j]) {
+                                case '.':
+                                case '*':
+                                case '+':
+                                    switch (ch) {
+                                        case '-':
+                                            ch = '.';
+                                            break;
+                                        case '$':
+                                            ch = '*';
+                                            break;
+                                        case '@':
+                                            ch = '+';
+                                    }
+                                    break;
+                                case '-':
+                                case '$':
+                                case '@':
+                                    switch (ch) {
+                                        case '.':
+                                            ch = '-';
+                                            break;
+                                        case '*':
+                                            ch = '$';
+                                            break;
+                                        case '+':
+                                            ch = '@';
+                                    }
+                            }
+                        }
+                    } else {
+                        ch = m_Game.m_cArray[i][j];   //正推迷宫
+                    }
                 }
+
                 myPaint.setARGB(255, 0, 0, 0);
                 //第一、二层显示————地板、逆推水印
                 if (ch != '_' && ch != '#') {
@@ -1116,6 +1172,7 @@ public class myGameViewMap extends View {
                         } else {                   // 偶格位
                             myPaint.setARGB(myMaps.m_Sets[39] * 5, 255, 255, 255);
                         }
+                        myPaint.setStyle(Paint.Style.FILL);
                         canvas.drawRect(rt, myPaint);
                     }
                     myPaint.setARGB(255, 0, 0, 0);
@@ -1656,25 +1713,15 @@ public class myGameViewMap extends View {
         }
         ss = sp2px(myMaps.ctxDealFile, 16);
         myPaint.setTextSize(ss);
-        if (m_Game.bt_BK.isChecked()) {
-            if (myMaps.m_Sets[13] == 1) {  //即景模式
-                rt.set(getWidth()-ss*2-ss/2, m_nArenaTop, getWidth(), m_nArenaTop+ss+ss/2);
-                myPaint.setARGB(127, 0, 0, 0);
-                myPaint.setStyle(Paint.Style.FILL);
-                canvas.drawRect(rt, myPaint);
-                myPaint.setARGB(255, 255, 255, 255);
-                canvas.drawText("即景", getWidth()-ss*2-4, m_nArenaTop+ss+4, myPaint);
-            }
-        } else {
-            if (myMaps.m_Sets[25] == 1) {  //即景模式
-                rt.set(getWidth()-ss*2-ss/2, m_nArenaTop, getWidth(), m_nArenaTop+ss+ss/2);
-                myPaint.setARGB(127, 0, 0, 0);
-                myPaint.setStyle(Paint.Style.FILL);
-                canvas.drawRect(rt, myPaint);
-                myPaint.setARGB(255, 255, 255, 255);
-                canvas.drawText("即景", getWidth()-ss*2-4, m_nArenaTop+ss+4, myPaint);
-            }
+        if (myMaps.m_Sets[13] == 1) {  //即景模式
+            rt.set(getWidth()-ss*2-ss/2, m_nArenaTop, getWidth(), m_nArenaTop+ss+ss/2);
+            myPaint.setARGB(127, 0, 0, 0);
+            myPaint.setStyle(Paint.Style.FILL);
+            canvas.drawRect(rt, myPaint);
+            myPaint.setARGB(255, 255, 255, 255);
+            canvas.drawText("即景", getWidth()-ss*2-4, m_nArenaTop+ss+4, myPaint);
         }
+
 
         if (!m_Game.bt_BK.isChecked() && m_Game.m_Gif_Start > 0) {
             mStr = "GIF 开始点：" + m_Game.m_Gif_Start;

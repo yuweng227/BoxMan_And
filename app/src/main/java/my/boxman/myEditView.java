@@ -1204,7 +1204,7 @@ public class myEditView extends Activity {
     //导出 XSB
     private void myExport() {
         //将关卡地图，送入剪切板。
-        StringBuilder str = new StringBuilder();
+        StringBuilder str = new StringBuilder("\n");
 
         //导出全部（有效部分）或选区部分
         if (mMap.selNode.row < 0 || mMap.selNode == mMap.selNode2) {
@@ -1221,7 +1221,7 @@ public class myEditView extends Activity {
         str.append("Title: ").append(myMaps.curMap.Title).append('\n');
         str.append("Author: ").append(myMaps.curMap.Author).append('\n');
         str.append("Comment:").append('\n').append(myMaps.curMap.Comment).append('\n');
-        str.append("Comment_end:");
+        str.append("Comment_end:\n");
         final EditText et = new EditText(this);
         et.setTypeface(Typeface.MONOSPACE);
         et.setText(str);

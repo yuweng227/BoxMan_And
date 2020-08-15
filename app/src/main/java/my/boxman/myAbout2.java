@@ -58,7 +58,6 @@ public class myAbout2 extends Activity {
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(false);
-        actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title));
 		setTitle(myMaps.sFile + "：" + (myMaps.curMap.Num < 0 ? "关卡资料" : (myMaps.m_lstMaps.indexOf(myMaps.curMap)+1) + " - 关于"));
 
 		et_Title = (EditText)this.findViewById(R.id.etTitle);

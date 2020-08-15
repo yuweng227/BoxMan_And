@@ -58,7 +58,6 @@ public class myRecogView extends Activity {
 
         //开启标题栏的返回键
         ActionBar actionBar = getActionBar();
-        actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title));
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(false);
         setTitle("");

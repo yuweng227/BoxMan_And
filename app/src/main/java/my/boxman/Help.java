@@ -24,7 +24,6 @@ public class Help extends Activity {
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(false);
-        actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title));
 
 		tv_help = (TextView)this.findViewById(R.id.tvHelp);
 
@@ -55,7 +54,7 @@ public class Help extends Activity {
 				 .append("【单击--顶行“游标指示”】，快速更换背景或皮肤；").append('\n')
 				 .append('\n')
 				 .append("【长按--顶行“关卡序号”】，“奇偶格模式”开关；").append('\n')
-				 .append("【长按--顶行“移动步数”】，即景模式与标准模式的切换（即景模式：正逆推互换箱子和目标点）；").append('\n')
+				 .append("【长按--顶行“移动步数”】，即景模式开关（即景模式：正逆推互以对方箱子为目标点）；").append('\n')
 				 .append("【长按--顶行“推动步数”】，“自动箱子编号”开关；").append('\n')
 				 .append("【长按--顶行“游标指示”】，“显示标尺”开关；").append('\n')
 				 .append('\n')
@@ -284,13 +283,22 @@ public class Help extends Activity {
 				 .append("  10、“快手”支持的关卡尺寸为：3--100行、3--100列，对尺寸超标或不足、箱子与目标不符、仓管员数目非法的，均视为无效关卡且不予接收，用灰色预览图标示占位；").append('\n')
 				 .append("  11、“快手”支持答案（或动作）合成 GIF 动画，其中：“现场皮肤”动画，可以将名称为“banner.png”图片放到“推箱快手/”一级文件夹下（建议尺寸控制在“200  x 42”以内，且需在快手启动前放置才有效），作为自定义动画水印，默认水印为“sokoban.cn”网站域名，“现场皮肤”动画同时支持人工箱子编号和标尺，以便教学；而“固定皮肤”，默认水印为“推箱子群”的QQ号码，自定义水印，自动取提交比赛答案的玩家“姓名”。").append('\n')
 				 .append('\n')
-				 .append("====== 近期更新 ======").append('\n')
+				 .append("====== 最近更新 ======").append('\n')
+				 .append('\n')
+				 .append("BoxMan9.97：2019-10-17").append('\n')
+				 .append("1、优化即景模式；").append('\n')
+				 .append("2、完善比赛答案提交功能（anian版主）；").append('\n')
+                 .append("3、优化关卡截图文档列表按创建时间排序，把最新的列在最前面（anian版主）；").append('\n')
+				 .append("4、修正个别手机上，状态栏和菜单字体不清晰问题（Xiao Fei xia、不愿透露姓名）；").append('\n')
+                 .append("5、更新逆推中的仓管员坐标[0, 0]为起点到[1, 1]为起点（anian版主）；").append('\n')
+                 .append("6、修正关卡浏览界面处于“显示标题”模式下，长按关卡的“移动到...”功能有时不能正确执行的bug（anian版主）；").append('\n')
+				 .append("7、修正逆推动作导入时，偶尔出现多个仓管员的bug；").append('\n')
+				 .append("8、其它优化。").append('\n')
 				 .append('\n')
 				 .append("BoxMan9.96：2019-6-29").append('\n')
-				 .append("1、增加关卡图默认的最大放到倍数（关雎）；").append('\n')
+				 .append("1、增加关卡图默认的最大缩放倍数（关雎）；").append('\n')
 				 .append("2、修复“对角死锁”检测时偶尔误报的bug（天）；").append('\n')
 				 .append("3、其它优化。").append('\n')
-				 .append('\n')
 				 .append('\n')
 				 .append("BoxMan9.95：2019-4-26").append('\n')
 				 .append("1、新增导入往期比赛关卡功能（无极）；").append('\n')

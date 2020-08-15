@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -124,7 +125,7 @@ public class myMaps {
 	static String J_Comment;  //关卡集"注释"
 
 	static long m_Set_id;  //增补关卡之关卡集 id
-	static int[] m_Sets;  //系统参数设置(0-关卡集组，1-关卡集， 2-关卡预览图标题，3-长按目标点提示关联网点及网口， 4-关卡背景色， 5-仓管员图片方向，6-瞬移，7-轮转方位，8-显示可达提示，9-标尺不随关卡旋转，10-移动速度，11-死锁提示，12-标识重复关卡，13-即景逆推，14-仓管员移动方向，15-使用音量键选择关卡，16-显示系统虚拟按键，17-是否允许穿越，18-unDO、ReDo，19-是否采用YASC绘制习惯，20-禁用全屏，21-编辑关卡图时，地图中的标尺字体颜色，22-编辑关卡图时，哪些元素携带标尺，23-单步进退，25-即景正推，26-查找相似关卡的默认相似度，27-仓管员转向动画，28-演示时仅推动，29-自动爬阶梯，30-导出答案的注释信息，31-导入关卡为一个时，自动打开，32-禁用逆推目标点，33-每行浏览的图标数，34-每行浏览的图标默认数，35-布局中的图标默认高度，36-识别，37-打开无解关卡时，自动加载最新状态，38-区分奇偶地板格，39-偶位地板格明暗度，40-奇位地板格明暗度)
+	static int[] m_Sets;  //系统参数设置(0-关卡集组，1-关卡集， 2-关卡预览图标题，3-长按目标点提示关联网点及网口， 4-关卡背景色， 5-仓管员图片方向，6-瞬移，7-轮转方位，8-显示可达提示，9-标尺不随关卡旋转，10-移动速度，11-死锁提示，12-标识重复关卡，13-即景模式，14-仓管员移动方向，15-使用音量键选择关卡，16-显示系统虚拟按键，17-是否允许穿越，18-unDO、ReDo，19-是否采用YASC绘制习惯，20-禁用全屏，21-编辑关卡图时，地图中的标尺字体颜色，22-编辑关卡图时，哪些元素携带标尺，23-单步进退，25-，26-查找相似关卡的默认相似度，27-仓管员转向动画，28-演示时仅推动，29-自动爬阶梯，30-导出答案的注释信息，31-导入关卡为一个时，自动打开，32-逆推时使用正推的目标点，33-每行浏览的图标数，34-每行浏览的图标默认数，35-布局中的图标默认高度，36-识别，37-打开无解关卡时，自动加载最新状态，38-区分奇偶地板格，39-偶位地板格明暗度，40-奇位地板格明暗度)
 	static String mMatchNo = "";  //第 n 期比赛
 	static String mMatchDate1 = "";  //比赛开始日期
 	static String mMatchDate2 = "";  //比赛结束日期
@@ -452,7 +453,7 @@ public class myMaps {
 		return "";
 	}
 
-	//取得"宏/"文件夹下的文档列表
+	//取得"宏/"文件夹下的文档列表，最新文档列在最前面
 	static void mMacroList() {
 		File targetDir = new File(myMaps.sRoot + myMaps.sPath + "宏/");
 		myMaps.mFile_List.clear();
@@ -476,16 +477,39 @@ public class myMaps {
 		File targetDir = new File(fn);
 		myMaps.mFile_List.clear();
 		if (targetDir.exists()) {
-			String[] filelist = targetDir.list();
-			Arrays.sort(filelist, String.CASE_INSENSITIVE_ORDER);
-			for (int i = 0; i < filelist.length; i++) {
-				int dot = filelist[i].lastIndexOf('.');
-				if ((dot > -1) && (dot < (filelist[i].length()))) {
-					String prefix = filelist[i].substring(filelist[i].lastIndexOf(".") + 1);
+			File[] fs = targetDir.listFiles();
+			Arrays.sort(fs, new Comparator< File>(){            // 截图文档列表按创建时间排序
+				public int compare(File f1, File f2) {
+					long diff = f1.lastModified() - f2.lastModified();
+					if (diff > 0)
+						return -1;
+					else if (diff == 0)
+						return 0;
+					else
+						return 1;
+				}
+				public boolean equals(Object obj) {
+					return true;
+				}
+			});
+			for (int i = 0; i < fs.length; i++) {
+				int dot = fs[i].getName().lastIndexOf('.');
+				if ((dot > -1) && (dot < (fs[i].length()))) {
+					String prefix = fs[i].getName().substring(fs[i].getName().lastIndexOf(".") + 1);
 					if (prefix.equalsIgnoreCase("jpg") || prefix.equalsIgnoreCase("bmp") || prefix.equalsIgnoreCase("png"))
-						myMaps.mFile_List.add(filelist[i]);
+						myMaps.mFile_List.add(fs[i].getName());
 				}
 			}
+//			String[] filelist = targetDir.list();
+//			Arrays.sort(filelist, String.CASE_INSENSITIVE_ORDER);
+//			for (int i = 0; i < filelist.length; i++) {
+//				int dot = filelist[i].lastIndexOf('.');
+//				if ((dot > -1) && (dot < (filelist[i].length()))) {
+//					String prefix = filelist[i].substring(filelist[i].lastIndexOf(".") + 1);
+//					if (prefix.equalsIgnoreCase("jpg") || prefix.equalsIgnoreCase("bmp") || prefix.equalsIgnoreCase("png"))
+//						myMaps.mFile_List.add(filelist[i]);
+//				}
+//			}
 		}
 	}
 

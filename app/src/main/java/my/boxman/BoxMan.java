@@ -235,7 +235,6 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		//开启标题栏的返回键
 		ActionBar actionBar = getActionBar();
 		actionBar.setDisplayShowHomeEnabled(false);
-		actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title));
 
 		expView = (ExpandableListView) findViewById(R.id.explist);
 		expAdapter = new MyExpandableListView();

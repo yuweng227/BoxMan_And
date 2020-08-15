@@ -48,7 +48,6 @@ public class myAbout1 extends Activity {
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(false);
-        actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title));
 		setTitle(myMaps.sFile + " - 关于");
 
 		et_Title = (EditText)this.findViewById(R.id.etTitle);

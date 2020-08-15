@@ -106,7 +106,6 @@ public class myExport extends Activity implements myGifMakeFragment.GifMakeStatu
 		 ActionBar actionBar = getActionBar();
 		 actionBar.setDisplayHomeAsUpEnabled(true);
          actionBar.setDisplayShowHomeEnabled(false);
-         actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.title));
 		 setTitle("导出");
 
 		 //界面初始化
@@ -287,7 +286,7 @@ public class myExport extends Activity implements myGifMakeFragment.GifMakeStatu
 						 saveFile(et_Action.getText().toString(), my_Name);
 					 }
 				 } else {  //导出到剪切板
-					 myMaps.saveClipper(et_Action.getText().toString());
+					 myMaps.saveClipper("\n" + et_Action.getText().toString() + "\n");
 					 finish();
 				 }
 			 }
