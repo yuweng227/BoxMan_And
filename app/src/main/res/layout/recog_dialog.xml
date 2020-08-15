@@ -7,7 +7,13 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="6dp"
+        android:layout_height="2dp"
+        android:background="#18759E">
+    </View>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
         android:background="#363636">
     </View>
 
@@ -26,10 +32,10 @@
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="100dp"
+                android:layout_width="160dp"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
-                android:text="颜色容差:\n(0-500)"
+                android:text="允许色差(0-600):"
                 android:padding="4dp"/>
 
             <TextView
@@ -40,7 +46,7 @@
 
             <EditText
                 android:id="@+id/recog_toleranceValueColor"
-                android:layout_width="100dp"
+                android:layout_width="60dp"
                 android:layout_height="wrap_content"
                 android:digits="0123456789"
                 android:maxLines="1"
@@ -67,10 +73,10 @@
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="100dp"
+                android:layout_width="160dp"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
-                android:text="误差点数:\n(0-50)"
+                android:text="误差像素数(0-60):"
                 android:padding="4dp"/>
 
             <TextView
@@ -81,7 +87,7 @@
 
             <EditText
                 android:id="@+id/recog_toleranceValueDifferentColor"
-                android:layout_width="100dp"
+                android:layout_width="60dp"
                 android:layout_height="wrap_content"
                 android:digits="0123456789"
                 android:maxLines="1"
@@ -97,9 +103,14 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="6dp"
+        android:layout_height="8dp"
         android:background="#363636">
     </View>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="#18759E">
+    </View>
 
 </LinearLayout>

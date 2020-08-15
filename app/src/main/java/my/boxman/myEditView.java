@@ -608,8 +608,8 @@ public class myEditView extends Activity {
                 }
                 old_Map = myMaps.curMap;
                 //saveFile()中，已经重新定义 myMaps.curMap 的 Rows、Cols、Map
-                mapNode nd = new mapNode(myMaps.curMap.Map, myMaps.curMap.Title, myMaps.curMap.Author, myMaps.curMap.Comment);
                 try {
+                    mapNode nd = new mapNode(myMaps.curMap.Map, myMaps.curMap.Title, myMaps.curMap.Author, myMaps.curMap.Comment);
                     if (nd.L_CRC_Num != -1) {
                         myMaps.curMap = nd;
                         myMaps.curMap.fileName = old_Map.fileName;
@@ -794,10 +794,14 @@ public class myEditView extends Activity {
 
                 return true;
             case R.id.edit_inf:  //关卡作者、标题、说明等资料编辑
-                old_Map = myMaps.curMap;
-                Intent intent = new Intent();
-                intent.setClass(myEditView.this, myAbout2.class);
-                startActivity(intent);
+                if (myMaps.curMap.Map == null) {
+                    MyToast.showToast(myEditView.this, "做好关卡保存后才可以哦！", Toast.LENGTH_SHORT);
+                } else {
+                    old_Map = myMaps.curMap;
+                    Intent intent = new Intent();
+                    intent.setClass(myEditView.this, myAbout2.class);
+                    startActivity(intent);
+                }
                 return true;
             case R.id.edit_rule:  //设置标尺
                 View view2 = View.inflate(this, R.layout.rule_dialog, null);

@@ -27,7 +27,7 @@ public class myRecogViewMap extends View {
     int m_nArenaTop;                //舞台 Top 距屏幕顶的距离
     int m_nPicWidth, m_nPicHeight;  //关卡图的像素尺寸
     int m_nMapTop, m_nMapLeft;      //图片有效区域的左上角
-    int m_nWidth;                   //素材尺寸，即关卡图每个格子的像素尺寸
+    float m_nWidth = 50;            //素材尺寸，即关卡图每个格子的像素尺寸
     int m_nLine_Color = 0;          //网格线颜色
     int m_nObj = -1;                //选中的物件（XSB元素）
 
@@ -35,7 +35,7 @@ public class myRecogViewMap extends View {
     public Matrix mCurrentMatrix = new Matrix();  //当前变换矩阵
     private Matrix mMapMatrix = new Matrix();     //onDraw()用的当前变换矩阵
     float m_fTop, m_fLeft, m_fScale, mScale;      //关卡图的当前上边界、左边界、缩放倍数；原始缩放倍数
-    public float mMaxScale = 5;                   //最大缩放级别
+    public float mMaxScale = 9;                   //最大缩放级别
     float[] values = new float[9];
 
     // 识别参数默认值
@@ -103,19 +103,18 @@ public class myRecogViewMap extends View {
                 float y = (e.getY() - m_fTop ) / m_fScale;
 
                 int xx = (int) x, yy = (int) y, r, c;
-                r = (yy - m_nMapTop ) / m_nWidth;
-                c = (xx - m_nMapLeft) / m_nWidth;
 
-                while ((xx - m_nMapLeft) % m_nWidth != 0) {
-                    xx--;
-                }
-                while ((yy - m_nMapTop) % m_nWidth != 0) {
-                    yy--;
-                }
+                r = (int) ((yy - m_nMapTop ) / m_nWidth);
+                c = (int) ((xx - m_nMapLeft) / m_nWidth);
 
-                cur_Rect.set(xx, yy, xx + m_nWidth, yy + m_nWidth);   // 设置点击的格子 -- 焦点区域
+                xx = (int) (c * m_nWidth + m_nMapLeft);
+                yy = (int) (r * m_nWidth + m_nMapTop);
+
+                cur_Rect.set(xx, yy, (int) (xx + m_nWidth), (int) (yy + m_nWidth));   // 设置样本格子 -- 焦点区域
+                cur_Rect.set(xx, yy, (int) (xx + m_nWidth), (int) (yy + m_nWidth));   // 设置样本格子 -- 焦点区域
 
                 if (m_nObj >= 0) {    // 手动 XSB 模式
+                    m_Recog.myBackup();
                     if (m_nObj == 4) {  // 若选中的物件是“目标点”
                         if (m_Recog.m_cArray[r][c] == '@') {
                             m_Recog.m_cArray[r][c] = '+';
@@ -358,7 +357,10 @@ public class myRecogViewMap extends View {
             canvas.drawBitmap(myMaps.edPict, null, new Rect(0, 0, m_nPicWidth, m_nPicHeight), myPaint);
         }
 
-        // 画左上角线
+        myPaint.setStyle(Paint.Style.FILL);
+        myPaint.setStrokeWidth((float) 1);              //设置线宽
+
+        // 设置网格线颜色
         if (m_nLine_Color == 1) {            // 网格线为白色
             myPaint.setARGB(159, 255, 255, 255);
         } else if (m_nLine_Color == 2) {     // 网格线为黑色
@@ -366,43 +368,44 @@ public class myRecogViewMap extends View {
         } else {                             // 默认，网格线为紫色
             myPaint.setARGB(159, 255, 0, 255);
         }
-        myPaint.setStyle(Paint.Style.FILL);
-        myPaint.setStrokeWidth((float) 1);              //设置线宽
-
         // 画横线
         int k = 0;
         while (m_nMapTop + k * m_nWidth < m_nPicHeight) {
             canvas.drawLine(m_nMapLeft, m_nMapTop + k * m_nWidth, m_nPicWidth, m_nMapTop + k * m_nWidth, myPaint);
             k++;
         }
-        k = 0;
         // 画竖线
+        k = 0;
         while (m_nMapLeft + k * m_nWidth < m_nPicWidth) {
             canvas.drawLine(m_nMapLeft + k * m_nWidth, m_nMapTop, m_nMapLeft + k * m_nWidth, m_nPicHeight, myPaint);
             k++;
         }
 
-        // 显示点击的格子
+        // 显示样本格子
         if (cur_Rect.top >= m_nMapTop && cur_Rect.left >= m_nMapLeft) {
-            canvas.drawRect(cur_Rect, myPaint);
+            rt.set(cur_Rect.left+mPoff, cur_Rect.top+mPoff, cur_Rect.left+mPoff+mPR, cur_Rect.top+mPoff+mPR);
+            canvas.drawRect(cur_Rect.left, cur_Rect.top, rt.left, cur_Rect.bottom, myPaint);
+            canvas.drawRect(rt.right, cur_Rect.top, cur_Rect.right, cur_Rect.bottom, myPaint);
+            canvas.drawRect(rt.left, cur_Rect.top, rt.right, rt.top, myPaint);
+            canvas.drawRect(rt.left, rt.bottom, rt.right, cur_Rect.bottom, myPaint);
         }
 
         // 显示识别出来的 XSB
         ss = sp2px(myMaps.ctxDealFile, 11);
         cc = 0;
-        if (m_nWidth <= ss + 4) {
+        if (m_nWidth <= ss + 6) {
             ss /= 2;
             cc = 1;
         }
-        if (m_nWidth <= ss/2 + 8) {
-            ss /= 4;
+        if (m_nWidth <= ss/2 + 15) {
+            ss /= 5;
             cc = 2;
         }
         for (int i = 0; i < m_Recog.m_cArray.length; i++) {
             for (int j = 0; j < m_Recog.m_cArray.length; j++) {
                 if (m_Recog.m_cArray[i][j] != '-') {
                     ch = m_Recog.m_cArray[i][j];
-                    if (cc > 0) {
+                    if (cc == 2) {  //当样本格子比较小的时候，没有足够的空间显示 XSB 字符，此时，使用替换字符显示
                         switch (ch) {
                             case '#':
                                 ch = '■';
@@ -411,22 +414,68 @@ public class myRecogViewMap extends View {
                                 ch = '▲';
                                 break;
                             case '*':
-                                ch = '△';
+                                ch = '◇';
                                 break;
                             case '@':
-                                ch = '◆';
+                                ch = '↑';
                                 break;
                             case '+':
+                                ch = '＋';
+                                break;
+                        }
+                    } else if (cc == 1) {  //当样本格子比较小的时候，没有足够的空间显示 XSB 字符，此时，使用替换字符显示
+                        switch (ch) {
+                            case '#':
+                                ch = '■';
+                                break;
+                            case '$':
+                                ch = '▲';
+                                break;
+                            case '*':
                                 ch = '◇';
+                                break;
+                            case '@':
+                                ch = '∏';
+                                break;
+                            case '+':
+                                ch = '＋';
+                                break;
+                        }
+                    } else{  //格子可以正常显示 XSB 字符时，将其变成全角显示，这样定位准确
+                        switch (ch) {
+                            case '#':
+                                ch = '＃';
+                                break;
+                            case '$':
+                                ch = '＄';
+                                break;
+                            case '*':
+                                ch = '*';
+                                break;
+                            case '@':
+                                ch = '＠';
+                                break;
+                            case '+':
+                                ch = '＋';
                                 break;
                         }
                     }
-                    showXSB(canvas, j * m_nWidth + m_nMapLeft, i * m_nWidth + m_nMapTop, ch, ss);
+                    showXSB(canvas, (int) (j * m_nWidth + m_nMapLeft), (int) (i * m_nWidth + m_nMapTop), ch, ss);
                 }
             }
         }
 
         canvas.restore();
+
+        ss = sp2px(myMaps.ctxDealFile, 16);
+        myPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        myPaint.setTextSize(ss);
+        myPaint.setARGB(255, 0, 0, 0);
+        myPaint.setStrokeWidth(5);
+        canvas.drawText("样本像素数: " + mPR + " × " + mPR + " ＝ " + mPR * mPR, 10, ss / 2 * 3, myPaint);
+        myPaint.setARGB(255, 255, 255, 255);
+        myPaint.setStrokeWidth(3);
+        canvas.drawText("样本像素数: " + mPR + " × " + mPR + " ＝ " + mPR * mPR, 10, ss / 2 * 3, myPaint);
 
         // 提示箱子数和目标点数
         if (m_Recog.m_nBoxNum > 0 || m_Recog.DstNum > 0) {
@@ -435,28 +484,44 @@ public class myRecogViewMap extends View {
             myPaint.setTextSize(ss);
             myPaint.setARGB(255, 0, 0, 0);
             myPaint.setStrokeWidth(5);
-            canvas.drawText("箱子: "+  m_Recog.m_nBoxNum + "  目标点: "+  m_Recog.DstNum, 0, 0 + m_nWidth, myPaint);
+            canvas.drawText("箱子: "+  m_Recog.m_nBoxNum + "  目标点: "+  m_Recog.DstNum, 10, ss * 3, myPaint);
             myPaint.setARGB(255, 255, 255, 255);
             myPaint.setStrokeWidth(3);
-            canvas.drawText("箱子: "+  m_Recog.m_nBoxNum + "  目标点: "+  m_Recog.DstNum, 0, 0 + m_nWidth, myPaint);
+            canvas.drawText("箱子: "+  m_Recog.m_nBoxNum + "  目标点: "+  m_Recog.DstNum, 10, ss * 3, myPaint);
         }
+
+//        if (cur_Rect.top >= 0) {  // debug
+//            myPaint.setARGB(255, 255, 255, 255);
+//            rt.set(getRight() - mPR * 3 - 4, 2, getRight(), mPR * 3 + 6);
+//            canvas.drawRect(rt, myPaint);
+//            rt.set(getRight() - mPR * 3 - 2, 4, getRight() - 2, mPR * 3 + 4);
+//            canvas.drawBitmap(myMaps.edPict, new Rect(cur_Rect.left + mPoff, cur_Rect.top + mPoff, cur_Rect.right - mPoff, cur_Rect.bottom - mPoff), rt, myPaint);
+//        }
     }
 
     // 对整张图进行识别，识别时将锁定之前识别出来的 XSB
-    int mPR, mPX, mPY;
+    int mPoff = (int) (m_nWidth / 5);         // 比对样本区域的偏移量
+    int mPR = (int) (m_nWidth - mPoff * 2);  // 比对样本区域的边长
+    public void setPR() {
+        // 为了避免格子线造成的误差，仅查找子图的中心部分
+        if (m_nWidth < 20) {
+            mPoff = (int) (m_nWidth / 4);
+        } else {
+            mPoff = (int) (m_nWidth / 5);
+        }
+        mPR = (int) (m_nWidth - mPoff * 2);
+    }
+
     public ArrayList<Point> findSubimages() {
         ArrayList<Point> locs = new ArrayList<Point>();
 
-        // 为了避免格子线造成的误差，仅查找子图的中心部分
-        mPR = m_nWidth / 2;
-        mPX = cur_Rect.left + m_nWidth / 4;
-        mPY = cur_Rect.top  + m_nWidth / 4;
+        setPR();
 
         // 从“左上角”开始搜索子图
-        for (int y = m_nMapTop; y < m_nPicHeight - mPR; y += m_nWidth) {
-            for (int x = m_nMapLeft; x < m_nPicWidth - mPR; x += m_nWidth) {
-                if (m_Recog.m_cArray[(y-m_nMapTop)/m_nWidth][(x-m_nMapLeft)/m_nWidth] == '-' && isFindSubimage(x, y)) {  // 发现子图（隐含有对之前识别出来的元素的锁定功能）
-                    locs.add(new Point(x + mPR / 2, y + mPR / 2));
+        for (int y = m_nMapTop, k1 = 0; y < m_nPicHeight - mPR; k1++, y = (int) (m_nMapTop + k1 * m_nWidth)) {
+            for (int x = m_nMapLeft, k2 = 0; x < m_nPicWidth - mPR; k2++, x = (int) (m_nMapLeft + k2 * m_nWidth)) {
+                if ((m_Recog.isActNum == 4 || m_Recog.m_cArray[Math.round((y-m_nMapTop)/m_nWidth)][Math.round((x-m_nMapLeft)/m_nWidth)] == '-') && isFindSubimage(x, y)) {  // 发现子图（隐含有对之前识别出来的元素的锁定功能）
+                    locs.add(new Point(x, y));
                 }
             }
         }
@@ -490,15 +555,21 @@ public class myRecogViewMap extends View {
                 } else {
                     sourceColor  = myMaps.edPict.getPixel(x + bx , y + by);    // 原图中，传过来的区域
                 }
-                if (x + cur_Rect.left + mPR / 2 >= m_nPicWidth || y + cur_Rect.top + mPR / 2 >= m_nPicHeight) {
+                if (x + cur_Rect.left + mPoff >= m_nPicWidth || y + cur_Rect.top + mPoff >= m_nPicHeight) {
                     compareColor = 0;
                 } else {
-                    compareColor = myMaps.edPict.getPixel(x + cur_Rect.left + mPR / 2, y + cur_Rect.top + mPR / 2);    // 原图中，子图区域
+                    compareColor = myMaps.edPict.getPixel(x + cur_Rect.left + mPoff, y + cur_Rect.top + mPoff);    // 样本区域
                 }
-                // 在 myEditView 中读取图片时，格式为 Bitmap.Config.RGB_565
-                difference = Math.abs(((compareColor >>> 11) & 0xFF) - ((sourceColor >>> 11) & 0xFF)) +
-                        Math.abs(((compareColor >>>  5) & 0xFF) - ((sourceColor >>>  5) & 0xFF)) +
-                        Math.abs(((compareColor >>>  0) & 0xFF) - ((sourceColor >>>  0) & 0xFF));
+                // 在 myEditView 中读取图片时，格式为 Bitmap.Config.ARGB_8888
+//                difference = (int) Math.sqrt(
+//                        Math.pow(Math.abs(((compareColor >>> 16) & 0xFF) - ((sourceColor >>> 16) & 0xFF)) * 3, 2) +
+//                        Math.pow(Math.abs(((compareColor >>>  8) & 0xFF) - ((sourceColor >>>  8) & 0xFF)) * 4, 2) +
+//                        Math.pow(Math.abs(((compareColor >>>  0) & 0xFF) - ((sourceColor >>>  0) & 0xFF)) * 2, 2)
+//                );
+                difference =
+                        Math.abs(((compareColor >>> 16) & 0xFF) - ((sourceColor >>> 16) & 0xFF)) * 3 +
+                        Math.abs(((compareColor >>>  8) & 0xFF) - ((sourceColor >>>  8) & 0xFF)) * 4 +
+                        Math.abs(((compareColor >>>  0) & 0xFF) - ((sourceColor >>>  0) & 0xFF)) * 2;
 
                 if (difference > toleranceValueColor) {
                     if (++colorDeviationsCount > toleranceValueDifferentColor)
@@ -520,19 +591,26 @@ public class myRecogViewMap extends View {
         myPaint.setARGB(255, 255, 255, 255);
         if (mXSB == '.') {
             mXSB = 'o';
-            myPaint.setTextSize(ss/2);
+            myPaint.setTextSize(ss / 2);
             myPaint.setStrokeWidth(5);
-            canvas.drawText(""+mXSB, x + m_nWidth / 2 - ss / 4, y + m_nWidth / 2 + ss / 8, myPaint);
+            canvas.drawText("" + mXSB, x + m_nWidth / 2 - ss / 4, y + m_nWidth / 2 + ss / 6, myPaint);
             myPaint.setARGB(255, 0, 0, 0);
             myPaint.setStrokeWidth(3);
-            canvas.drawText(""+mXSB, x + m_nWidth / 2 - ss / 4, y + m_nWidth / 2 + ss / 8, myPaint);
+            canvas.drawText("" + mXSB, x + m_nWidth / 2 - ss / 4, y + m_nWidth / 2 + ss / 6, myPaint);
+        } else if (mXSB == '*') {
+            myPaint.setTextSize(ss*3/2);
+            myPaint.setStrokeWidth(5);
+            canvas.drawText(""+mXSB, x + m_nWidth / 2 - ss / 3, y + m_nWidth / 3 + ss, myPaint);
+            myPaint.setARGB(255, 0, 0, 0);
+            myPaint.setStrokeWidth(3);
+            canvas.drawText(""+mXSB, x + m_nWidth / 2 - ss / 3, y + m_nWidth / 3 + ss, myPaint);
         } else {
             myPaint.setTextSize(ss);
             myPaint.setStrokeWidth(5);
-            canvas.drawText(""+mXSB, x + m_nWidth / 2 - ss / 2, y + m_nWidth / 2 + ss / 4, myPaint);
+            canvas.drawText(""+mXSB, x + m_nWidth / 2 - ss / 2, y + m_nWidth / 2 + ss / 3, myPaint);
             myPaint.setARGB(255, 0, 0, 0);
             myPaint.setStrokeWidth(3);
-            canvas.drawText(""+mXSB, x + m_nWidth / 2 - ss / 2, y + m_nWidth / 2 + ss / 4, myPaint);
+            canvas.drawText(""+mXSB, x + m_nWidth / 2 - ss / 2, y + m_nWidth / 2 + ss / 3, myPaint);
         }
     }
 

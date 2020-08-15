@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,13 +50,28 @@ public class myFileExplorerActivity extends Activity {
 		actionBar.setDisplayShowHomeEnabled(false);
 
 		//获取系统SD卡目录
-		File root = new File(myMaps.sRoot);
-		if(root.exists()){
+		File root;
+		if (!myMaps.myPathList[2].isEmpty()) {
+			File targetDir = new File(myMaps.sRoot+myMaps.myPathList[2]);
+			if (targetDir.exists()) {
+				root = new File(myMaps.sRoot+myMaps.myPathList[2]);
+			} else {
+				root = new File(myMaps.sRoot);
+			}
+		} else {
+			root = new File(myMaps.sRoot);
+		}
+
+		if (root.exists()) {
 			currentParent = root;
 			currentFiles = root.listFiles();
 			//使用当前目录下的全部文件，来填充ListView
 			inflateListView(currentFiles);
+		} else {
+			MyToast.showToast(this, "系统错误，无法执行该操作！", Toast.LENGTH_SHORT);
+			finish();
 		}
+
 		setTitle("自定义位置");
 
 		//为ListView的列表项单击事件绑定监听器
@@ -123,13 +139,12 @@ public class myFileExplorerActivity extends Activity {
 			case R.id.filelist_ok:  // 完成
 				// 保存自定义位置
 				String str = textView.getText().toString();
-				if (!str.isEmpty()) {
-					myMaps.myPathList[2] = str+'/';
+//				if (!str.isEmpty()) {
+					myMaps.myPathList[2] = str + '/';
 					myMaps.m_Sets[36] = 2;
 					Intent intent = new Intent();
 					setResult(999, intent);
-					finish();
-				}
+//				}
 				this.finish();
 				return true;
 			case R.id.filelist_parent:  // 上一级

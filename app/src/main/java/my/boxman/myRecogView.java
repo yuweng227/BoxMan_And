@@ -5,25 +5,34 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
 import android.text.method.NumberKeyListener;
+import android.util.AttributeSet;
+import android.view.InflateException;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -31,9 +40,11 @@ public class myRecogView extends Activity {
 
     AlertDialog exitDlg;
 
-    myRecogViewMap mMap;  //地图
+    Menu myMenu = null;
 
-    char[][] m_cArray;  //迷宫，选择区域
+    myRecogViewMap mMap;
+
+    char[][] m_cArray, bk_cArray;  //地图，备份地图
     int m_nRows, m_nCols;
     int m_nBoxNum, DstNum;
 
@@ -89,8 +100,26 @@ public class myRecogView extends Activity {
         bt_Floor.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                clearXSB();
-                myCount();
+                String[] m_menu = {
+                        "清空地图"
+                };
+                isActNum = 0;
+                Builder dlg = new Builder(myRecogView.this, AlertDialog.THEME_HOLO_DARK);
+                dlg.setCancelable(false);
+
+                dlg.setTitle("选项").setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        clearXSB();
+                        myCount();
+                        mMap.invalidate();
+                    }
+                }).setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        isActNum = which;
+                    }
+                }).setCancelable(false).create().show();
                 mMap.invalidate();
                 return true;
             }
@@ -113,7 +142,26 @@ public class myRecogView extends Activity {
         bt_Wall.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                removeXSB('#');
+                String[] m_menu = {
+                        "清理墙壁"
+                };
+                isActNum = 0;
+                Builder dlg = new Builder(myRecogView.this, AlertDialog.THEME_HOLO_DARK);
+                dlg.setCancelable(false);
+
+                dlg.setTitle("选项").setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        removeXSB('#', true);
+                        myCount();
+                        mMap.invalidate();
+                    }
+                }).setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        isActNum = which;
+                    }
+                }).setCancelable(false).create().show();
                 mMap.invalidate();
                 return true;
             }
@@ -136,9 +184,27 @@ public class myRecogView extends Activity {
         bt_Box.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                removeXSB('$');
-                myCount();
-                mMap.invalidate();
+                String[] m_menu = {
+                        "清理纯箱子",
+                        "清理所有箱子"
+                };
+                isActNum = 0;
+                Builder dlg = new Builder(myRecogView.this, AlertDialog.THEME_HOLO_DARK);
+                dlg.setCancelable(false);
+
+                dlg.setTitle("选项").setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        removeXSB('$', isActNum == 1);
+                        myCount();
+                        mMap.invalidate();
+                    }
+                }).setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        isActNum = which;
+                    }
+                }).setCancelable(false).create().show();
                 return true;
             }
         });
@@ -160,9 +226,27 @@ public class myRecogView extends Activity {
         bt_BoxGoal.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                removeXSB('*');
-                myCount();
-                mMap.invalidate();
+                String[] m_menu = {
+                        "清理目标点箱子",
+                        "保留目标点清理箱子"
+                };
+                isActNum = 0;
+                Builder dlg = new Builder(myRecogView.this, AlertDialog.THEME_HOLO_DARK);
+                dlg.setCancelable(false);
+
+                dlg.setTitle("选项").setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        removeXSB('*', isActNum == 0);
+                        myCount();
+                        mMap.invalidate();
+                    }
+                }).setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        isActNum = which;
+                    }
+                }).setCancelable(false).create().show();
                 return true;
             }
         });
@@ -184,9 +268,27 @@ public class myRecogView extends Activity {
         bt_Goal.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                removeXSB('.');
-                myCount();
-                mMap.invalidate();
+                String[] m_menu = {
+                        "清理纯目标点",
+                        "清理所有目标点"
+                };
+                isActNum = 0;
+                Builder dlg = new Builder(myRecogView.this, AlertDialog.THEME_HOLO_DARK);
+                dlg.setCancelable(false);
+
+                dlg.setTitle("选项").setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        removeXSB('.', isActNum == 1);
+                        myCount();
+                        mMap.invalidate();
+                    }
+                }).setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        isActNum = which;
+                    }
+                }).setCancelable(false).create().show();
                 return true;
             }
         });
@@ -205,6 +307,7 @@ public class myRecogView extends Activity {
                 }
             }
         });
+
         mMap.m_nObj = -1;   // 默认，没有选择物件（XSB元素）
 
         bt_Color = (Button) findViewById(R.id.bt_color);  //网格线颜色
@@ -226,6 +329,18 @@ public class myRecogView extends Activity {
                     bt_Color.setTextColor(0xffffffff);
                     bt_Color.setText("紫");
                 }
+                if (myMenu != null) {
+                    if (mMap.m_nLine_Color == 2) {
+                        myMenu.getItem(3).setTitle("-.5");
+                        myMenu.getItem(4).setTitle("+.5");
+                    } else if (mMap.m_nLine_Color == 1) {
+                        myMenu.getItem(3).setTitle("-3");
+                        myMenu.getItem(4).setTitle("+3");
+                    } else {
+                        myMenu.getItem(3).setTitle("-1");
+                        myMenu.getItem(4).setTitle("+1");
+                    }
+                }
                 mMap.invalidate();
             }
         });
@@ -237,6 +352,10 @@ public class myRecogView extends Activity {
             public void onClick(View v) {
                 if (mMap.m_nMapLeft > 0) {
                     mMap.m_nMapLeft--;
+                    if (mMap.cur_Rect.top >= 0) {  //焦点框
+                        mMap.cur_Rect.left--;
+                        mMap.cur_Rect.right--;
+                    }
                     mMap.invalidate();
                 }
             }
@@ -248,6 +367,10 @@ public class myRecogView extends Activity {
             public void onClick(View v) {
                 if (mMap.m_nMapLeft < mMap.m_nPicWidth - mMap.m_nWidth) {
                     mMap.m_nMapLeft++;
+                    if (mMap.cur_Rect.top >= 0) {  //焦点框
+                        mMap.cur_Rect.left++;
+                        mMap.cur_Rect.right++;
+                    }
                     mMap.invalidate();
                 }
             }
@@ -259,6 +382,10 @@ public class myRecogView extends Activity {
             public void onClick(View v) {
                 if (mMap.m_nMapTop > 0) {
                     mMap.m_nMapTop--;
+                    if (mMap.cur_Rect.top >= 0) {  //焦点框
+                        mMap.cur_Rect.top--;
+                        mMap.cur_Rect.bottom--;
+                    }
                     mMap.invalidate();
                 }
             }
@@ -270,6 +397,10 @@ public class myRecogView extends Activity {
             public void onClick(View v) {
                 if (mMap.m_nMapTop < mMap.m_nPicHeight - mMap.m_nWidth) {
                     mMap.m_nMapTop++;
+                    if (mMap.cur_Rect.top >= 0) {  //焦点框
+                        mMap.cur_Rect.top++;
+                        mMap.cur_Rect.bottom++;
+                    }
                     mMap.invalidate();
                 }
             }
@@ -316,14 +447,14 @@ public class myRecogView extends Activity {
         if (isInAction || mMap.cur_Rect.top < 0) return;
         isInAction = true;
         dialog = new ProgressDialog(myRecogView.this);
-        dialog.setMessage("分析中...\n" + "最大颜色容差: " + mMap.toleranceValueColor + "\n最大误差点数: " + mMap.toleranceValueDifferentColor);
+        dialog.setMessage("分析中...\n" + "最大允许色差: " + mMap.toleranceValueColor + "\n最多误差像素: " + mMap.toleranceValueDifferentColor);
         dialog.setCancelable(false);
         new Thread(new MyThread()).start();
         dialog.show();
     }
 
     //识别进度条
-    final char[] myXSB = { '#', '$', '*', '.' };
+    final char[] myXSB = { '#', '$', '*', '.', '-' };
     private Handler handler = new Handler() {
         // 在Handler中获取消息，重写handleMessage()方法
         @Override
@@ -331,6 +462,7 @@ public class myRecogView extends Activity {
             if (dialog != null) dialog.dismiss();
 
             if (msg.what == 1) {  // 识别成功
+                myBackup();
                 for(Point p : mMap.curPoints) {
                     setXSB(Math.round((p.x-mMap.m_nMapLeft)/mMap.m_nWidth), Math.round((p.y-mMap.m_nMapTop)/mMap.m_nWidth), myXSB[isActNum]);
                 }
@@ -341,6 +473,27 @@ public class myRecogView extends Activity {
         }
     };
 
+
+    // 还原到上一次识别出的地图
+    public void myRestore() {
+        char ch;
+        for (int i = 0; i < myMaps.m_nMaxRow; i++) {
+            for (int j = 0; j < myMaps.m_nMaxRow; j++) {
+                ch = m_cArray[i][j];
+                m_cArray[i][j] = bk_cArray[i][j];
+                bk_cArray[i][j] = ch;
+            }
+        }
+    }
+
+    // 备份一次识别出的地图，以备撤销使用（只允许撤销一次）
+    public void myBackup() {
+        for (int i = 0; i < myMaps.m_nMaxRow; i++) {
+            for (int j = 0; j < myMaps.m_nMaxRow; j++) {
+                bk_cArray[i][j] = m_cArray[i][j];
+            }
+        }
+    }
 
     // 计数箱子和目标点
     public void myCount() {
@@ -418,21 +571,33 @@ public class myRecogView extends Activity {
     }
 
     //清除所选的XSB元素
-    private void removeXSB(char ch) {
+    private void removeXSB(char ch, boolean isAll) {
+        myBackup();
         for (int i = 0; i < myMaps.m_nMaxRow; i++) {
             for (int j = 0; j < myMaps.m_nMaxRow; j++) {
                 if (ch == '.') {
-                    if (m_cArray[i][j] == '.') {
-                        m_cArray[i][j] = '-';
-                    } else if (m_cArray[i][j] == '+') {
-                        m_cArray[i][j] = '@';
-                    } if (m_cArray[i][j] == '*') {
-                        m_cArray[i][j] = '$';
+                    if (m_cArray[i][j] == '.') m_cArray[i][j] = '-';
+                    //考虑是否“所有目标点”选项
+                    if (isAll) {
+                        if (m_cArray[i][j] == '*') {
+                            m_cArray[i][j] = '$';
+                        } else if (m_cArray[i][j] == '+') {
+                            m_cArray[i][j] = '@';
+                        }
+                    }
+                } else  if (ch == '$') {
+                    if (m_cArray[i][j] == '$') m_cArray[i][j] = '-';
+                    //考虑是否“所有箱子”选项
+                    if (isAll && m_cArray[i][j] == '*') m_cArray[i][j] = '.';
+                } else  if (ch == '*') {
+                    //考虑是否“保留目标点”选项
+                    if (isAll) {
+                        if (m_cArray[i][j] == '*') m_cArray[i][j] = '-';
+                    } else {
+                        if (m_cArray[i][j] == '*') m_cArray[i][j] = '.';
                     }
                 } else {
-                    if (m_cArray[i][j] == ch) {
-                        m_cArray[i][j] = '-';
-                    }
+                    if (m_cArray[i][j] == ch) m_cArray[i][j] = '-';
                 }
             }
         }
@@ -440,6 +605,7 @@ public class myRecogView extends Activity {
 
     //清除所有的元素XSB
     private void clearXSB() {
+        myBackup();
         for (int i = 0; i < myMaps.m_nMaxRow; i++) {
             for (int j = 0; j < myMaps.m_nMaxRow; j++) {
                 if (m_cArray[i][j] != '-') {
@@ -492,17 +658,20 @@ public class myRecogView extends Activity {
     private void initMap() {
         // 默认尺寸：100 * 100
         m_cArray = new char[myMaps.m_nMaxRow][myMaps.m_nMaxCol];
-        for (int i = 0; i < myMaps.m_nMaxRow; i++)
-            for (int j = 0; j < myMaps.m_nMaxCol; j++)
+        bk_cArray = new char[myMaps.m_nMaxRow][myMaps.m_nMaxCol];
+        for (int i = 0; i < myMaps.m_nMaxRow; i++) {
+            for (int j = 0; j < myMaps.m_nMaxCol; j++) {
                 m_cArray[i][j] = '-';
-
+                bk_cArray[i][j] = '-';
+            }
+        }
         mMap.initArena();  //舞台初始化
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.recog, menu);
-
+        myMenu = menu;
         return true;
     }
 
@@ -529,9 +698,61 @@ public class myRecogView extends Activity {
                 intent1.setClass(this, myAboutRecgo.class);
                 startActivity(intent1);
                 return true;
-            case R.id.recog_cut_set:  // 比对参数设置
+            case R.id.recog_cut_left_top:  // 设置为左上角: m_nMapTop, m_nMapLeft
+                mMap.cur_Rect.top = -1;   // 取消点击的格子
+                mMap.m_nMapLeft = (int) (Math.abs(mMap.m_fLeft) / mMap.m_fScale);
+                mMap.m_nMapTop  = (int) (Math.abs(mMap.m_fTop)  / mMap.m_fScale);
+                mMap.invalidate();
+                return true;
+            case R.id.recog_shrink:  // 格子变小
+                mMap.cur_Rect.top = -1;   // 取消点击的格子
+                if (mMap.m_nLine_Color == 2) {
+                    mMap.m_nWidth -= 0.5;
+                } else if (mMap.m_nLine_Color == 1) {
+                    mMap.m_nWidth -= 3.0;
+                } else {
+                    mMap.m_nWidth -= 1.0;
+                }
+                if (mMap.m_nWidth < 10) mMap.m_nWidth = 10;
+
+                mMap.setPR();
+                mMap.invalidate();
+                return true;
+            case R.id.recog_extend:  // 格子变大
+                mMap.cur_Rect.top = -1;   // 取消点击的格子
+                if (mMap.m_nLine_Color == 2) {
+                    mMap.m_nWidth += 0.5;
+                } else if (mMap.m_nLine_Color == 1) {
+                    mMap.m_nWidth += 3.0;
+                } else {
+                    mMap.m_nWidth += 1.0;
+                }
+
+                if (mMap.m_nWidth > 200) mMap.m_nWidth = 200;
+
+                mMap.setPR();
+                mMap.invalidate();
+                return true;
+            case R.id.recog_restore:  // 取消本次识别
+                myRestore();
+                myCount();
+                mMap.invalidate();
+                return true;
+            case R.id.recog_complete:  // 开始识别
+                if (mMap.cur_Rect.top < 0) {
+                    MyToast.showToast(this, "请给出要识别的位置！", Toast.LENGTH_LONG);
+                    return true;
+                }
+                String[] m_menu = {
+                        "墙壁",
+                        "箱子",
+                        "箱子在目标点",
+                        "目标点",
+                        "地板"
+                };
+                isActNum = -1;
                 View view3 = View.inflate(this, R.layout.recog_dialog, null);
-                final EditText input1 = (EditText) view3.findViewById(R.id.recog_toleranceValueColor);  //容差
+                final EditText input1 = (EditText) view3.findViewById(R.id.recog_toleranceValueColor);  //色差
                 final EditText input2 = (EditText) view3.findViewById(R.id.recog_toleranceValueDifferentColor);  //误差点数
                 Builder dlg2 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 dlg2.setView(view3).setCancelable(false);
@@ -545,75 +766,28 @@ public class myRecogView extends Activity {
                 input1.setText(""+mm);
                 input2.setText(""+nn);
 
-                dlg2.setTitle("参数设置").setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                dlg2.setTitle("识别选项").setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         int m, n;
                         try {
                             m = Integer.valueOf(input1.getText().toString().trim());
                             n = Integer.valueOf(input2.getText().toString().trim());
-                            if (m < 0 || m > 500) {
-                            } else {
+                            if (m >= 0 && m <= 600) {
                                 mMap.toleranceValueColor = m;
                             }
-                            if (n < 0 || n > 50) {
-                            } else {
+                            if (n >= 0 && n <= 60) {
                                 mMap.toleranceValueDifferentColor = n;
                             }
+                            if (isActNum >= 0) doAction();
                         } catch (Throwable ex) { }
-                        dialog.dismiss();
                     }
-                }).setCancelable(false).create().show();
-                return true;
-            case R.id.recog_cut_left_top:  // 设置为左上角: m_nMapTop, m_nMapLeft
-                mMap.cur_Rect.top = -1;   // 取消点击的格子
-                mMap.m_nMapLeft = (int) ((int) Math.abs(mMap.m_fLeft) / mMap.m_fScale);
-                mMap.m_nMapTop  = (int) ((int) Math.abs(mMap.m_fTop)  / mMap.m_fScale);
-                mMap.invalidate();
-                return true;
-            case R.id.recog_shrink:  // 格子变小
-                mMap.cur_Rect.top = -1;   // 取消点击的格子
-                if (mMap.m_nWidth > 10) mMap.m_nWidth--;
-                mMap.invalidate();
-                return true;
-            case R.id.recog_extend:  // 格子变大
-                mMap.cur_Rect.top = -1;   // 取消点击的格子
-                if (mMap.m_nWidth < 200) mMap.m_nWidth++;
-                mMap.invalidate();
-                return true;
-            case R.id.recog_complete:  // 开始识别
-                if (mMap.cur_Rect.top < 0) {
-                    MyToast.showToast(this, "请给出要识别的位置！", Toast.LENGTH_LONG);
-                    return true;
-                }
-                String[] m_menu = {
-                        "墙壁",
-                        "箱子",
-                        "箱子在目标点",
-                        "目标点"
-                };
-                isActNum = -1;
-                Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
-                builder.setTitle("请选择识别的元素:").setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
+                }).setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         isActNum = which;
                     }
-                }).setPositiveButton("确定", new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        doAction();
-                        dialog.dismiss();
-                    }
-                })
-                        .setNegativeButton("取消", new OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        });
-                builder.setCancelable(false).show();
-
+                }).setCancelable(false).create().show();
                 return true;
             default:
                 return super.onOptionsItemSelected(mt);

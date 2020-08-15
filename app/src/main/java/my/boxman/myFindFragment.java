@@ -28,10 +28,11 @@ public class myFindFragment extends DialogFragment {
     private FindTask mFindTask;
     private String mMessage;
     private ArrayList<mapNode> m_Map_List;
-    private int mSimilarity0;  //相似度
-    private long[] m_sets;     //关卡集 id 数组
-    private boolean m_Ans;     //是否搜索答案库
-    private boolean m_Sort;    //搜索后是否按相似度排序
+    private int mSimilarity0;      //相似度
+    private long[] m_sets;         //关卡集 id 数组
+    private boolean m_Ans;         //是否搜索答案库
+    private boolean m_Sort;        //搜索后是否按相似度排序
+    private boolean m_IgnoreBox;   //搜索后是否按相似度排序
 
     @Override
     public void onAttach(Activity activity) {
@@ -50,11 +51,13 @@ public class myFindFragment extends DialogFragment {
             mSimilarity0 = bundle.getInt("mSimilarity");
             m_Ans = bundle.getBoolean("mAns");
             m_Sort = bundle.getBoolean("mSort");
+            m_IgnoreBox = bundle.getBoolean("mIgnoreBox");
         } else {
             m_sets = null;
             mSimilarity0 = 100;
             m_Ans = false;
             m_Sort = false;
+            m_IgnoreBox = false;
         }
 
         setRetainInstance(true);
@@ -455,6 +458,7 @@ public class myFindFragment extends DialogFragment {
         //计数两个关卡的相同格子数（找到两个关卡的重叠区域并比对，重叠区域需要“晃动”），mLeast -- 相似率要求的最少相同格子数
         private int myCompare(int mLeast, char[][] mAry1, int Rows1,int Cols1, char[][] mAry2, int Rows2,int Cols2) {
             int m, m2, n, n2, dR1, dC1, dR2, dC2;
+            char ch1, ch2;
 
             if (Rows1 < Rows2) m = Rows1;
             else m = Rows2;
@@ -480,7 +484,16 @@ public class myFindFragment extends DialogFragment {
                             for (int r = 0; r < Rows1; r++) {
                                 for (int c = 0; c < Cols1; c++) {
 
-                                    if (mAry1[r][c] == mAry2[r + i][c + j]) n++;
+                                    ch1 = mAry1[r][c];
+                                    ch2 = mAry2[r + i][c + j];
+
+                                    if (m_IgnoreBox) {
+                                        if (ch1 == '$' || ch1 == '@') ch1 = '-';
+                                        else if (ch1 == '*' || ch1 == '+') ch1 = '.';
+                                        if (ch2 == '$' || ch2 == '@') ch2 = '-';
+                                        else if (ch2 == '*' || ch2 == '+') ch2 = '.';
+                                    }
+                                    if (ch1 == ch2) n++;
                                     else n2++;
 
                                     if (m_Sort) {
@@ -502,8 +515,19 @@ public class myFindFragment extends DialogFragment {
                             for (int r = 0; r < Rows1; r++) {
                                 for (int c = 0; c < Cols2; c++) {
 
-                                    if (mAry1[r][c + j] == mAry2[r + i][c]) n++;
+                                    ch1 = mAry1[r][c + j];
+                                    ch2 = mAry2[r + i][c];
+
+                                    if (m_IgnoreBox) {
+                                        if (ch1 == '$' || ch1 == '@') ch1 = '-';
+                                        else if (ch1 == '*' || ch1 == '+') ch1 = '.';
+                                        if (ch2 == '$' || ch2 == '@') ch2 = '-';
+                                        else if (ch2 == '*' || ch2 == '+') ch2 = '.';
+                                    }
+                                    if (ch1 == ch2) n++;
                                     else n2++;
+//                                    if (mAry1[r][c + j] == mAry2[r + i][c]) n++;
+//                                    else n2++;
 
                                     if (m_Sort) {
                                         if (m < n) m = n;
@@ -526,8 +550,19 @@ public class myFindFragment extends DialogFragment {
                             for (int r = 0; r < Rows2; r++) {
                                 for (int c = 0; c < Cols1; c++) {
 
-                                    if (mAry1[r + i][c] == mAry2[r][c + j]) n++;
+                                    ch1 = mAry1[r + i][c];
+                                    ch2 = mAry2[r][c + j];
+
+                                    if (m_IgnoreBox) {
+                                        if (ch1 == '$' || ch1 == '@') ch1 = '-';
+                                        else if (ch1 == '*' || ch1 == '+') ch1 = '.';
+                                        if (ch2 == '$' || ch2 == '@') ch2 = '-';
+                                        else if (ch2 == '*' || ch2 == '+') ch2 = '.';
+                                    }
+                                    if (ch1 == ch2) n++;
                                     else n2++;
+//                                    if (mAry1[r + i][c] == mAry2[r][c + j]) n++;
+//                                    else n2++;
 
                                     if (m_Sort) {
                                         if (m < n) m = n;
@@ -548,8 +583,19 @@ public class myFindFragment extends DialogFragment {
                             for (int r = 0; r < Rows2; r++) {
                                 for (int c = 0; c < Cols2; c++) {
 
-                                    if (mAry1[r + i][c + j] == mAry2[r][c]) n++;
+                                    ch1 = mAry1[r + i][c + j];
+                                    ch2 = mAry2[r][c];
+
+                                    if (m_IgnoreBox) {
+                                        if (ch1 == '$' || ch1 == '@') ch1 = '-';
+                                        else if (ch1 == '*' || ch1 == '+') ch1 = '.';
+                                        if (ch2 == '$' || ch2 == '@') ch2 = '-';
+                                        else if (ch2 == '*' || ch2 == '+') ch2 = '.';
+                                    }
+                                    if (ch1 == ch2) n++;
                                     else n2++;
+//                                    if (mAry1[r + i][c + j] == mAry2[r][c]) n++;
+//                                    else n2++;
 
                                     if (m_Sort) {
                                         if (m < n) m = n;

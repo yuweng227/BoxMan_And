@@ -67,7 +67,7 @@
         android:orientation="horizontal">
 
         <TextView
-            android:layout_width="100dp"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:text="相似度："/>
@@ -85,6 +85,15 @@
                 android:padding="4dp"
                 android:checked="false"
                 android:text="排序"/>
+
+            <CheckBox
+                android:id="@+id/find_ignore_box"
+                style="@style/CustomCheckboxTheme"
+                android:layout_width="145dp"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:checked="false"
+                android:text="忽略箱子和人"/>
 
         </LinearLayout>
 

@@ -103,7 +103,7 @@
                 android:id="@+id/rb_code_GBK"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="UTF-8" />
+                android:text="GBK" />
 
             <View
                 android:layout_width="16dp"

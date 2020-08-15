@@ -48,13 +48,13 @@
 		android:title="清空列表"/>
 
 	<item
+		android:id="@+id/levels_col_count"
+		android:title="每行图标个数..."/>
+
+	<item
 		android:id="@+id/levels_delete_more"
 		android:title="批量删除..."/>
 
-	<item
-		android:id="@+id/levels_col_count"
-		android:title="每行图标个数..."/>
-  	
 	<item
 		android:id="@+id/levels_about"
 		android:title="关于"/>

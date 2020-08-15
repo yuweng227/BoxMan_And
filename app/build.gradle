@@ -7,7 +7,7 @@ android {
         applicationId 'my.boxman'
         minSdkVersion 17
         versionCode 9
-        versionName "9.91"
+        versionName "9.92"
     }
     buildTypes {
         release {
@@ -18,8 +18,8 @@ android {
     android.applicationVariants.all {
         variant ->
             variant.outputs.all {
-                //这里修改apk文件名
-                outputFileName = "BoxMan_${defaultConfig.versionName}_${releaseTime()}.apk"
+                //这里修改apk文件名:
+                outputFileName = "BoxMan${defaultConfig.versionName}_${releaseTime()}.apk"
             }
     }
     productFlavors {

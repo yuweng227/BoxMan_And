@@ -58,7 +58,6 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 	//缓存 GridView 中每个 Item 的图片
 	public static SparseArray <Bitmap> gridviewBitmapCaches = new SparseArray <Bitmap>();
 	int m_Num, mWhich;
-	View my_View = null;
 
 	myGridViewAdapter adapter = null;
 
@@ -218,7 +217,6 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 		@Override
 		public boolean onItemLongClick(AdapterView<?> arg0, View arg1,int arg2, long arg3){ //arg2代表长按的位置
 
-			my_View = arg1;
 			m_Num = arg2;
 			mGridView.showContextMenu();
 
@@ -342,8 +340,8 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 		menu.getItem(7).setVisible(false);     // 打开首个未解关卡
 		menu.getItem(8).setVisible(false);     // 打开上次推的关卡
 		menu.getItem(9).setVisible(false);     // 清空列表
-		menu.getItem(10).setVisible(false);    // 批量删除...
-		menu.getItem(11).setVisible(false);    // 每行图标个数...
+		menu.getItem(10).setVisible(false);    // 每行图标个数...
+		menu.getItem(11).setVisible(false);    // 批量删除...
 		menu.getItem(12).setVisible(false);    // 关于
 
 		if (myMaps.sFile.equals("最近推过的关卡")) {
@@ -354,7 +352,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 			menu.getItem(6).setVisible(true);     // 标识重复关卡
 			menu.getItem(7).setVisible(true);     // 打开首个未解关卡
 			menu.getItem(9).setVisible(true);     // 清空列表
-			menu.getItem(11).setVisible(true);    // 每行图标个数...
+			menu.getItem(10).setVisible(true);    // 每行图标个数...
 		} else
 		if (myMaps.sFile.equals("创编关卡")) {
 			menu.getItem(0).setVisible(true);     // ╋
@@ -363,8 +361,8 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 			menu.getItem(3).setVisible(true);     // 定位...
 			menu.getItem(4).setVisible(true);     // 多选模式
 			menu.getItem(5).setVisible(true);     // 显示标题
-			menu.getItem(10).setVisible(true);    // 批量删除
-			menu.getItem(11).setVisible(true);    // 每行图标个数...
+			menu.getItem(10).setVisible(true);    // 每行图标个数...
+			menu.getItem(11).setVisible(true);    // 批量删除
 		} else
 		if (myMaps.sFile.equals("关卡查询")) {
 			menu.getItem(1).setVisible(true);     // 顶
@@ -374,7 +372,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 			menu.getItem(5).setVisible(true);     // 显示标题
 			menu.getItem(6).setVisible(true);     // 标识重复关卡
 			menu.getItem(7).setVisible(true);     // 打开首个未解关卡
-			menu.getItem(11).setVisible(true);    // 每行图标个数...
+			menu.getItem(10).setVisible(true);    // 每行图标个数...
 		} else
 		if (myMaps.sFile.equals("相似关卡")) {
 			menu.getItem(1).setVisible(true);     // 顶
@@ -383,7 +381,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 			menu.getItem(4).setVisible(true);     // 多选模式
 			menu.getItem(5).setVisible(true);     // 显示标题
 			menu.getItem(6).setVisible(true);     // 标识重复关卡
-			menu.getItem(11).setVisible(true);    // 每行图标个数...
+			menu.getItem(10).setVisible(true);    // 每行图标个数...
 		} else
 		if (myMaps.m_Sets[0] == 3) {  // 扩展关卡组
 			menu.getItem(0).setVisible(true);     // ╋
@@ -395,8 +393,8 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 			menu.getItem(6).setVisible(true);     // 标识重复关卡
 			menu.getItem(7).setVisible(true);     // 打开首个未解关卡
 			menu.getItem(8).setVisible(true);     // 打开上次推的关卡
-			menu.getItem(10).setVisible(true);    // 批量删除
-			menu.getItem(11).setVisible(true);    // 每行图标个数...
+			menu.getItem(10).setVisible(true);    // 每行图标个数...
+			menu.getItem(11).setVisible(true);    // 批量删除
 			menu.getItem(12).setVisible(true);    // 关于
 		} else {                     // 内置关卡组
 			menu.getItem(1).setVisible(true);     // 顶
@@ -407,7 +405,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 			menu.getItem(6).setVisible(true);     // 标识重复关卡
 			menu.getItem(7).setVisible(true);     // 打开首个未解关卡
 			menu.getItem(8).setVisible(true);     // 打开上次推的关卡
-			menu.getItem(11).setVisible(true);    // 每行图标个数...
+			menu.getItem(10).setVisible(true);    // 每行图标个数...
 			menu.getItem(12).setVisible(true);    // 关于
 		}
 	}
@@ -1498,6 +1496,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 				final CheckBox m_All = (CheckBox) view2.findViewById(R.id.find_all);                //全选
 				final CheckBox m_Ans = (CheckBox) view2.findViewById(R.id.find_ans);                //搜索答案库
 				final CheckBox m_Sort = (CheckBox) view2.findViewById(R.id.find_sort);              //排序
+				final CheckBox m_Ignore_Box = (CheckBox) view2.findViewById(R.id.find_ignore_box);  //比较时忽略箱子和人
 				myMaps.m_setName = (ListView) view2.findViewById(R.id.find_setname);                //关卡集选项
 				m_Similarity = (ListView) view2.findViewById(R.id.find_similarity);                 //相似度选项
 
@@ -1575,6 +1574,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
                                     bundle.putInt("mSimilarity", Integer.valueOf(m_menu4[myMaps.m_Sets[26]]));
                                     bundle.putBoolean("mAns", m_Ans.isChecked());
                                     bundle.putBoolean("mSort", m_Sort.isChecked());
+                                    bundle.putBoolean("mIgnoreBox", m_Ignore_Box.isChecked());
                                     myMaps.curMap = myMaps.m_lstMaps.get(m_Num);
                                     //指向源关卡
                                     if (myMaps.sFile.equals("创编关卡")) {
