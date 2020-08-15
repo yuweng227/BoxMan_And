@@ -43,7 +43,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 public class myGridView extends Activity implements OnScrollListener, myFindFragment.FindStatusUpdate, mySplitLevelsFragment.SplitStatusUpdate {
@@ -1152,7 +1151,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 					str = "共 " + myMaps.mArray.size() + " 个关卡迁至";
 				} else {  //单关卡迁移
 					myMaps.mArray.add(m_Num);
-					str = m_Num + " 号关卡迁至";
+					str = (m_Num+1) + " 号关卡迁至";
 				}
 
 				mWhich = 0;
@@ -1224,7 +1223,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 					str2 = "共 " + myMaps.mArray.size() + " 个关卡复制到";
 				} else {  //单关卡迁移
 					myMaps.mArray.add(m_Num);
-					str2 = m_Num + " 号关卡复制到";
+					str2 = (m_Num+1) + " 号关卡复制到";
 				}
 
 				mWhich = 0;
@@ -1314,6 +1313,7 @@ public class myGridView extends Activity implements OnScrollListener, myFindFrag
 				myMaps.curMap = null;
 				View view = View.inflate(this, R.layout.goto_dialog, null);
 				final EditText input_steps = (EditText) view.findViewById(R.id.dialog_steps);  //位置
+				input_steps.setKeyListener(getNumber);
 				Builder dlg = new Builder(this, AlertDialog.THEME_HOLO_DARK);
 				dlg.setView(view).setCancelable(true);
 				dlg.setOnKeyListener(new DialogInterface.OnKeyListener() {

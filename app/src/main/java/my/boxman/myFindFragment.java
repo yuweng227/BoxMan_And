@@ -14,7 +14,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 //相似查找解耗时，myGridView 调用
 public class myFindFragment extends DialogFragment {

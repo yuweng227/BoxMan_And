@@ -6,6 +6,7 @@ package my.boxman;
  	private void showSystemUI() { ... }
  */
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -38,6 +39,7 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import java.io.File;
@@ -129,7 +131,6 @@ public class myGameView extends Activity {
     boolean m_bBusing;  //忙中
     boolean m_bPush;  //推
     boolean m_bNetLock;  //网锁
-    boolean m_b_UnDo_LongPress, m_b_ReDo_LongPress, m_b_TR_LongPress, m_b_More_LongPress;  //是否长按了“UnDo、ReDo、旋转、更多”按钮
 
     //四邻：左、右、上、下
     final byte[] dr4 = {0, 0, -1, 1};
@@ -1326,25 +1327,23 @@ public class myGameView extends Activity {
                 mMap.m_lChangeBK = false;  //是否显示更换背景按钮
                 m_bACT_ERROR = false;  //执行动作时是否遇到错误
                 mMap.invalidate();
-                if (m_b_UnDo_LongPress) {  //长按了“UnDo”按钮 == “重新开始”
+                if (m_bBusing) return;
 
-                    mMap.d_Moves = mMap.m_PicWidth;
-
-                    //先合并 undo 和 redo 序列，关卡复位后，将合并后的动作序列送入 redu 序列
-                    if (bt_BK.isChecked()) {  //逆推
-                        MyToast.showToast(myGameView.this, "重新开始！", Toast.LENGTH_SHORT);
-                        levelReset(true);  //逆推关卡复位
-                        if (myMaps.m_Sets[13] == 1)
-                            load_BK_Level(true);  //加载即景逆推目标点
-
-                    } else {  //正推
-                        MyToast.showToast(myGameView.this, "重新开始！", Toast.LENGTH_SHORT);
+                if (bt_BK.isChecked()) {  //逆推
+                    if (m_lstMovUnDo2.isEmpty()) {
+                        MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
+                    } else {
+                        if (myMaps.m_Sets[23] == 1) m_nStep = 1;
+                        else m_nStep = getStep(m_lstMovUnDo2);
+                        UpData4(1);
+                    }
+                } else {            //正推
+                    if (myMaps.isMacroDebug) {
                         levelReset(false);  //正推关卡复位
                         if (myMaps.m_Sets[25] == 1) {
                             load_Level(true);  //加载即景正推目标点
                         }
-
-                        if (myMaps.m_ActionIsPos && myMaps.isMacroDebug) {  //若执行“宏”选择了从当前点执行，则先将地图回复到当前点局面
+                        if (myMaps.m_ActionIsPos) {  //若执行“宏”选择了从当前点执行，则先将地图回复到当前点局面
                             Iterator myItr = m_lstMovedHistory.iterator();
                             m_lstMovReDo.clear();
                             m_lstMovUnDo.clear();
@@ -1353,75 +1352,37 @@ public class myGameView extends Activity {
                                 m_nStep = 1;
                                 reDo1();
                             }
-//                            mMap.invalidate();
+                            mMap.invalidate();
                         }
-                        mMap.myMacro.clear();
-                        mMap.myMacro.add(0);  //准备从第 0 行开始
-                        mMap.myMacroInf = "";
-                    }
-                    mMap.curMoves = 0;
-                    mMap.invalidate();
-                } else {
-                    if (m_bBusing) return;
-                    if (bt_BK.isChecked()) {  //逆推
-                        if (m_lstMovUnDo2.isEmpty()) {
+                        mMap.curMoves = 0;
+
+                        m_nMacro_Row = m_nRow;
+                        m_nMacro_Col = m_nCol;
+                        int len = mMap.myMacro.size();
+                        if (len > 1) {
+                            mMap.myMacro.remove(len - 1);
+                            for (int k = 0; k < len - 2; k++) {
+                                myDo_Block(mMap.myMacro.get(k).intValue(), mMap.myMacro.get(k).intValue(), true, false);
+                            }
+                            m_lstMovReDo.clear();
+                            mMap.invalidate();
+                        } else {
                             MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
-//                            m_bBusing = false;
+                        }
+                    } else {
+                        if (m_lstMovUnDo.isEmpty()) {
+                            MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
                         } else {
                             if (myMaps.m_Sets[23] == 1) m_nStep = 1;
-                            else m_nStep = getStep(m_lstMovUnDo2);
-                            UpData4(1);
-                        }
-                    } else {            //正推
-                        if (myMaps.isMacroDebug) {
-                            levelReset(false);  //正推关卡复位
-                            if (myMaps.m_Sets[25] == 1) {
-                                load_Level(true);  //加载即景正推目标点
+                            else  {
+                                if (m_nLastSteps >= 0 && m_nLastSteps <= m_lstMovUnDo.size()) m_nStep = m_lstMovUnDo.size() - m_nLastSteps;
+                                else m_nStep = getStep2(m_lstMovUnDo);
                             }
-                            if (myMaps.m_ActionIsPos) {  //若执行“宏”选择了从当前点执行，则先将地图回复到当前点局面
-                                Iterator myItr = m_lstMovedHistory.iterator();
-                                m_lstMovReDo.clear();
-                                m_lstMovUnDo.clear();
-                                while (myItr.hasNext()) {
-                                    m_lstMovReDo.offer((Byte)myItr.next());
-                                    m_nStep = 1;
-                                    reDo1();
-                                }
-                                mMap.invalidate();
-                            }
-                            mMap.curMoves = 0;
-
-                            m_nMacro_Row = m_nRow;
-                            m_nMacro_Col = m_nCol;
-                            int len = mMap.myMacro.size();
-                            if (len > 1) {
-                                mMap.myMacro.remove(len - 1);
-                                for (int k = 0; k < len - 2; k++) {
-                                    myDo_Block(mMap.myMacro.get(k).intValue(), mMap.myMacro.get(k).intValue(), true, false);
-                                }
-                                m_lstMovReDo.clear();
-                                mMap.invalidate();
-//                                m_bBusing = false;
-                            } else {
-                                MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
-                            }
-                        } else {
-                            if (m_lstMovUnDo.isEmpty()) {
-                                MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
-//                                m_bBusing = false;
-                            } else {
-                                if (myMaps.m_Sets[23] == 1) m_nStep = 1;
-                                else  {
-                                    if (m_nLastSteps >= 0 && m_nLastSteps <= m_lstMovUnDo.size()) m_nStep = m_lstMovUnDo.size() - m_nLastSteps;
-                                    else m_nStep = getStep2(m_lstMovUnDo);
-                                }
-                                m_nLastSteps = -1;
-                                UpData2(1);
-                            }
+                            m_nLastSteps = -1;
+                            UpData2(1);
                         }
                     }
                 }
-                m_b_UnDo_LongPress = false;  //是否长按了“UnDo”按钮
                 m_bBusing = false;
             }
         });
@@ -1430,11 +1391,49 @@ public class myGameView extends Activity {
             @Override
             public boolean onLongClick(View v) {
                 StopMicro();  //停止“宏”功能运行
-
+                bt_Sel.setChecked(false);  //关闭计数状态
+                if (mMap.m_lShowAnsInf) mMap.m_lShowAnsInf = false; //有了动作后，自动关闭答案信息的显示
                 m_bNetLock = false;  //取消网型提示
+                m_nStep = 0;
+                m_bYanshi = false;
+                m_bYanshi2 = false;
+                mMap.m_lChangeBK = false;  //是否显示更换背景按钮
+                m_bACT_ERROR = false;  //执行动作时是否遇到错误
+                mMap.d_Moves = mMap.m_PicWidth;
                 mMap.invalidate();
-                m_b_UnDo_LongPress = true;  //是否长按了“UnDo”按钮
-                return false;
+
+                //先合并 undo 和 redo 序列，关卡复位后，将合并后的动作序列送入 redu 序列
+                if (bt_BK.isChecked()) {  //逆推
+                    MyToast.showToast(myGameView.this, "重新开始！", Toast.LENGTH_SHORT);
+                    levelReset(true);  //逆推关卡复位
+                    if (myMaps.m_Sets[13] == 1)
+                        load_BK_Level(true);  //加载即景逆推目标点
+
+                } else {  //正推
+                    MyToast.showToast(myGameView.this, "重新开始！", Toast.LENGTH_SHORT);
+                    levelReset(false);  //正推关卡复位
+                    if (myMaps.m_Sets[25] == 1) {
+                        load_Level(true);  //加载即景正推目标点
+                    }
+
+                    if (myMaps.m_ActionIsPos && myMaps.isMacroDebug) {  //若执行“宏”选择了从当前点执行，则先将地图回复到当前点局面
+                        Iterator myItr = m_lstMovedHistory.iterator();
+                        m_lstMovReDo.clear();
+                        m_lstMovUnDo.clear();
+                        while (myItr.hasNext()) {
+                            m_lstMovReDo.offer((Byte)myItr.next());
+                            m_nStep = 1;
+                            reDo1();
+                        }
+                    }
+                    mMap.myMacro.clear();
+                    mMap.myMacro.add(0);  //准备从第 0 行开始
+                    mMap.myMacroInf = "";
+                }
+                mMap.curMoves = 0;
+                m_bBusing = false;
+                mMap.invalidate();
+                return true;
             }
         });
         bt_ReDo = (CheckBox) findViewById(R.id.bt_ReDo);  //前进
@@ -1452,84 +1451,37 @@ public class myGameView extends Activity {
                 mMap.m_lChangeBK = false;  //是否显示更换背景按钮
                 m_bACT_ERROR = false;  //执行动作时是否遇到错误
                 mMap.invalidate();
-                if (m_b_ReDo_LongPress) {  //长按了“RenDo”按钮 == “进至尾”
-                    if (bt_BK.isChecked()) {  //逆推
-                        if (m_lstMovReDo2.isEmpty()) {
-                            MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
-//                            m_bBusing = false;
-                        } else {
-                            MyToast.showToast(myGameView.this, "进至尾！", Toast.LENGTH_SHORT);
-                            if (m_lstMovUnDo2.isEmpty()) goHome();
-                            m_nStep = m_lstMovReDo2.size();
-                            m_bYanshi = false;
-                            m_bYanshi2 = true;
-                            mMap.curMoves = 0;
-                            UpData3(1);
-                        }
-                    } else {            //正推
-                        if (myMaps.isMacroDebug) {
-                            if (mMap.myMacro.get(mMap.myMacro.size() - 1) < myMaps.sAction.length) {
-                                myDo_Block(mMap.myMacro.get(mMap.myMacro.size() - 1), myMaps.sAction.length - 1, false, false);
-                                m_lstMovReDo.clear();
-//                                m_bBusing = false;
-
-                                mMap.invalidate();
-                            } else {
-                                MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
-                            }
-                        } else {
-                            if (m_lstMovReDo.isEmpty()) {
-                                MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
-//                                m_bBusing = false;
-                            } else {
-                                MyToast.showToast(myGameView.this, "正向演示！", Toast.LENGTH_SHORT);
-                                m_nStep = m_lstMovReDo.size();
-                                mMap.Box_Row0 = -1;  //记录箱子移动前的位置
-                                m_bYanshi = true;
-                                m_bYanshi2 = false;
-                                mMap.curMoves = 0;
-                                m_nLastSteps = -1;
-                                UpData1(1);
-                            }
-                        }
+                if (m_bBusing) return;
+                if (bt_BK.isChecked()) {  //逆推
+                    if (m_lstMovReDo2.isEmpty()) {
+                        MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
+                    } else {
+                        if (myMaps.m_Sets[23] == 1) m_nStep = 1;
+                        else m_nStep = getStep2(m_lstMovReDo2);
+                        UpData3(1);
                     }
-                } else {
-                    if (m_bBusing) return;
-                    if (bt_BK.isChecked()) {  //逆推
-                        if (m_lstMovReDo2.isEmpty()) {
+                } else {            //正推
+                    if (myMaps.isMacroDebug) {
+                        if (mMap.myMacro.get(mMap.myMacro.size() - 1) < myMaps.sAction.length) {
+                            myDo_Block(mMap.myMacro.get(mMap.myMacro.size() - 1), mMap.myMacro.get(mMap.myMacro.size() - 1), false, false);
+                            m_lstMovReDo.clear();
+
+                            mMap.invalidate();
+                        } else {
                             MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
-//                            m_bBusing = false;
+                        }
+                    } else {
+                        if (m_lstMovReDo.isEmpty()) {
+                            MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
                         } else {
                             if (myMaps.m_Sets[23] == 1) m_nStep = 1;
-                            else m_nStep = getStep2(m_lstMovReDo2);
-                            UpData3(1);
-                        }
-                    } else {            //正推
-                        if (myMaps.isMacroDebug) {
-                            if (mMap.myMacro.get(mMap.myMacro.size() - 1) < myMaps.sAction.length) {
-                                myDo_Block(mMap.myMacro.get(mMap.myMacro.size() - 1), mMap.myMacro.get(mMap.myMacro.size() - 1), false, false);
-                                m_lstMovReDo.clear();
-//                                m_bBusing = false;
-
-                                mMap.invalidate();
-                            } else {
-                                MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
-                            }
-                        } else {
-                            if (m_lstMovReDo.isEmpty()) {
-                                MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
-//                                m_bBusing = false;
-                            } else {
-                                if (myMaps.m_Sets[23] == 1) m_nStep = 1;
-                                else m_nStep = getStep(m_lstMovReDo);
-                                mMap.Box_Row0 = -1;  //记录箱子移动前的位置
-                                m_nLastSteps = m_lstMovUnDo.size();
-                                UpData1(1);
-                            }
+                            else m_nStep = getStep(m_lstMovReDo);
+                            mMap.Box_Row0 = -1;  //记录箱子移动前的位置
+                            m_nLastSteps = m_lstMovUnDo.size();
+                            UpData1(1);
                         }
                     }
                 }
-                m_b_ReDo_LongPress = false;  //是否长按了“ReDo”按钮
                 m_bBusing = false;
             }
         });
@@ -1539,10 +1491,55 @@ public class myGameView extends Activity {
             public boolean onLongClick(View v) {
                 StopMicro();  //停止“宏”功能运行
 
+                bt_Sel.setChecked(false);  //关闭计数状态
+                if (mMap.m_lShowAnsInf) mMap.m_lShowAnsInf = false; //有了动作后，自动关闭答案信息的显示
                 m_bNetLock = false;  //取消网型提示
+                m_nStep = 0;
+                m_bYanshi = false;
+                m_bYanshi2 = false;
+                mMap.m_lChangeBK = false;  //是否显示更换背景按钮
+                m_bACT_ERROR = false;  //执行动作时是否遇到错误
                 mMap.invalidate();
-                m_b_ReDo_LongPress = true;  //是否长按了“ReDo”按钮
-                return false;
+
+                if (bt_BK.isChecked()) {  //逆推
+                    if (m_lstMovReDo2.isEmpty()) {
+                        MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
+                    } else {
+                        MyToast.showToast(myGameView.this, "进至尾！", Toast.LENGTH_SHORT);
+                        if (m_lstMovUnDo2.isEmpty()) goHome();
+                        m_nStep = m_lstMovReDo2.size();
+                        m_bYanshi = false;
+                        m_bYanshi2 = true;
+                        mMap.curMoves = 0;
+                        UpData3(1);
+                    }
+                } else {            //正推
+                    if (myMaps.isMacroDebug) {
+                        if (mMap.myMacro.get(mMap.myMacro.size() - 1) < myMaps.sAction.length) {
+                            myDo_Block(mMap.myMacro.get(mMap.myMacro.size() - 1), myMaps.sAction.length - 1, false, false);
+                            m_lstMovReDo.clear();
+
+                            mMap.invalidate();
+                        } else {
+                            MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
+                        }
+                    } else {
+                        if (m_lstMovReDo.isEmpty()) {
+                            MyToast.showToast(myGameView.this, "没有了！", Toast.LENGTH_SHORT);
+                        } else {
+                            MyToast.showToast(myGameView.this, "正向演示！", Toast.LENGTH_SHORT);
+                            m_nStep = m_lstMovReDo.size();
+                            mMap.Box_Row0 = -1;  //记录箱子移动前的位置
+                            m_bYanshi = true;
+                            m_bYanshi2 = false;
+                            mMap.curMoves = 0;
+                            m_nLastSteps = -1;
+                            UpData1(1);
+                        }
+                    }
+                }
+                m_bBusing = false;
+                return true;
             }
         });
         bt_IM = (CheckBox) findViewById(R.id.cb_IM);  //瞬移
@@ -1650,16 +1647,13 @@ public class myGameView extends Activity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 StopMicro();
-                if (m_b_TR_LongPress) {  //长按了“旋转”按钮 == 恢复到“0 转”
-                    myMaps.m_nTrun = 0;
-                } else {
-                    myMaps.m_nTrun = (myMaps.m_nTrun + 1) % 8;
-                }
+
+                myMaps.m_nTrun = (myMaps.m_nTrun + 1) % 8;
+
                 myMaps.curMap.Trun = myMaps.m_nTrun;
                 bt_TR.setText(myMaps.m_nTrun + " 转");
                 mMap.initArena();
                 mMap.invalidate();
-                m_b_TR_LongPress = false;  //是否长按了“旋转”按钮
                 if (myMaps.m_nTrun == 0)
                     MyToast.showToast(myGameView.this, "第 0 转", Toast.LENGTH_SHORT);
             }
@@ -1668,12 +1662,21 @@ public class myGameView extends Activity {
         bt_TR.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                m_b_TR_LongPress = true;  //是否长按了“旋转”按钮
-                return false;
+                StopMicro();
+
+                myMaps.m_nTrun = 0;
+
+                myMaps.curMap.Trun = myMaps.m_nTrun;
+                bt_TR.setText(myMaps.m_nTrun + " 转");
+                mMap.initArena();
+                mMap.invalidate();
+                if (myMaps.m_nTrun == 0)
+                    MyToast.showToast(myGameView.this, "第 0 转", Toast.LENGTH_SHORT);
+
+                return true;
             }
         });
         bt_More = (CheckBox) findViewById(R.id.cb_More);  //更多
-        m_b_More_LongPress = false;  //是否长按了“更多”按钮
         bt_More.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -1685,22 +1688,12 @@ public class myGameView extends Activity {
                 mMap.m_lChangeBK = false;  //是否显示更换背景按钮
                 m_bACT_ERROR = false;  //执行动作时是否遇到错误
                 mMap.invalidate();
-                if (m_b_More_LongPress) {  //长按了“更多”按钮，结束游戏，返回上一层
-                    if (m_bMoved && (m_lstMovUnDo.size() > 0 || m_lstMovUnDo2.size() > 0)) {
-                        exitDlg.show();
-                    } else {
-                        myStop();
-                        finish();
-                    }
-                } else {
-                    mMap.d_Moves = mMap.m_PicWidth;
-                    m_nStep = 0;
-                    m_bYanshi = false;
-                    m_bYanshi2 = false;
-                    m_bBusing = false;
-                    openOptionsMenu();  //菜单
-                }
-                m_b_More_LongPress = false;  //是否长按了“更多”按钮
+                mMap.d_Moves = mMap.m_PicWidth;
+                m_nStep = 0;
+                m_bYanshi = false;
+                m_bYanshi2 = false;
+                m_bBusing = false;
+                openOptionsMenu();  //菜单
             }
         });
         bt_More.setLongClickable(true);
@@ -1708,13 +1701,29 @@ public class myGameView extends Activity {
             @Override
             public boolean onLongClick(View v) {
                 MyToast.showToast(myGameView.this, "可以离开了！", Toast.LENGTH_SHORT);
+                StopMicro();  //停止“宏”功能运行
+
+                bt_Sel.setChecked(false);  //关闭计数状态
+                if (mMap.m_lShowAnsInf) mMap.m_lShowAnsInf = false; //有了动作后，自动关闭答案信息的显示
                 m_bNetLock = false;  //取消网型提示
+                mMap.m_lChangeBK = false;  //是否显示更换背景按钮
+                m_bACT_ERROR = false;  //执行动作时是否遇到错误
+                mMap.d_Moves = mMap.m_PicWidth;
                 m_nStep = 0;
                 m_bYanshi = false;
                 m_bYanshi2 = false;
+                m_bBusing = false;
+
                 mMap.invalidate();
-                m_b_More_LongPress = true;  //是否长按了“更多”按钮
-                return false;
+
+                if (m_bMoved && (m_lstMovUnDo.size() > 0 || m_lstMovUnDo2.size() > 0)) {
+                    exitDlg.show();
+                } else {
+                    myStop();
+                    finish();
+                }
+
+                return true;
             }
         });
 
@@ -1728,9 +1737,6 @@ public class myGameView extends Activity {
         m_iR10 = -1;
         m_iC10 = -1;
         initMap();
-        m_b_UnDo_LongPress = false;  //是否长按了“UnDo”按钮
-        m_b_ReDo_LongPress = false;  //是否长按了“ReDo”按钮
-        m_b_TR_LongPress = false;  //是否长按了“旋转”按钮
         m_bNetLock = false;  //取消网型提示
 
         closedDiagonalLock = new DiagonalLock(this);
@@ -2181,7 +2187,7 @@ public class myGameView extends Activity {
         if (myMaps.mState2.size() > 0) {  // 若有答案
             myMaps.m_State = mySQLite.m_SQL.load_State(myMaps.mState2.get(0).id);
             if (myMaps.m_State.ans.length() > 0) formatPath(myMaps.m_State.ans, false);
-        } else if (myMaps.mState1.size() > 0) {  // 若有保存的状态，自动加载最新状态
+        } else if (myMaps.m_Sets[37] == 1 && myMaps.mState1.size() > 0) {  // 若无答案，自动加载最新状态
             // 按保存时间排序，第一个为最新状态
             Collections.sort(myMaps.mState1, new Comparator() {
                 @Override
@@ -2667,6 +2673,12 @@ public class myGameView extends Activity {
                 break;
             case 2:  //推、移  -- 逆推
                 UpData3(1);
+                break;
+            case 3:  //undo 长按
+                bt_UnDo.onKeyLongPress(0, null);
+                break;
+            case 4:  //redo 长按
+                bt_ReDo.onKeyLongPress(0, null);
                 break;
             case 5:  //undo
                 bt_UnDo.setChecked(!bt_UnDo.isChecked());
@@ -3252,6 +3264,8 @@ public class myGameView extends Activity {
                     ans.id = hh;
                     ans.pid = myMaps.curMap.Level_id;
                     ans.pkey = myMaps.curMap.key;
+                    ans.moves = m_iStep[1];
+                    ans.pushs = m_iStep[0];
                     ans.inf = "移动: " + m_iStep[1] + ", 推动: " + m_iStep[0];
                     ans.time = m_imPort_YASS;
                     myMaps.mState2.add(ans);
@@ -3488,17 +3502,6 @@ public class myGameView extends Activity {
         return true;
     }
 
-    final NumberKeyListener getNumber16 = new NumberKeyListener() {
-        @Override
-        protected char[] getAcceptedChars() {
-            return new char[]{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F', ','};
-        }
-
-        @Override
-        public int getInputType() {
-            return InputType.TYPE_CLASS_PHONE;
-        }
-    };
     public boolean onOptionsItemSelected(MenuItem mt) {
 
         switch (mt.getItemId()) {
@@ -3665,8 +3668,7 @@ public class myGameView extends Activity {
                 String[] m_menu2 = {
                         "速度设置",
                         "更换皮肤",
-                        "更换背景图片",
-                        "设置背景色"
+                        "更换背景"
                 };
                 Builder builder2 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 builder2.setTitle("场景设置").setSingleChoiceItems(m_menu2, -1, new OnClickListener() {
@@ -3742,8 +3744,10 @@ public class myGameView extends Activity {
                                         public void onClick(DialogInterface dialog, int which) {
                                             myMaps.bk_Pic = myMaps.mFile_List2.get(which);  //选择的文档
                                             myMaps.loadBKPic();
-//                                            if (which > 0) mMap.setArena();  //重置舞台场地（背景）
-                                            if (which > 0 && myMaps.bkPict != null) {
+
+                                            if (which == 0) {     // 使用背景色
+                                                setColorBK();
+                                            } else if (myMaps.bkPict != null) {    // 使用背景图片
                                                 mMap.w_bkPic = myMaps.bkPict.getWidth();
                                                 mMap.h_bkPic = myMaps.bkPict.getHeight();
                                                 mMap.w_bkNum = myMaps.m_nWinWidth / mMap.w_bkPic + 1;
@@ -3761,7 +3765,6 @@ public class myGameView extends Activity {
                                         public void onClick(DialogInterface dialog, int n) {
                                             myMaps.bk_Pic = myMaps.mFile_List2.get(m_nItemSelect);  //选择的文档
                                             myMaps.loadBKPic();
-//                                            if (m_nItemSelect > 0) mMap.setArena();//重置舞台场地（背景）
                                             if (m_nItemSelect > 0 && myMaps.bkPict != null) {
                                                 mMap.w_bkPic = myMaps.bkPict.getWidth();
                                                 mMap.h_bkPic = myMaps.bkPict.getHeight();
@@ -3773,38 +3776,10 @@ public class myGameView extends Activity {
                                         }
                                     });
                                     builder.setCancelable(false).show();
-                                } else
+                                } else {
                                     MyToast.showToast(myGameView.this, "没找到图片文档", Toast.LENGTH_SHORT);
-
+                                }
                                 break;
-                            case 3:   //设置背景色
-
-                                final EditText et = new EditText(myGameView.this);
-                                et.setKeyListener(getNumber16);
-
-                                int i1 = myMaps.m_Sets[4] & 0x00ffffff;
-                                String s1 = Integer.toHexString(i1).toUpperCase(Locale.getDefault());
-                                s1 = String.format("%6s", s1);
-                                s1 = s1.replaceAll(" ", "0");
-
-                                et.setText(s1);
-
-                                new Builder(myGameView.this, AlertDialog.THEME_HOLO_DARK).setTitle("背景色(RGB)")
-                                        .setView(et)
-                                        .setMessage("(例：223344、AABBCC 等)")
-                                        .setPositiveButton("确定", new OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                try {
-                                                    int i1 = Integer.valueOf(et.getText().toString(), 16);
-                                                    myMaps.m_Sets[4] = i1 | 0xff000000;
-                                                    mMap.invalidate();
-                                                } catch (Throwable ex) {
-                                                    MyToast.showToast(myGameView.this, "请输入6位的16进制数！", Toast.LENGTH_SHORT);
-                                                }
-                                            }
-                                        })
-                                        .setNegativeButton("取消", null).setCancelable(false)
-                                        .show();
                         }  //end switch
                     }
                 }).setPositiveButton("返回", new OnClickListener() {
@@ -3825,6 +3800,7 @@ public class myGameView extends Activity {
                         "可达提示",
                         "仓管员转向动画",
                         "长按点位提示关联网",
+                        "自动加载最新状态",
                         "禁用逆推目标点",
                         "允许穿越",
                         "单步进退",
@@ -3842,6 +3818,7 @@ public class myGameView extends Activity {
                         myMaps.m_Sets[8] == 1,   //显示可达提示
                         myMaps.m_Sets[27] == 1,  //仓管员转向动画
                         myMaps.m_Sets[3] == 1,   //长按目标点提示关联网点及网口
+                        myMaps.m_Sets[37] == 1,   //关卡初态，长按仓管员，切换是否“自动加载最新状态”
                         myMaps.m_Sets[32] == 1,  //禁用逆推目标点
                         myMaps.m_Sets[17] == 1,  //允许穿越
                         myMaps.m_Sets[23] == 1,  //单步进退
@@ -3901,12 +3878,16 @@ public class myGameView extends Activity {
                         if (mChk[6]) myMaps.m_Sets[3] = 1;
                         else myMaps.m_Sets[3] = 0;
 
+                        //是否“自动加载最新状态”
+                        if (mChk[7]) myMaps.m_Sets[37] = 1;
+                        else myMaps.m_Sets[37] = 0;
+
                         //禁用逆推目标点
-                        if (mChk[7]) myMaps.m_Sets[32] = 1;
+                        if (mChk[8]) myMaps.m_Sets[32] = 1;
                         else myMaps.m_Sets[32] = 0;
 
                         //是否允许穿越
-                        if (mChk[8]) {
+                        if (mChk[9]) {
                             myMaps.m_Sets[17] = 1;
                             mMap.m_bManTo = false;
                             mMap.m_bManTo2 = false;
@@ -3927,15 +3908,15 @@ public class myGameView extends Activity {
                         }
 
                         //是否单步进退
-                        if (mChk[9]) myMaps.m_Sets[23] = 1;
+                        if (mChk[10]) myMaps.m_Sets[23] = 1;
                         else myMaps.m_Sets[23] = 0;
 
                         //自动爬阶梯
-                        if (mChk[10]) myMaps.m_Sets[29] = 1;
+                        if (mChk[11]) myMaps.m_Sets[29] = 1;
                         else myMaps.m_Sets[29] = 0;
 
                         //显示系统导航键
-                        if (mChk[11]) {
+                        if (mChk[12]) {
                             myMaps.m_Sets[16] = 1;
                             showSystemUI();
                         } else {
@@ -3944,15 +3925,15 @@ public class myGameView extends Activity {
                         }
 
                         //禁用全屏
-                        if (mChk[12]) myMaps.m_Sets[20] = 1;
+                        if (mChk[13]) myMaps.m_Sets[20] = 1;
                         else myMaps.m_Sets[20] = 0;
 
                         //演示时仅推动
-                        if (mChk[13]) myMaps.m_Sets[28] = 1;
+                        if (mChk[14]) myMaps.m_Sets[28] = 1;
                         else myMaps.m_Sets[28] = 0;
 
                         //使用音量键选择关卡
-                        if (mChk[14]) myMaps.m_Sets[15] = 1;
+                        if (mChk[15]) myMaps.m_Sets[15] = 1;
                         else myMaps.m_Sets[15] = 0;
 
                         BoxMan.saveSets();  //保存设置
@@ -4085,6 +4066,89 @@ public class myGameView extends Activity {
         }
     }
 
+    // 设置背景色
+    public void setColorBK() {
+        View view2 = View.inflate(this, R.layout.color_dialog, null);
+        final View vw = view2.findViewById(R.id.dialog_bk_color);                   //颜色示例
+        final SeekBar color_R = (SeekBar) view2.findViewById(R.id.dialog_color_R);  //标尺字体颜色 -- 红
+        final SeekBar color_G = (SeekBar) view2.findViewById(R.id.dialog_color_G);  //标尺字体颜色 -- 绿
+        final SeekBar color_B = (SeekBar) view2.findViewById(R.id.dialog_color_B);  //标尺字体颜色 -- 蓝
+
+        final int[] mColor = {
+                (myMaps.m_Sets[4] & 0x00FF0000) >> 16,
+                (myMaps.m_Sets[4] & 0x0000FF00) >> 8,
+                myMaps.m_Sets[4] & 0x000000FF };
+
+        vw.setBackgroundColor(myMaps.m_Sets[4] | 0xff000000);
+
+        color_R.setProgress(mColor[0]);
+        color_G.setProgress(mColor[1]);
+        color_B.setProgress(mColor[2]);
+
+        color_R.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mColor[0] = progress;
+                vw.setBackgroundColor(mColor[0] << 16 | mColor[1] << 8 | mColor[2] | 0xff000000);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        color_G.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mColor[1] = progress;
+                vw.setBackgroundColor(mColor[0] << 16 | mColor[1] << 8 | mColor[2] | 0xff000000);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        color_B.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mColor[2] = progress;
+                vw.setBackgroundColor(mColor[0] << 16 | mColor[1] << 8 | mColor[2] | 0xff000000);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        new Builder(this, AlertDialog.THEME_HOLO_DARK).setTitle("设置背景色:")
+                .setView(view2)
+                .setPositiveButton("确定", new OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        myMaps.m_Sets[4] = mColor[0] << 16 | mColor[1] << 8 | mColor[2] | 0xff000000;
+                        myMaps.bk_Pic = "使用背景色";
+                        mMap.invalidate();
+                    }
+                })
+                .setNegativeButton("取消", null).setCancelable(false)
+                .show();
+    }
+
     //接收 YASS 返回值
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
@@ -4196,6 +4260,7 @@ public class myGameView extends Activity {
         myMaps.m_StateIsRedy = false;
         Intent intent1 = new Intent();
         intent1.setClass(this, myStateBrow.class);
+        myStateBrow.my_Sort = 0;  // 每次，默认移动优先排序答案
         startActivity(intent1);
     }
 
@@ -5577,6 +5642,7 @@ public class myGameView extends Activity {
             myTime  = myTime0;
         }
 
+        @SuppressLint("WrongThread")
         @Override
         protected Void doInBackground(Integer... params) {
             try {

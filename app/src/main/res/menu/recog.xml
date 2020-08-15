@@ -12,19 +12,19 @@
 		android:title="悔"/>
 
 	<item
-		android:id="@+id/recog_cut_left_top"
+		android:id="@+id/recog_similarity"
 		android:showAsAction="always"
-		android:title="┏"/>
+		android:title="度"/>
 
 	<item
 		android:id="@+id/recog_shrink"
 		android:showAsAction="always"
-		android:title="-1"/>
+		android:title="减"/>
 
 	<item
 		android:id="@+id/recog_extend"
 		android:showAsAction="always"
-		android:title="+1"/>
+		android:title="增"/>
 
 	<item
 		android:id="@+id/recog_complete"

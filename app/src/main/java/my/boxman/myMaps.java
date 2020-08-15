@@ -14,7 +14,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -123,7 +122,7 @@ public class myMaps {
 	static String J_Comment;  //关卡集"注释"
 
 	static long m_Set_id;  //增补关卡之关卡集 id
-	static int[] m_Sets;  //系统参数设置(0-关卡集组，1-关卡集， 2-关卡预览图标题，3-长按目标点提示关联网点及网口， 4-关卡背景色， 5-仓管员图片方向，6-瞬移，7-轮转方位，8-显示可达提示，9-标尺不随关卡旋转，10-移动速度，11-死锁提示，12-标识重复关卡，13-即景逆推，14-仓管员移动方向，15-使用音量键选择关卡，16-显示系统虚拟按键，17-是否允许穿越，18-unDO、ReDo，19-是否采用YASC绘制习惯，20-禁用全屏，21-编辑关卡图时，地图中的标尺字体颜色，22-编辑关卡图时，哪些元素携带标尺，23-单步进退，25-即景正推，26-查找相似关卡的默认相似度，27-仓管员转向动画，28-演示时仅推动，29-自动爬阶梯，30-导出答案的注释信息，31-导入关卡为一个时，自动打开，32-禁用逆推目标点，33-每行浏览的图标数，34-每行浏览的图标默认数，35-布局中的图标默认高度，36-识别)
+	static int[] m_Sets;  //系统参数设置(0-关卡集组，1-关卡集， 2-关卡预览图标题，3-长按目标点提示关联网点及网口， 4-关卡背景色， 5-仓管员图片方向，6-瞬移，7-轮转方位，8-显示可达提示，9-标尺不随关卡旋转，10-移动速度，11-死锁提示，12-标识重复关卡，13-即景逆推，14-仓管员移动方向，15-使用音量键选择关卡，16-显示系统虚拟按键，17-是否允许穿越，18-unDO、ReDo，19-是否采用YASC绘制习惯，20-禁用全屏，21-编辑关卡图时，地图中的标尺字体颜色，22-编辑关卡图时，哪些元素携带标尺，23-单步进退，25-即景正推，26-查找相似关卡的默认相似度，27-仓管员转向动画，28-演示时仅推动，29-自动爬阶梯，30-导出答案的注释信息，31-导入关卡为一个时，自动打开，32-禁用逆推目标点，33-每行浏览的图标数，34-每行浏览的图标默认数，35-布局中的图标默认高度，36-识别，37-打开无解关卡时，自动加载最新状态)
 	static String mMatchNo = "";  //第 n 期比赛
 	static String mMatchDate1 = "";  //比赛开始日期
 	static String mMatchDate2 = "";  //比赛结束日期
@@ -138,6 +137,7 @@ public class myMaps {
 	static Bitmap skinBit = null; //皮肤
 	static Bitmap bkPict = null; //背景图片
 	static Bitmap edPict = null; //关卡编辑界面的背景图片
+	static int edPictLeft, edPictTop, edPictRight, edPictBottom;  // 关卡编辑界面的背景图片的四至
 	static android.graphics.Bitmap.Config cfg = Bitmap.Config.ARGB_4444;
 	static Paint myPaint = new Paint();
 	static Resources res;  //资源

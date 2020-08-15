@@ -131,7 +131,6 @@ public class DiagonalLock {
 							break cur_Diagonal;
 						}
 					}
-
 					if (isPass(current_Position)) {  // 检查点是通道
 
 						if(isPass(neighbor2_Position)) {  // neighbor2_Position 是通道，不会构成“对角”，结束此方向的检查
@@ -157,11 +156,11 @@ public class DiagonalLock {
 						//     * *
 						//     **
 						if (isWall(neighbor2_Position) && isWall(current_Position + dy) ||                                         // 遇到“双墙壁”端点
-							isWall(current_Position+dy) && isBox(neighbor2_Position) && isZFreeze(current_Position, neighbor2_Position) ||   // 变种“双墙壁”端点
-							isWall(neighbor2_Position) && isBox(current_Position+dy) && isZFreeze(current_Position, current_Position+dy)) {   // 变种“双墙壁”端点
+							isWall(current_Position+dy) && isBox(neighbor2_Position) && isPass(current_Position + dx + dy) && isZFreeze(current_Position, neighbor2_Position) ||   // 变种“双墙壁”端点
+							isWall(neighbor2_Position) && isBox(current_Position+dy) && isPass(current_Position + dx + dy) && isZFreeze(current_Position, current_Position+dy)) {   // 变种“双墙壁”端点
 							// 遇到“双墙壁”端点，就可以做“折返”检查的准备了
 						} else {
-//							if (!isWall(neighbor2_Position) || !isWall(current_Position + dy)) {
+//						if (!isWall(neighbor2_Position) || !isWall(current_Position + dy)) {
 							current_Position += dx + dy;  // 下一检查点
 							continue;
 						}

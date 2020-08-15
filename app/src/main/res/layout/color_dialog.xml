@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:keepScreenOn="true">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636"/>
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#363636"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="108dp"
+            android:layout_height="108dp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:background="#000000">
+
+            <LinearLayout
+                android:layout_width="104dp"
+                android:layout_height="104dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:background="#ffffff">
+
+                <View
+                    android:id="@+id/dialog_bk_color"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:background="#000000"
+                    android:layout_margin="4dp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#363636"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#363636"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginLeft="12dp"
+                android:text="红："/>
+
+            <SeekBar
+            android:id="@+id/dialog_color_R"
+            android:layout_width="256dp"
+            android:layout_height="wrap_content"
+            android:max="255"
+            android:padding="4dp"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="20dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#363636"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginLeft="12dp"
+                android:text="绿："/>
+
+            <SeekBar
+                android:id="@+id/dialog_color_G"
+                android:layout_width="256dp"
+                android:layout_height="wrap_content"
+                android:max="255"
+                android:padding="4dp"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="20dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#363636"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginLeft="12dp"
+                android:text="蓝："/>
+
+            <SeekBar
+            android:id="@+id/dialog_color_B"
+            android:layout_width="256dp"
+            android:layout_height="wrap_content"
+            android:max="255"
+            android:padding="4dp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="20dp"/>
+
+</LinearLayout>

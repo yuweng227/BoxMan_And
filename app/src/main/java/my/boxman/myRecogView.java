@@ -4,39 +4,27 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.InputType;
-import android.text.method.NumberKeyListener;
-import android.util.AttributeSet;
-import android.view.InflateException;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class myRecogView extends Activity {
+
+    MyHandler myTimer;
 
     AlertDialog exitDlg;
 
@@ -44,14 +32,12 @@ public class myRecogView extends Activity {
 
     myRecogViewMap mMap;
 
-    char[][] m_cArray, bk_cArray;  //地图，备份地图
-    int m_nRows, m_nCols;
+    char[][] m_cArray, bk_cArray;  //地图，备份地图m_nRows, m_nCols,
     int m_nBoxNum, DstNum;
 
-    int isActNum = -1;
-    boolean isInAction = false;
-
-    private ProgressDialog dialog;
+    int actNum = 0;              // 定时器功能选择
+    int selNum = -1;             // 当前的选择条目
+    boolean isInAction = false;  // 是否正在识别
 
     Button bt_Floor;
     Button bt_Wall;
@@ -59,7 +45,6 @@ public class myRecogView extends Activity {
     Button bt_BoxGoal;
     Button bt_Goal;
     Button bt_Player;
-    Button bt_Color;
     Button bt_Left;
     Button bt_Right;
     Button bt_Up;
@@ -81,29 +66,25 @@ public class myRecogView extends Activity {
         mMap = (myRecogViewMap) this.findViewById(R.id.myRecogMap);
         mMap.Init(this);
 
+        myTimer = new MyHandler();
+
         initMap();
 
         bt_Floor = (Button) findViewById(R.id.bt_floor);  //地板
         bt_Floor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mMap.m_nObj != 0) {
-                    mMap.m_nObj = 0;
-                    setColor();
-                    bt_Floor.setBackgroundColor(0x9f0000ff);
-                } else {
-                    mMap.m_nObj = -1;
-                    bt_Floor.setBackgroundColor(0xff334455);
-                }
+                setColor(0);
             }
         });
         bt_Floor.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                mMap.m_nObj = -1;
+                setColor(0);
                 String[] m_menu = {
                         "清空地图"
                 };
-                isActNum = 0;
                 Builder dlg = new Builder(myRecogView.this, AlertDialog.THEME_HOLO_DARK);
                 dlg.setCancelable(false);
 
@@ -111,16 +92,9 @@ public class myRecogView extends Activity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         clearXSB();
-                        myCount();
                         mMap.invalidate();
                     }
-                }).setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        isActNum = which;
-                    }
-                }).setCancelable(false).create().show();
-                mMap.invalidate();
+                }).setSingleChoiceItems(m_menu, 0, null).setCancelable(false).create().show();
                 return true;
             }
         });
@@ -129,23 +103,17 @@ public class myRecogView extends Activity {
         bt_Wall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mMap.m_nObj != 1) {
-                    mMap.m_nObj = 1;
-                    setColor();
-                    bt_Wall.setBackgroundColor(0x9f0000ff);
-                } else {
-                    mMap.m_nObj = -1;
-                    bt_Wall.setBackgroundColor(0xff334455);
-                }
+                setColor(1);
             }
         });
         bt_Wall.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                mMap.m_nObj = -1;
+                setColor(1);
                 String[] m_menu = {
                         "清理墙壁"
                 };
-                isActNum = 0;
                 Builder dlg = new Builder(myRecogView.this, AlertDialog.THEME_HOLO_DARK);
                 dlg.setCancelable(false);
 
@@ -153,16 +121,9 @@ public class myRecogView extends Activity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         removeXSB('#', true);
-                        myCount();
                         mMap.invalidate();
                     }
-                }).setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        isActNum = which;
-                    }
-                }).setCancelable(false).create().show();
-                mMap.invalidate();
+                }).setSingleChoiceItems(m_menu, 0, null).setCancelable(false).create().show();
                 return true;
             }
         });
@@ -171,38 +132,32 @@ public class myRecogView extends Activity {
         bt_Box.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mMap.m_nObj != 2) {
-                    mMap.m_nObj = 2;
-                    setColor();
-                    bt_Box.setBackgroundColor(0x9f0000ff);
-                } else {
-                    mMap.m_nObj = -1;
-                    bt_Box.setBackgroundColor(0xff334455);
-                }
+                setColor(2);
             }
         });
         bt_Box.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                mMap.m_nObj = -1;
+                setColor(2);
                 String[] m_menu = {
                         "清理纯箱子",
                         "清理所有箱子"
                 };
-                isActNum = 0;
+                selNum = 0;
                 Builder dlg = new Builder(myRecogView.this, AlertDialog.THEME_HOLO_DARK);
                 dlg.setCancelable(false);
 
                 dlg.setTitle("选项").setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        removeXSB('$', isActNum == 1);
-                        myCount();
+                        removeXSB('$', selNum == 1);
                         mMap.invalidate();
                     }
-                }).setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
+                }).setSingleChoiceItems(m_menu, selNum, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        isActNum = which;
+                        selNum = which;
                     }
                 }).setCancelable(false).create().show();
                 return true;
@@ -213,38 +168,32 @@ public class myRecogView extends Activity {
         bt_BoxGoal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mMap.m_nObj != 3) {
-                    mMap.m_nObj = 3;
-                    setColor();
-                    bt_BoxGoal.setBackgroundColor(0x9f0000ff);
-                } else {
-                    mMap.m_nObj = -1;
-                    bt_BoxGoal.setBackgroundColor(0xff334455);
-                }
+                setColor(3);
             }
         });
         bt_BoxGoal.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                mMap.m_nObj = -1;
+                setColor(3);
                 String[] m_menu = {
                         "清理目标点箱子",
                         "保留目标点清理箱子"
                 };
-                isActNum = 0;
+                selNum = 0;
                 Builder dlg = new Builder(myRecogView.this, AlertDialog.THEME_HOLO_DARK);
                 dlg.setCancelable(false);
 
                 dlg.setTitle("选项").setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        removeXSB('*', isActNum == 0);
-                        myCount();
+                        removeXSB('*', selNum == 0);
                         mMap.invalidate();
                     }
-                }).setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
+                }).setSingleChoiceItems(m_menu, selNum, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        isActNum = which;
+                        selNum = which;
                     }
                 }).setCancelable(false).create().show();
                 return true;
@@ -255,38 +204,32 @@ public class myRecogView extends Activity {
         bt_Goal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mMap.m_nObj != 4) {
-                    mMap.m_nObj = 4;
-                    setColor();
-                    bt_Goal.setBackgroundColor(0x9f0000ff);
-                } else {
-                    mMap.m_nObj = -1;
-                    bt_Goal.setBackgroundColor(0xff334455);
-                }
+                setColor(4);
             }
         });
         bt_Goal.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                mMap.m_nObj = -1;
+                setColor(4);
                 String[] m_menu = {
                         "清理纯目标点",
                         "清理所有目标点"
                 };
-                isActNum = 0;
+                selNum = 0;
                 Builder dlg = new Builder(myRecogView.this, AlertDialog.THEME_HOLO_DARK);
                 dlg.setCancelable(false);
 
                 dlg.setTitle("选项").setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        removeXSB('.', isActNum == 1);
-                        myCount();
+                        removeXSB('.', selNum == 1);
                         mMap.invalidate();
                     }
-                }).setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
+                }).setSingleChoiceItems(m_menu, selNum, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        isActNum = which;
+                        selNum = which;
                     }
                 }).setCancelable(false).create().show();
                 return true;
@@ -297,67 +240,43 @@ public class myRecogView extends Activity {
         bt_Player.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mMap.m_nObj != 5) {
-                    mMap.m_nObj = 5;
-                    setColor();
-                    bt_Player.setBackgroundColor(0x9f0000ff);
-                } else {
-                    mMap.m_nObj = -1;
-                    bt_Player.setBackgroundColor(0xff334455);
-                }
+                setColor(5);
             }
         });
 
         mMap.m_nObj = -1;   // 默认，没有选择物件（XSB元素）
 
-        bt_Color = (Button) findViewById(R.id.bt_color);  //网格线颜色
-        bt_Color.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mMap.m_nLine_Color++;
-                mMap.m_nLine_Color %= 3;
-                if (mMap.m_nLine_Color == 1) {            // 网格线为白色
-                    bt_Color.setBackgroundColor(0x9fffffff);
-                    bt_Color.setTextColor(0xff000000);
-                    bt_Color.setText("白");
-                } else if (mMap.m_nLine_Color == 2) {     // 网格线为黑色
-                    bt_Color.setTextColor(0xffffffff);
-                    bt_Color.setBackgroundColor(0x9f000000);
-                    bt_Color.setText("黑");
-                } else {                                  // 默认，网格线为紫色
-                    bt_Color.setBackgroundColor(0x9fff00ff);
-                    bt_Color.setTextColor(0xffffffff);
-                    bt_Color.setText("紫");
-                }
-                if (myMenu != null) {
-                    if (mMap.m_nLine_Color == 2) {
-                        myMenu.getItem(3).setTitle("-.5");
-                        myMenu.getItem(4).setTitle("+.5");
-                    } else if (mMap.m_nLine_Color == 1) {
-                        myMenu.getItem(3).setTitle("-3");
-                        myMenu.getItem(4).setTitle("+3");
-                    } else {
-                        myMenu.getItem(3).setTitle("-1");
-                        myMenu.getItem(4).setTitle("+1");
-                    }
-                }
-                mMap.invalidate();
-            }
-        });
-        mMap.m_nLine_Color = 0;
+        mMap.isLeftTop = true;  // 默认：左、上边的指示灯点亮
 
         bt_Left = (Button) findViewById(R.id.bt_left);  //网格线左移
         bt_Left.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mMap.m_nMapLeft > 0) {
-                    mMap.m_nMapLeft--;
-                    if (mMap.cur_Rect.top >= 0) {  //焦点框
-                        mMap.cur_Rect.left--;
-                        mMap.cur_Rect.right--;
-                    }
-                    mMap.invalidate();
+                if (actNum > 0) {    // 取消连续调整
+                    actNum = 0;      // 取消定时器功能
+                    return;
                 }
+                mMap.cur_Rect.top = -1;   // 取消焦点格子
+                if (mMap.isLeftTop) {
+                    if (mMap.m_nMapLeft > 1) {
+                        mMap.m_nMapLeft--;
+                        mMap.invalidate();
+                    }
+                } else {
+                    if (mMap.m_nMapRight-50 > mMap.m_nMapLeft) {
+                        mMap.m_nMapRight--;
+                        mMap.invalidate();
+                    }
+                }
+            }
+        });
+        bt_Left.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                mMap.cur_Rect.top = -1;  // 取消焦点框
+                actNum = 1;              // 定时器功能选择 -- 连续左移
+                UpData(1);            // 启动定时器
+                return false;
             }
         });
 
@@ -365,14 +284,31 @@ public class myRecogView extends Activity {
         bt_Right.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mMap.m_nMapLeft < mMap.m_nPicWidth - mMap.m_nWidth) {
-                    mMap.m_nMapLeft++;
-                    if (mMap.cur_Rect.top >= 0) {  //焦点框
-                        mMap.cur_Rect.left++;
-                        mMap.cur_Rect.right++;
-                    }
-                    mMap.invalidate();
+                if (actNum > 0) {    // 取消连续调整
+                    actNum = 0;      // 取消定时器功能
+                    return;
                 }
+                mMap.cur_Rect.top = -1;   // 取消焦点格子
+                if (mMap.isLeftTop) {
+                    if (mMap.m_nMapLeft+50 < mMap.m_nMapRight) {
+                        mMap.m_nMapLeft++;
+                        mMap.invalidate();
+                    }
+                } else {
+                    if (mMap.m_nMapRight+1 < mMap.m_nPicWidth-1) {
+                        mMap.m_nMapRight++;
+                        mMap.invalidate();
+                    }
+                }
+            }
+        });
+        bt_Right.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                mMap.cur_Rect.top = -1;  // 取消焦点框
+                actNum = 2;              // 定时器功能选择 -- 连续右移
+                UpData(1);            // 启动定时器
+                return false;
             }
         });
 
@@ -380,14 +316,31 @@ public class myRecogView extends Activity {
         bt_Up.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mMap.m_nMapTop > 0) {
-                    mMap.m_nMapTop--;
-                    if (mMap.cur_Rect.top >= 0) {  //焦点框
-                        mMap.cur_Rect.top--;
-                        mMap.cur_Rect.bottom--;
-                    }
-                    mMap.invalidate();
+                if (actNum > 0) {    // 取消连续调整
+                    actNum = 0;      // 取消定时器功能
+                    return;
                 }
+                mMap.cur_Rect.top = -1;   // 取消焦点格子
+                if (mMap.isLeftTop) {
+                    if (mMap.m_nMapTop > 1) {
+                        mMap.m_nMapTop--;
+                        mMap.invalidate();
+                    }
+                } else {
+                    if (mMap.m_nMapBottom-50 > mMap.m_nMapTop) {
+                        mMap.m_nMapBottom--;
+                        mMap.invalidate();
+                    }
+                }
+            }
+        });
+        bt_Up.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                mMap.cur_Rect.top = -1;  // 取消焦点框
+                actNum = 3;              // 定时器功能选择 -- 连续上移
+                UpData(1);            // 启动定时器
+                return false;
             }
         });
 
@@ -395,20 +348,37 @@ public class myRecogView extends Activity {
         bt_Down.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mMap.m_nMapTop < mMap.m_nPicHeight - mMap.m_nWidth) {
-                    mMap.m_nMapTop++;
-                    if (mMap.cur_Rect.top >= 0) {  //焦点框
-                        mMap.cur_Rect.top++;
-                        mMap.cur_Rect.bottom++;
-                    }
-                    mMap.invalidate();
+                if (actNum > 0) {    // 取消连续调整
+                    actNum = 0;      // 取消定时器功能
+                    return;
                 }
+                mMap.cur_Rect.top = -1;   // 取消焦点格子
+                if (mMap.isLeftTop) {
+                    if (mMap.m_nMapTop+50 < mMap.m_nMapBottom) {
+                        mMap.m_nMapTop++;
+                        mMap.invalidate();
+                    }
+                } else {
+                    if (mMap.m_nMapBottom+1 < mMap.m_nPicHeight-1) {
+                        mMap.m_nMapBottom++;
+                        mMap.invalidate();
+                    }
+                }
+            }
+        });
+        bt_Down.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                mMap.cur_Rect.top = -1;  // 取消焦点框
+                actNum = 4;              // 定时器功能选择 -- 连续下移
+                UpData(1);            // 启动定时器
+                return false;
             }
         });
 
         Builder dlg0 = new Builder(this);
-        dlg0.setTitle("提醒").setMessage("有识别内容，应用吗？").setCancelable(false).setNegativeButton("取消", null)
-                .setPositiveButton("送入编辑", new DialogInterface.OnClickListener(){
+        dlg0.setTitle("请选择:").setCancelable(false).setNegativeButton("取消", null)
+                .setPositiveButton("进入编辑", new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
@@ -416,21 +386,33 @@ public class myRecogView extends Activity {
                         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");//设置日期格式
 
                         //为关卡生成关卡文档名称（含有原关卡集及其关卡序号信息）
-                        String newTitle = "Recog_"+df.format(new Date());  // new Date()获取当前系统时间
-                        String level = getXSB();
+                        final String newTitle = "Recog_"+df.format(new Date());  // new Date()获取当前系统时间
+                        final String level = getXSB();
 
-                        myMaps.curMap = new mapNode(m_nRows, m_nCols, level.split("\n"), newTitle, "", "");
-
+                        if (level == null) {
+                            myMaps.curMap.Map = null;
+                        } else {
+                            myMaps.curMap = new mapNode(mMap.m_nRows, mMap.m_nCols, level.split("\n"), newTitle, "", "");
+                        }
                         //取得当前关卡文档名
                         myMaps.sFile = "创编关卡";
                         myMaps.curMap.fileName = newTitle + ".XSB";
-                        myMaps.curMapNum = -4;  //识别关卡编辑
+                        if (mMap.m_nRows < 3 || mMap.m_nCols < 3) {
+                            myMaps.curMapNum = -5;  //识别关卡编辑
+                        } else {
+                            myMaps.curMapNum = -4;  //识别关卡编辑
+                        }
+                        // 计算截图尺寸
+                        myMaps.edPictLeft = mMap.m_nMapLeft;
+                        myMaps.edPictTop  = mMap.m_nMapTop;
+                        myMaps.edPictRight = mMap.m_nMapRight;
+                        myMaps.edPictBottom = (int) (mMap.m_nMapTop + mMap.m_nRows * mMap.m_nWidth);
                         Intent intent2 = new Intent();
                         intent2.setClass(myRecogView.this, myEditView.class);
                         startActivity(intent2);
                     }
                 })
-                .setNeutralButton("丢弃", new OnClickListener() {
+                .setNeutralButton("退出", new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface arg0, int arg1) {
                         finish();
@@ -442,37 +424,100 @@ public class myRecogView extends Activity {
         DstNum = 0;
     }
 
-    // 识别
-    public void doAction() {
-        if (isInAction || mMap.cur_Rect.top < 0) return;
-        isInAction = true;
-        dialog = new ProgressDialog(myRecogView.this);
-        dialog.setMessage("分析中...\n" + "最大允许色差: " + mMap.toleranceValueColor + "\n最多误差像素: " + mMap.toleranceValueDifferentColor);
-        dialog.setCancelable(false);
-        new Thread(new MyThread()).start();
-        dialog.show();
+    // 统一定时器处理
+    public void UpData(int p) {
+        if (p != 1) {
+            return;
+        }
+
+        switch (actNum) {
+            case 1:                       // 长按“左”，微调左右边线
+                if (mMap.isLeftTop) {
+                    if (mMap.m_nMapLeft > 3) {
+                        mMap.m_nMapLeft -= 3;
+                    } else {
+                        mMap.m_nMapLeft = 0;
+                    }
+                } else {
+                    if (mMap.m_nMapRight-100 > mMap.m_nMapLeft) {
+                        mMap.m_nMapRight -= 3;
+                    }
+                }
+                mMap.invalidate();
+                myTimer.sleep(20);
+                break;
+            case 2:                       // 长按“右”，微调左右边线
+                if (mMap.isLeftTop) {
+                    if (mMap.m_nMapLeft+100 < mMap.m_nMapRight) {
+                        mMap.m_nMapLeft += 3;
+                    }
+                } else {
+                    mMap.m_nMapRight += 3;
+                    if (mMap.m_nMapRight > mMap.m_nPicWidth-1) {
+                        mMap.m_nMapRight = mMap.m_nPicWidth-1;
+                    }
+                }
+                mMap.invalidate();
+                myTimer.sleep(20);
+                break;
+            case 3:                       // 长按“上”，微调上下边线
+                if (mMap.isLeftTop) {
+                    if (mMap.m_nMapTop > 3) {
+                        mMap.m_nMapTop -= 3;
+                    } else {
+                        mMap.m_nMapTop = 0;
+                    }
+                } else {
+                    if (mMap.m_nMapBottom-100 > mMap.m_nMapTop) {
+                        mMap.m_nMapBottom -= 3;
+                    }
+                }
+                mMap.invalidate();
+                myTimer.sleep(20);
+                break;
+            case 4:                       // 长按“下”，微调上下边线
+                if (mMap.isLeftTop) {
+                    if (mMap.m_nMapTop+100 < mMap.m_nMapBottom) {
+                        mMap.m_nMapTop += 3;
+                    }
+                } else {
+                    mMap.m_nMapBottom += 3;
+                    if (mMap.m_nMapBottom > mMap.m_nPicHeight-1) {
+                        mMap.m_nMapBottom = mMap.m_nPicHeight-1;
+                    }
+                }
+                mMap.invalidate();
+                myTimer.sleep(20);
+                break;
+            case 5:                       // 长按指示灯时，底行仓管员闪烁
+                if (mMap.isLamp) {
+                    mMap.m_Recog.bt_Player.setBackgroundColor(0x9fff00ff);
+                } else {
+                    mMap.m_Recog.bt_Player.setBackgroundColor(0xff334455);
+                }
+                mMap.isLamp = !mMap.isLamp;
+                myTimer.sleep(500);
+            break;
+        }
     }
 
-    //识别进度条
-    final char[] myXSB = { '#', '$', '*', '.', '-' };
-    private Handler handler = new Handler() {
-        // 在Handler中获取消息，重写handleMessage()方法
-        @Override
-        public void handleMessage(Message msg) {
-            if (dialog != null) dialog.dismiss();
+    // 自动识别
+    public void doAction() {
+        if (isInAction || mMap.cur_Rect.top < 0) return;
 
-            if (msg.what == 1) {  // 识别成功
-                myBackup();
-                for(Point p : mMap.curPoints) {
-                    setXSB(Math.round((p.x-mMap.m_nMapLeft)/mMap.m_nWidth), Math.round((p.y-mMap.m_nMapTop)/mMap.m_nWidth), myXSB[isActNum]);
-                }
-                myCount();
-                mMap.invalidate();
-            }
-            isInAction = false;
+        isInAction = true;     // 识别中标记
+
+        mMap.curPoints = mMap.findSubimages();
+
+        // 应用识别结果
+        for(int k = 0; k < mMap.curPoints.size(); k++) {
+            setXSB(mMap.curPoints.get(k) & 0xffff, mMap.curPoints.get(k) >>> 16, mMap.myXSB[mMap.m_nObj]);
         }
-    };
 
+        isInAction = false;     // 识别结束
+
+        mMap.invalidate();
+    }
 
     // 还原到上一次识别出的地图
     public void myRestore() {
@@ -499,8 +544,8 @@ public class myRecogView extends Activity {
     public void myCount() {
         m_nBoxNum = 0;
         DstNum = 0;
-        for (int i = 0; i < myMaps.m_nMaxRow; i++) {
-            for (int j = 0; j < myMaps.m_nMaxRow; j++) {
+        for (int i = 0; i < mMap.m_nRows; i++) {
+            for (int j = 0; j < mMap.m_nCols; j++) {
                 if (m_cArray[i][j] == '$') {
                     m_nBoxNum++;
                 } else if (m_cArray[i][j] == '*') {
@@ -517,60 +562,30 @@ public class myRecogView extends Activity {
     private String getXSB() {
 
         StringBuilder str = new StringBuilder();
-        m_nRows = 0;
-        m_nCols = 0;
 
-        // 关卡最小化
-        int mTop = 0, mLeft = 0, mBottom = myMaps.m_nMaxRow-1, mRight = myMaps.m_nMaxCol-1;
-        for (int k = 0, t; k < myMaps.m_nMaxRow; k++) {
-            t = 0;
-            while (t < myMaps.m_nMaxCol && m_cArray[k][t] == '-') t++;
-            if (t == myMaps.m_nMaxCol) mTop++;
-            else break;
+        if (mMap.m_nRows < 3 || mMap.m_nCols < 3) {
+            return null;
         }
-        for (int k = myMaps.m_nMaxRow-1, t; k > mTop; k--) {
-            t = 0;
-            while (t < myMaps.m_nMaxCol && m_cArray[k][t] == '-') t++;
-            if (t == myMaps.m_nMaxCol) mBottom--;
-            else break;
-        }
-        if (mBottom - mTop < 2) return "";
 
-        for (int k = 0, t; k < myMaps.m_nMaxCol; k++) {
-            t = mTop;
-            while (t <= mBottom && m_cArray[t][k] == '-') t++;
-            if (t > mBottom) mLeft++;
-            else break;
-        }
-        for (int k = myMaps.m_nMaxCol-1, t; k > mLeft; k--) {
-            t = mTop;
-            while (t <= mBottom && m_cArray[t][k] == '-') t++;
-            if (t > mBottom) mRight--;
-            else break;
-        }
-        if (mRight - mLeft < 2) return "";
-
-        for (int i = mTop; i <= mBottom; i++) {
-            for (int j = mLeft; j <= mRight; j++) {
+        for (int i = 0; i <= mMap.m_nRows; i++) {
+            for (int j = 0; j <= mMap.m_nCols; j++) {
                 str.append(m_cArray[i][j]);
             }
             str.append('\n');
         }
 
-        m_nRows = mBottom - mTop  + 1;
-        m_nCols = mRight  - mLeft + 1;
         return str.toString();
     }
 
-    //手动编辑XSB
-    private void setXSB(int x, int y, char ch) {
-        if (x < 0 || y < 0 || x >= myMaps.m_nMaxCol || y >= myMaps.m_nMaxRow) {
+    //置XSB
+    private void setXSB(int r, int c, char ch) {
+        if (c < 0 || r < 0 || c >= myMaps.m_nMaxCol || r >= myMaps.m_nMaxRow) {
             return;
         }
-        m_cArray[y][x] = ch;
+        m_cArray[r][c] = ch;
     }
 
-    //清除所选的XSB元素
+    //清除特定的XSB元素
     private void removeXSB(char ch, boolean isAll) {
         myBackup();
         for (int i = 0; i < myMaps.m_nMaxRow; i++) {
@@ -603,7 +618,7 @@ public class myRecogView extends Activity {
         }
     }
 
-    //清除所有的元素XSB
+    //清除所有的XSB元素
     private void clearXSB() {
         myBackup();
         for (int i = 0; i < myMaps.m_nMaxRow; i++) {
@@ -613,44 +628,60 @@ public class myRecogView extends Activity {
                 }
             }
         }
-        isInAction = false;
     }
 
-    //恢复所有元素按钮为未选状态的颜色
-    private void setColor() {
+    //元素按钮的状态颜色
+    public void setColor(int n) {
         bt_Floor.setBackgroundColor(0xff334455);
         bt_Wall.setBackgroundColor(0xff334455);
         bt_Box.setBackgroundColor(0xff334455);
         bt_BoxGoal.setBackgroundColor(0xff334455);
         bt_Goal.setBackgroundColor(0xff334455);
         bt_Player.setBackgroundColor(0xff334455);
-    }
 
-    // 是否有识别的XSB
-    private boolean isRecog() {
-        for (int i = 0; i < myMaps.m_nMaxRow; i++) {
-            for (int j = 0; j < myMaps.m_nMaxRow; j++) {
-                if (m_cArray[i][j] != '-') {
-                    return true;
-                }
+        int m_Color;
+        if (mMap.isRecog) {  // 识别模式的高亮颜色
+            m_Color = 0x9f0000ff;
+        } else {             // 编辑模式的高亮颜色
+            m_Color = 0x9fff3300;
+        }
+
+        if (mMap.m_nObj == n) {
+            mMap.m_nObj = -1;
+        } else {
+            mMap.m_nObj = n;
+            switch (n) {
+                case 0:
+                    bt_Floor.setBackgroundColor(m_Color);
+                    break;
+                case 1:
+                    bt_Wall.setBackgroundColor(m_Color);
+                    break;
+                case 2:
+                    bt_Box.setBackgroundColor(m_Color);
+                    break;
+                case 3:
+                    bt_BoxGoal.setBackgroundColor(m_Color);
+                    break;
+                case 4:
+                    bt_Goal.setBackgroundColor(m_Color);
+                    break;
+                case 5:
+                    bt_Player.setBackgroundColor(m_Color);
+                    break;
             }
         }
-        return false;
     }
 
-    //使用独立进程识别地图
-    public class MyThread implements Runnable {
-        @Override
-        public void run() {
-            Message msg = Message.obtain();
-            try {
-                mMap.curPoints = mMap.findSubimages();
-                msg.what = 1;
-                handler.sendMessage(msg);
-            } catch (Exception e) {
-                msg.what = 0;
-                handler.sendMessage(msg);
-            }
+    // 定时器进程
+    class MyHandler extends Handler {
+        public void handleMessage(Message msg) {
+            UpData(msg.what);
+        }
+
+        public void sleep(int m) {
+            removeMessages(0);
+            sendMessageDelayed(obtainMessage(1), m);
         }
     }
 
@@ -676,21 +707,10 @@ public class myRecogView extends Activity {
     }
 
     public boolean onOptionsItemSelected(MenuItem mt) {
-        final NumberKeyListener getNumber = new NumberKeyListener() {
-            @Override
-            protected char[] getAcceptedChars() {
-                return new char[]{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'};
-            }
-
-            @Override
-            public int getInputType() {
-                return InputType.TYPE_CLASS_PHONE;
-            }
-        };
         switch (mt.getItemId()) {
             //菜单栏返回键功能
             case android.R.id.home:
-                if (!isRecog()) finish();
+                if (mMap.m_nCols < 3 || mMap.m_nRows < 3) finish();
                 else exitDlg.show();  //有过识别动作，提示保存
                 return true;
             case R.id.recog_about:  // 关于
@@ -698,99 +718,82 @@ public class myRecogView extends Activity {
                 intent1.setClass(this, myAboutRecgo.class);
                 startActivity(intent1);
                 return true;
-            case R.id.recog_cut_left_top:  // 设置为左上角: m_nMapTop, m_nMapLeft
-                mMap.cur_Rect.top = -1;   // 取消点击的格子
-                mMap.m_nMapLeft = (int) (Math.abs(mMap.m_fLeft) / mMap.m_fScale);
-                mMap.m_nMapTop  = (int) (Math.abs(mMap.m_fTop)  / mMap.m_fScale);
-                mMap.invalidate();
-                return true;
-            case R.id.recog_shrink:  // 格子变小
-                mMap.cur_Rect.top = -1;   // 取消点击的格子
-                if (mMap.m_nLine_Color == 2) {
-                    mMap.m_nWidth -= 0.5;
-                } else if (mMap.m_nLine_Color == 1) {
-                    mMap.m_nWidth -= 3.0;
-                } else {
-                    mMap.m_nWidth -= 1.0;
+            case R.id.recog_shrink:  // 减少格子数
+                mMap.cur_Rect.top = -1;  // 取消焦点框
+                if (mMap.m_nRows > 3 && mMap.m_nCols > 3) {
+                    mMap.m_nCols--;
+                    mMap.invalidate();
+                    mMap.m_nWidth = (float) (mMap.m_nMapRight - mMap.m_nMapLeft + 1) / mMap.m_nCols;
+                    mMap.m_nRows = (int) ((mMap.m_nMapBottom - mMap.m_nMapTop + 1) / mMap.m_nWidth);
                 }
-                if (mMap.m_nWidth < 10) mMap.m_nWidth = 10;
-
-                mMap.setPR();
-                mMap.invalidate();
                 return true;
-            case R.id.recog_extend:  // 格子变大
-                mMap.cur_Rect.top = -1;   // 取消点击的格子
-                if (mMap.m_nLine_Color == 2) {
-                    mMap.m_nWidth += 0.5;
-                } else if (mMap.m_nLine_Color == 1) {
-                    mMap.m_nWidth += 3.0;
-                } else {
-                    mMap.m_nWidth += 1.0;
+            case R.id.recog_extend:  // 增加格子数
+                mMap.cur_Rect.top = -1;  // 取消焦点框
+                mMap.m_nWidth = (float) (mMap.m_nMapRight - mMap.m_nMapLeft + 1) / mMap.m_nCols;
+                if (mMap.m_nCols < 100 && (int)mMap.m_nWidth > 8) {
+                    mMap.m_nCols++;
+                    mMap.invalidate();
+                    mMap.m_nWidth = (float) (mMap.m_nMapRight - mMap.m_nMapLeft + 1) / mMap.m_nCols;
+                    mMap.m_nRows = (int) ((mMap.m_nMapBottom - mMap.m_nMapTop + 1) / mMap.m_nWidth);
                 }
-
-                if (mMap.m_nWidth > 200) mMap.m_nWidth = 200;
-
-                mMap.setPR();
-                mMap.invalidate();
                 return true;
             case R.id.recog_restore:  // 取消本次识别
                 myRestore();
-                myCount();
                 mMap.invalidate();
                 return true;
-            case R.id.recog_complete:  // 开始识别
-                if (mMap.cur_Rect.top < 0) {
-                    MyToast.showToast(this, "请给出要识别的位置！", Toast.LENGTH_LONG);
-                    return true;
-                }
-                String[] m_menu = {
-                        "墙壁",
-                        "箱子",
-                        "箱子在目标点",
-                        "目标点",
-                        "地板"
-                };
-                isActNum = -1;
+            case R.id.recog_similarity:  // 设置相似度
                 View view3 = View.inflate(this, R.layout.recog_dialog, null);
-                final EditText input1 = (EditText) view3.findViewById(R.id.recog_toleranceValueColor);  //色差
-                final EditText input2 = (EditText) view3.findViewById(R.id.recog_toleranceValueDifferentColor);  //误差点数
+                final RadioGroup rg = (RadioGroup) view3.findViewById(R.id.recog_similarity);  //相似度
+                final RadioButton rb5 = (RadioButton) view3.findViewById(R.id.rb_5);
+                final RadioButton rb6 = (RadioButton) view3.findViewById(R.id.rb_6);
+                final RadioButton rb7 = (RadioButton) view3.findViewById(R.id.rb_7);
+                final RadioButton rb8 = (RadioButton) view3.findViewById(R.id.rb_8);
+                final RadioButton rb9 = (RadioButton) view3.findViewById(R.id.rb_9);
                 Builder dlg2 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 dlg2.setView(view3).setCancelable(false);
 
-                input1.setKeyListener(getNumber);
-                input2.setKeyListener(getNumber);
+                final RadioButton[] my_RBS = {rb5, rb6, rb7, rb8, rb9};
+                setBT_Color(my_RBS[mMap.mSimilarity-5], true);
 
-                final int mm = mMap.toleranceValueColor;
-                final int nn = mMap.toleranceValueDifferentColor;
-
-                input1.setText(""+mm);
-                input2.setText(""+nn);
-
-                dlg2.setTitle("识别选项").setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener(){
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        int m, n;
-                        try {
-                            m = Integer.valueOf(input1.getText().toString().trim());
-                            n = Integer.valueOf(input2.getText().toString().trim());
-                            if (m >= 0 && m <= 600) {
-                                mMap.toleranceValueColor = m;
-                            }
-                            if (n >= 0 && n <= 60) {
-                                mMap.toleranceValueDifferentColor = n;
-                            }
-                            if (isActNum >= 0) doAction();
-                        } catch (Throwable ex) { }
+                    public void onCheckedChanged(RadioGroup group, int checkedId) {
+                        for (int k = 0; k < 5; k++) {
+                            setBT_Color(my_RBS[k], false);
+                        }
+                        if (checkedId == R.id.rb_5) mMap.mSimilarity = 5;
+                        else if (checkedId == R.id.rb_6) mMap.mSimilarity = 6;
+                        else if (checkedId == R.id.rb_8) mMap.mSimilarity = 8;
+                        else if (checkedId == R.id.rb_9) mMap.mSimilarity = 9;
+                        else mMap.mSimilarity = 7;
+
+                        setBT_Color(my_RBS[mMap.mSimilarity-5], true);
                     }
-                }).setSingleChoiceItems(m_menu, isActNum, new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        isActNum = which;
-                    }
-                }).setCancelable(false).create().show();
+                });
+                dlg2.setTitle("识别设置").setPositiveButton("确定", null).setCancelable(false).create().show();
                 return true;
+            case R.id.recog_complete:  // 开始识别
+                setColor(-1);  // 取消底行 XSB 元素高亮
+                if (mt.getTitle().equals("识别")) {
+                    mt.setTitle("编辑");
+                    mMap.isRecog = false;
+                } else {
+                    mt.setTitle("识别");
+                    mMap.isRecog = true;
+                }
+                 return true;
             default:
                 return super.onOptionsItemSelected(mt);
+        }
+    }
+
+    private void setBT_Color(RadioButton bt, boolean flg) {
+        if (flg) {
+            bt.setBackgroundColor(0xffffffff);
+            bt.setTextColor(0xff000000);
+        } else {
+            bt.setBackgroundColor(0xff000000);
+            bt.setTextColor(0xffffffff);
         }
     }
 
@@ -803,7 +806,7 @@ public class myRecogView extends Activity {
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            if (!isRecog()) finish();
+            if (mMap.m_nCols < 3 || mMap.m_nRows < 3) finish();
             else exitDlg.show();  //有过识别动作，提示保存
 
             return true;

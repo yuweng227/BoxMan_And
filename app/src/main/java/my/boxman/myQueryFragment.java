@@ -12,7 +12,6 @@ import android.view.WindowManager;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.List;
 
 //查询解耗时，BoxMan 调用
 public class myQueryFragment extends DialogFragment {

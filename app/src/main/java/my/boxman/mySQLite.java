@@ -1487,6 +1487,7 @@ public class mySQLite {
 		try {
 			cursor = mSDB.query("G_State", null, where, whereValue, null, null, orderBy);
 			StringBuilder str, str2;
+			int moves, pushs;
 
 			while (cursor.moveToNext()){
 				str = new StringBuilder();
@@ -1495,8 +1496,9 @@ public class mySQLite {
 				if (id == cursor.getLong(cursor.getColumnIndex("P_id")) ||          //本关卡保存的状态及答案，直接读取
 						(cursor.getInt(cursor.getColumnIndex("G_Solution")) == 1 && isAnsOK(myMaps.getANS(cursor.getString(cursor.getColumnIndex("G_Ans")), cursor.getInt(cursor.getColumnIndex("P_Key_Num")), myMaps.curMap.L_CRC_Num)))) {    //非本关卡保存的答案，做试推验证cursor.getString(cursor.getColumnIndex("G_Ans"))
 
-					str.append("移动: ").append(cursor.getInt(cursor.getColumnIndex("G_Moves")))
-							.append(", 推动: ").append(cursor.getInt(cursor.getColumnIndex("G_Pushs")));
+					moves = cursor.getInt(cursor.getColumnIndex("G_Moves"));
+					pushs = cursor.getInt(cursor.getColumnIndex("G_Pushs"));
+					str.append("移动: ").append(moves).append(", 推动: ").append(pushs);
 					str2.append(cursor.getString(cursor.getColumnIndex("G_DateTime")));
 					if (cursor.getInt(cursor.getColumnIndex("G_Solution")) == 0) {  //答案不需要逆推步数
 						str.append(" [ 移: ").append(cursor.getInt(cursor.getColumnIndex("G_Moves2")))
@@ -1506,6 +1508,8 @@ public class mySQLite {
 					ans.id = cursor.getLong(cursor.getColumnIndex("S_id"));
 					ans.pid = cursor.getLong(cursor.getColumnIndex("P_id"));
 					ans.pkey = cursor.getLong(cursor.getColumnIndex("P_Key"));
+					ans.moves = moves;
+					ans.pushs = pushs;
 					ans.inf = str.toString();
 					ans.time = str2.toString();
 
@@ -1882,6 +1886,8 @@ class state_Node{  //状态列表
 	long id;
 	long pid;
 	long pkey;
+	int moves;   //移动步数
+	int pushs;   //推动步数
 	String inf;
 	String time;
 }

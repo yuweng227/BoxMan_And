@@ -186,7 +186,6 @@ public class mySubmitList extends Activity {
 		}
 	}
 
-
 	//解析比赛关卡（使用 json-simple-1.1.jar，比较轻量级）
 	private String myJson(String str, int num) {
 		String inf = "解析列表遇到错误！";

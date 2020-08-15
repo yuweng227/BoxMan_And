@@ -10,8 +10,6 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
@@ -31,6 +29,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,8 +60,6 @@ public class myEditView extends Activity {
     CheckBox bt_Tru  = null;
     CheckBox bt_Save = null;
     CheckBox bt_More = null;
-
-    boolean m_b_More_LongPress;  //是否长按了“更多”按钮
 
     char[][] m_cArray, m_cSelArray;  //迷宫，选择区域
     int selRows, selCols, selRows2, selCols2;
@@ -359,17 +356,10 @@ public class myEditView extends Activity {
         });
 
         bt_More = (CheckBox) findViewById(R.id.bt_More);  //更多
-        m_b_More_LongPress = false;
         bt_More.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (m_b_More_LongPress) {  //长按了“更多”按钮，结束编辑，返回上一层
-                    if (!bt_Save.isEnabled()) finish();
-                    else exitDlg.show();  //做过编辑修改，提示保存
-                } else {
-                    openOptionsMenu();  //菜单
-                }
-                m_b_More_LongPress = false;  //是否长按了“更多”按钮
+                openOptionsMenu();  //菜单
             }
         });
         bt_More.setLongClickable(true);
@@ -377,8 +367,10 @@ public class myEditView extends Activity {
             @Override
             public boolean onLongClick(View v) {
                 MyToast.showToast(myEditView.this, "离开！", Toast.LENGTH_SHORT);
-                m_b_More_LongPress = true;  //是否长按了“更多”按钮
-                return false;
+                if (!bt_Save.isEnabled()) finish();
+                else exitDlg.show();  //做过编辑修改，提示保存
+
+                return true;
             }
         });
 
@@ -502,12 +494,12 @@ public class myEditView extends Activity {
                         myMaps.m_Sets[19] == 1,   //YASC绘制习惯
                         myMaps.m_Sets[16] == 1,  //系统导航键
                 };
-                AlertDialog.Builder builder2 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
+                Builder builder2 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 builder2.setTitle("设置").setMultiChoiceItems(m_menu, mChk, new DialogInterface.OnMultiChoiceClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                     }
-                }).setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                }).setNegativeButton("取消", null).setPositiveButton("确定", new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //YASC绘制习惯
@@ -548,13 +540,13 @@ public class myEditView extends Activity {
                 myList[myList.length-1] = myMaps.getNewSetName();  // 末尾，自动加上一个新的关卡集
 
                 if (mWhich < 0 || mWhich >= myList.length) mWhich = 0;
-                AlertDialog.Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
+                Builder builder = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 builder.setTitle("提交到").setSingleChoiceItems(myList, mWhich, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mWhich = which;
                     }
-                }).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                }).setPositiveButton("确定", new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         // 如果，选中的是最后一个新建关卡集
@@ -630,6 +622,7 @@ public class myEditView extends Activity {
                 ndAct.Act(9);
 
                 Normalize(m_cArray);
+                mMap.isShowBkPict = false;
                 mMap.initArena();
 
                 m_UnDoList.offer(ndAct);
@@ -640,9 +633,9 @@ public class myEditView extends Activity {
 
                 return true;
             case R.id.edit_clear:  //清空地图
-                AlertDialog.Builder dlg0 = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK);
+                Builder dlg0 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 dlg0.setCancelable(false).setTitle("确认").setMessage("地图将被清空，确定吗？").setNegativeButton("取消", null);
-                dlg0.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                dlg0.setPositiveButton("确定", new OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         ndAct = null;
                         ndAct = new ActNode(m_cArray, mMap.m_nMapLeft, mMap.m_nMapRight, mMap.m_nMapTop, mMap.m_nMapBottom, -1, -1, null, null, null, null);
@@ -725,9 +718,9 @@ public class myEditView extends Activity {
                     }
                 });
 
-                AlertDialog.Builder dlg = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK);
+                Builder dlg = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 dlg.setView(view).setCancelable(false).setTitle("当前尺寸：" + (mMap.m_nMapRight-mMap.m_nMapLeft+1) + " × " + (mMap.m_nMapBottom-mMap.m_nMapTop+1)).setNegativeButton("取消", null);
-                dlg.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                dlg.setPositiveButton("确定", new OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         int newLeft, newRight, newTop, newBottom;
 
@@ -764,7 +757,7 @@ public class myEditView extends Activity {
                         }
 
                         if (str.length() > 0) {
-                            AlertDialog.Builder dlg2 = new AlertDialog.Builder(myEditView.this, AlertDialog.THEME_HOLO_DARK);
+                            Builder dlg2 = new Builder(myEditView.this, AlertDialog.THEME_HOLO_DARK);
                             dlg2.setCancelable(true).setTitle("错误").setPositiveButton("确定", null).setMessage(str);
                             dlg2.setCancelable(false).create().show();
                         } else {
@@ -805,24 +798,42 @@ public class myEditView extends Activity {
                 return true;
             case R.id.edit_rule:  //设置标尺
                 View view2 = View.inflate(this, R.layout.rule_dialog, null);
-                final EditText input_color = (EditText) view2.findViewById(R.id.dialog_rule_color);  //标尺字体颜色
-                int mColor = myMaps.m_Sets[21] & 0xffffffff;
-                String str = Integer.toHexString(mColor).toUpperCase(Locale.getDefault());
-                str = String.format("%8s", str);
-                str = str.replaceAll(" ", "0");
-                input_color.setText(str);
+                final SeekBar input_color = (SeekBar) view2.findViewById(R.id.dialog_rule_color);  //标尺字体颜色 -- 仅灰度变化就够用了
+                final EditText et1 = (EditText) view2.findViewById(R.id.dialog_rule_color1);       //颜色示例1
+                final EditText et2 = (EditText) view2.findViewById(R.id.dialog_rule_color2);       //颜色示例2
+                final int[] mColor = {myMaps.m_Sets[21] & 0x000000ff};
+                et1.setTextColor((mColor[0] << 16) | (mColor[0] << 8) | mColor[0] | 0xff000000);
+                et2.setTextColor((mColor[0] << 16) | (mColor[0] << 8) | mColor[0] | 0xff000000);
+
+                input_color.setProgress(mColor[0]);
+                input_color.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        mColor[0] = progress;
+                        et1.setTextColor((mColor[0] << 16) | (mColor[0] << 8) | mColor[0] | 0xff000000);
+                        et2.setTextColor((mColor[0] << 16) | (mColor[0] << 8) | mColor[0] | 0xff000000);
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                    }
+                });
+
                 final String [] items = {"墙壁","地板","目标","箱子","仓管员"};
                 final boolean checkedItems[] = {(myMaps.m_Sets[22] & 1) > 0, (myMaps.m_Sets[22] & 2) > 0, (myMaps.m_Sets[22] & 4) > 0, (myMaps.m_Sets[22] & 8) > 0, (myMaps.m_Sets[22] & 16) > 0};
-                AlertDialog.Builder dlg2 = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_DARK);
+                Builder dlg2 = new Builder(this, AlertDialog.THEME_HOLO_DARK);
                 dlg2.setView(view2).setCancelable(true);
                 dlg2.setOnKeyListener(new DialogInterface.OnKeyListener() {
                     @Override
                     public boolean onKey(DialogInterface di, int keyCode, KeyEvent event) {
                         if(keyCode == KeyEvent.KEYCODE_ENTER){
-                            String input = input_color.getText().toString();
                             try {
-                                if (input.length() != 8) throw new Exception();
-                                myMaps.m_Sets[21] = Color.parseColor("#"+input);
+                                myMaps.m_Sets[21] = (mColor[0] << 16) | (mColor[0] << 8) | mColor[0] | 0xff000000;
                                 //关闭输入法
                                 InputMethodManager imm = (InputMethodManager)input_color.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                                 if(imm.isActive()) imm.hideSoftInputFromWindow(input_color.getApplicationWindowToken(), 0 );
@@ -866,10 +877,8 @@ public class myEditView extends Activity {
                 }).setNegativeButton("取消", null).setPositiveButton("确定", new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String input = input_color.getText().toString();
                         try {
-                            if (input.length() != 8) throw new Exception();
-                            myMaps.m_Sets[21] = Color.parseColor("#"+input);
+                            myMaps.m_Sets[21] = (mColor[0] << 16) | (mColor[0] << 8) | mColor[0] | 0xff000000;
                             mMap.invalidate();
                             dialog.dismiss();
                         } catch (Exception e) {

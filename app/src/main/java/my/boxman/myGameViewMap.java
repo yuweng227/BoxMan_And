@@ -69,6 +69,7 @@ public class myGameViewMap extends View {
     private Rect m_rNext_Skin;  //可以触发“下一个皮肤”的区域
     private Rect m_rPre_BK;  //可以触发“上一个背景”的区域
     private Rect m_rNext_BK;  //可以触发“下一个背景”的区域
+    private Rect m_rColor_BK;  //可以触发“背景色”的区域
     private Rect m_rPre_Speed;  //可以触发“上一速度值”的区域
     private Rect m_rNext_Speed;  //可以触发“下一速度值”的区域
     private Rect m_rChangeBK;  //可以触发更改“背景”设置的区域
@@ -83,6 +84,7 @@ public class myGameViewMap extends View {
     private Bitmap bitNextBK;
     private Bitmap bitPreSkin;
     private Bitmap bitNextSkin;
+    private Bitmap bitColorBK;
     int curButton = 0;
 
     private Bitmap bitInvalid;  // 无效关卡图片
@@ -177,12 +179,16 @@ public class myGameViewMap extends View {
 
         m_rPre_BK = new Rect();
         m_rNext_BK = new Rect();
+        m_rColor_BK = new Rect();
         m_rPre_Skin = new Rect();
         m_rNext_Skin = new Rect();
         m_rPre_BK.set(myMaps.m_nWinWidth-m_nArenaTop*4, m_nArenaTop*3/2, myMaps.m_nWinWidth-m_nArenaTop*2, m_nArenaTop*2+m_nArenaTop*3/2); //上一个背景
-        m_rNext_BK.set(m_rPre_BK.left, m_rPre_BK.bottom, m_rPre_BK.right, m_rPre_BK.bottom+m_nArenaTop*2); //下一个背景
-        m_rPre_Skin.set(m_rPre_BK.left-m_nArenaTop*2, m_rPre_BK.top+m_nArenaTop, m_rPre_BK.left, m_rPre_BK.top+m_nArenaTop*3); //上一个皮肤
-        m_rNext_Skin.set(m_rPre_BK.right, m_rPre_BK.top+m_nArenaTop, myMaps.m_nWinWidth, m_rPre_BK.top+m_nArenaTop*3); //下一个皮肤
+        m_rColor_BK.set(m_rPre_BK.left, m_rPre_BK.bottom, m_rPre_BK.right, m_rPre_BK.bottom+m_nArenaTop*2); //背景色
+        m_rNext_BK.set(m_rPre_BK.left, m_rColor_BK.bottom, m_rPre_BK.right, m_rColor_BK.bottom+m_nArenaTop*2); //下一个背景
+//        m_rNext_BK.set(m_rPre_BK.left, m_rPre_BK.bottom, m_rPre_BK.right, m_rPre_BK.bottom+m_nArenaTop*2); //下一个背景
+//        m_rColor_BK.set(m_rPre_BK.left, m_rNext_BK.bottom, m_rPre_BK.right, m_rNext_BK.bottom+m_nArenaTop*2); //背景色
+        m_rPre_Skin.set(m_rPre_BK.left-m_nArenaTop*2, m_rPre_BK.top+m_nArenaTop*2, m_rPre_BK.left, m_rPre_BK.top+m_nArenaTop*4); //上一个皮肤
+        m_rNext_Skin.set(m_rPre_BK.right, m_rColor_BK.top, myMaps.m_nWinWidth, m_rColor_BK.bottom); //下一个皮肤
 
         bitPreBK = Bitmap.createBitmap(m_nArenaTop*2, m_nArenaTop*2, myMaps.cfg); //上一个背景按钮图片
         Canvas cvs05 = new Canvas(bitPreBK);
@@ -194,6 +200,11 @@ public class myGameViewMap extends View {
         Drawable dw06 = myMaps.res.getDrawable(R.drawable.nextbk);
         dw06.setBounds(0, 0, m_nArenaTop*2, m_nArenaTop*2);
         dw06.draw(cvs06);
+        bitColorBK = Bitmap.createBitmap(m_nArenaTop*2, m_nArenaTop*2, myMaps.cfg); //背景色
+        Canvas cvs09 = new Canvas(bitColorBK);
+        Drawable dw09 = myMaps.res.getDrawable(R.drawable.bk_color);
+        dw09.setBounds(0, 0, m_nArenaTop*2, m_nArenaTop*2);
+        dw09.draw(cvs09);
         bitPreSkin = Bitmap.createBitmap(m_nArenaTop*2, m_nArenaTop*2, myMaps.cfg); //上一个皮肤按钮图片
         Canvas cvs07 = new Canvas(bitPreSkin);
         Drawable dw07 = myMaps.res.getDrawable(R.drawable.preskin);
@@ -267,13 +278,11 @@ public class myGameViewMap extends View {
                 m_boxCanMove2 = false;
                 m_Game.m_bACT_ERROR = false;  //执行动作时是否遇到错误
                 if (m_nArenaTop <= 0 && m_rUnDo.contains((int) e.getX(), (int) e.getY())) {  //长按 undo
-                    m_Game.m_b_UnDo_LongPress = true;  //是否长按了“UnDo”按钮
                     m_Game.m_bNetLock = false;  //取消网型提示
-                    m_Game.DoEvent(5);  //undo
+                    m_Game.DoEvent(3);  //undo
                 } else if (m_nArenaTop <= 0 && m_rReDo.contains((int) e.getX(), (int) e.getY())) {  //长按redo
-                    m_Game.m_b_ReDo_LongPress = true;  //是否长按了“ReDo”按钮
                     m_Game.m_bNetLock = false;  //取消网型提示
-                    m_Game.DoEvent(6);  //redo
+                    m_Game.DoEvent(4);  //redo
                 } else if (m_rTrans.contains((int) e.getX(), (int) e.getY())) {
                     m_Game.DoEvent(12);  //“死锁提示”开关
                 } else if (m_rPre_Speed.contains((int) e.getX(), (int) e.getY())) {  //即景模式切换
@@ -319,8 +328,18 @@ public class myGameViewMap extends View {
                             MyToast.showToast(m_Game, "禁用逆推目标点！", Toast.LENGTH_SHORT);
                         }
                     } else {
-                        if (m_Game.m_Gif_Start == m_Game.m_iStep[1]) m_Game.m_Gif_Start = 0;
-                        else m_Game.m_Gif_Start = m_Game.m_iStep[1];
+                        if (m_Game.m_iStep[1] == 0) {  // 在关卡初态，即尚未任何动作
+                            if (myMaps.m_Sets[37] == 1) {
+                                myMaps.m_Sets[37] = 0;
+                                MyToast.showToast(m_Game, "自动加载最新状态 -- 关！", Toast.LENGTH_SHORT);
+                            } else {
+                                myMaps.m_Sets[37] = 1;
+                                MyToast.showToast(m_Game, "自动加载最新状态 -- 开！", Toast.LENGTH_SHORT);
+                            }
+                        } else {
+                            if (m_Game.m_Gif_Start == m_Game.m_iStep[1]) m_Game.m_Gif_Start = 0;
+                            else m_Game.m_Gif_Start = m_Game.m_iStep[1];
+                        }
                     }
                 } else if (mClickObj == '#') {  //长按墙壁，显示哪些箱子没有动过
                     if (m_Game.mMicroTask != null) return;
@@ -471,6 +490,10 @@ public class myGameViewMap extends View {
                             h_bkNum = myMaps.m_nWinHeight / h_bkPic + 1;
                         }
                     }
+                    return true;
+                } else if (m_lChangeBK && m_rColor_BK.contains((int) e.getX(), (int) e.getY())) {  //背景色
+                    m_Game.setColorBK();
+                    invalidate();
                     return true;
                 } else if (m_lChangeBK && m_rPre_Skin.contains((int)e.getX(), (int)e.getY())) {  //上一个皮肤
                     int m_nSkin = -1;
@@ -986,15 +1009,16 @@ public class myGameViewMap extends View {
 
         if (myMaps.curMap == null) return;
 
-        setBackgroundColor(myMaps.m_Sets[4]);  //设置背景色
-
-        if (myMaps.bkPict != null) {
-            for (int i = 0; i <= w_bkNum; i++) {
-                for (int j = 0; j <= h_bkNum; j++)
-                    canvas.drawBitmap(myMaps.bkPict, w_bkPic * i, h_bkPic * j, null);
+        if (myMaps.bk_Pic == null || myMaps.bk_Pic.length() <= 0 || myMaps.bk_Pic.equals("使用背景色")) {
+            setBackgroundColor(myMaps.m_Sets[4]);  //设置背景色
+        } else {
+            if (myMaps.bkPict != null) {
+                for (int i = 0; i <= w_bkNum; i++) {
+                    for (int j = 0; j <= h_bkNum; j++)
+                        canvas.drawBitmap(myMaps.bkPict, w_bkPic * i, h_bkPic * j, null);
+                }
             }
         }
-
         canvas.save();
         mCurrentMatrix.getValues(values);
         values[Matrix.MTRANS_Y] += m_nArenaTop;
@@ -1477,6 +1501,7 @@ public class myGameViewMap extends View {
             myPaint.setARGB(255, 0, 0, 0);
             canvas.drawBitmap(bitPreBK, m_rPre_BK.left, m_rPre_BK.top, null);   //画按钮
             canvas.drawBitmap(bitNextBK, m_rNext_BK.left, m_rNext_BK.top, null);   //画按钮
+            canvas.drawBitmap(bitColorBK, m_rColor_BK.left, m_rColor_BK.top, null);   //画按钮
             canvas.drawBitmap(bitPreSkin, m_rPre_Skin.left, m_rPre_Skin.top, null);   //画按钮
             canvas.drawBitmap(bitNextSkin, m_rNext_Skin.left, m_rNext_Skin.top, null);   //画按钮
         }

@@ -24,7 +24,7 @@ public class myAbout extends Activity {
 		tv_help = (TextView)this.findViewById(R.id.tvHelp);
 		
 		String s = "《推箱快手》\n\n" +
-			   "  版本：9.92\n\n" +
+			   "  版本：9.93\n\n" +
 			   "  作者：愉翁    QQ：252804303\n\n" +
 			   "  策划：anian、愉翁\n\n" +
 			   "  特别感谢：anian老师和杨超教授及众多热心箱友，anian老师在游戏设计的全过程中，" +

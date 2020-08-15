@@ -18,7 +18,7 @@
 			android:layout_width="29dp"
 			android:layout_height="29dp"
 			android:layout_marginTop="2.0dp"
-			android:layout_marginLeft="1.0dp"
+			android:layout_marginLeft="2.0dp"
 			android:gravity="center"
 			android:background="#ff334455"
 			android:textSize="14sp"
@@ -74,19 +74,15 @@
 			android:textSize="14sp"
 			android:text="\@" />
 
-		<Button
-			android:id="@+id/bt_color"
-			android:layout_width="29dp"
-			android:layout_height="29dp"
-			android:layout_margin="2.0dp"
-			android:gravity="center"
-			android:background="#9fff00ff"
-			android:textSize="14sp"
-			android:text="紫" />
+		<TextView
+			android:layout_width="8dp"
+			android:layout_height="wrap_content"
+			android:textSize="16sp"
+			android:gravity="center"/>
 
 		<Button
 			android:id="@+id/bt_left"
-			android:layout_width="29dp"
+			android:layout_width="35dp"
 			android:layout_height="29dp"
 			android:layout_margin="2.0dp"
 			android:gravity="center"
@@ -96,7 +92,7 @@
 
 		<Button
 			android:id="@+id/bt_right"
-			android:layout_width="29dp"
+			android:layout_width="35dp"
 			android:layout_height="29dp"
 			android:layout_margin="2.0dp"
 			android:gravity="center"
@@ -106,7 +102,7 @@
 
 		<Button
 			android:id="@+id/bt_up"
-			android:layout_width="29dp"
+			android:layout_width="35dp"
 			android:layout_height="29dp"
 			android:layout_margin="2.0dp"
 			android:gravity="center"
@@ -116,7 +112,7 @@
 
 		<Button
 			android:id="@+id/bt_down"
-			android:layout_width="29dp"
+			android:layout_width="35dp"
 			android:layout_height="29dp"
 			android:layout_margin="2.0dp"
 			android:gravity="center"

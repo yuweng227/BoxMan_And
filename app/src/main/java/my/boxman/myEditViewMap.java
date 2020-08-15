@@ -30,6 +30,8 @@ public class myEditViewMap extends View {
     boolean isSize = true;  //指示右上角显示尺寸还是游标
     boolean isDrawing = false;  //是否正在连续绘制
 
+    boolean isShowBkPict = true;  //是否显示识别中的背景图片
+
     myEditView m_Edit;  //父控件指针，以便使用父控件的功能
 
     Paint myPaint = new Paint();
@@ -312,6 +314,15 @@ public class myEditViewMap extends View {
                 }
                 return true;
             }
+
+            public boolean onDoubleTap(MotionEvent e) {
+                // 双击顶部素材行，打开或关闭识别时的背景图片
+                if (e.getRawY() < m_nArenaTop && myMaps.curMapNum == -4 && myMaps.edPict != null) {
+                    isShowBkPict = !isShowBkPict;
+                    invalidate();
+                }
+                return true;
+            }
         });
 
         @Override
@@ -584,6 +595,12 @@ public class myEditViewMap extends View {
         m_fScale = values[Matrix.MSCALE_X];
         canvas.setMatrix(mMapMatrix);
 
+        if (isShowBkPict && myMaps.curMapNum == -4 && myMaps.edPict != null) {  // 来自图像识别
+            myPaint.setARGB(127, 0, 0, 0);
+            canvas.drawBitmap(myMaps.edPict, new Rect(myMaps.edPictLeft, myMaps.edPictTop, myMaps.edPictRight, myMaps.edPictBottom),
+                                             new Rect(0, 0, m_nPicWidth, m_nPicHeight), myPaint);
+        }
+
         for (int r = m_nMapTop, i, j; r <= m_nMapBottom; r++) {
             for (int c = m_nMapLeft; c <= m_nMapRight; c++) {
                 i = r - m_nMapTop;
@@ -593,10 +610,14 @@ public class myEditViewMap extends View {
                 ch = m_Edit.m_cArray[r][c];   //关卡数据
 
                 myPaint.setARGB(255, 0, 0, 0);
+
                 //第一层显示————地板
-                if (ch != '#') {
+                if (ch == '#') {
+                    canvas.drawBitmap(myMaps.skinBit, rtKF, rt, myPaint);
+                } else if (ch != '-' || !isShowBkPict || myMaps.curMapNum != -4 || myMaps.edPict == null) {
                     canvas.drawBitmap(myMaps.skinBit, rtKF, rt, myPaint);
                 }
+
                 //第二层显示————目标点
                 if (ch == '.' || ch == '*' || ch == '+') {
                     canvas.drawBitmap(myMaps.skinBit, rtKD, rt, myPaint);

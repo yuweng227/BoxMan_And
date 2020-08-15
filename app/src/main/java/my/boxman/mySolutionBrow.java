@@ -19,7 +19,6 @@ import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.FileOutputStream;
 
 public class mySolutionBrow extends Activity {

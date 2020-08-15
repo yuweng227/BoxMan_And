@@ -106,12 +106,12 @@ public class myPicListView extends Activity implements OnScrollListener {
 
 			loadEDPic(myMaps.mFile_List.get(arg2));
 
-			if (myMaps.edPict != null) {
+			if (myMaps.edPict != null && myMaps.edPict.getHeight() > 200 && myMaps.edPict.getWidth() > 200) {
 				Intent intent1 = new Intent();
 				intent1.setClass(myPicListView.this, myRecogView.class);
 				startActivity(intent1);
 			} else {
-				MyToast.showToast(myPicListView.this, "图片文档读取出错或权限不够！", Toast.LENGTH_SHORT);
+				MyToast.showToast(myPicListView.this, "图片尺寸太小或不能打开！", Toast.LENGTH_SHORT);
 			}
 		}
 	}
@@ -197,12 +197,12 @@ public class myPicListView extends Activity implements OnScrollListener {
 		switch (item.getItemId()) {
 			case 0:  //加载图片
 				loadEDPic(myMaps.mFile_List.get(m_Num));
-				if (myMaps.edPict != null) {
+				if (myMaps.edPict != null && myMaps.edPict.getHeight() > 200 && myMaps.edPict.getWidth() > 200) {
 					Intent intent1 = new Intent();
 					intent1.setClass(myPicListView.this, myRecogView.class);
 					startActivity(intent1);
 				} else {
-					MyToast.showToast(myPicListView.this, "图片文档读取出错或权限不够！", Toast.LENGTH_SHORT);
+					MyToast.showToast(myPicListView.this, "图片尺寸太小或不能打开！", Toast.LENGTH_SHORT);
 				}
 				break;
 			case 1:  //删除图片

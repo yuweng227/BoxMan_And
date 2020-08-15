@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;

@@ -94,7 +94,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		setContentView(R.layout.main);
 
 		myMaps.res = getResources();
-		myMaps.m_Sets = new int[37]; //系统参数设置数组
+		myMaps.m_Sets = new int[38]; //系统参数设置数组
 
 		//路径设置
 		myMaps.sRoot = Environment.getExternalStorageDirectory().getPath();
@@ -702,6 +702,7 @@ public class BoxMan extends Activity implements mySplitLevelsFragment.SplitStatu
 		IniFile file = new IniFile();
 		file.load(f);
 
+		myMaps.m_Sets[37] = 1;         // 打开无解关卡时，自动加载最新状态
 		myMaps.m_Sets[0] = Integer.parseInt(file.get("常规", "当前关卡集组别", "0").toString());
 		myMaps.m_Sets[1] = Integer.parseInt(file.get("常规", "当前关卡集", "0").toString());
 		myMaps.m_Sets[2] = Integer.parseInt(file.get("常规", "预览时是否显示关卡标题", "0").toString());

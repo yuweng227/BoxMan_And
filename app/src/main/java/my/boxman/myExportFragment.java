@@ -1,7 +1,6 @@
 package my.boxman;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
@@ -9,16 +8,10 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.WindowManager;
-import android.widget.Toast;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Locale;
 
 //异步导出关卡集，BoxMan 调用
 public class myExportFragment extends DialogFragment {

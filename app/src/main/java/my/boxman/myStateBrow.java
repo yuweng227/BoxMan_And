@@ -44,6 +44,8 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -55,7 +57,11 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 	private static final String TAG_PROGRESS_DIALOG_FRAGMENT = "gif_make_progress_fragment";
 
 	String[] s_groups = { "状态", "答案" };
-    int g_Pos;  
+	String[] s_sort = { "  【移动优先】", "  【推动优先】" };
+	static int my_Sort = 0;  // 答案列表的默认排序 -- 移动优先
+	Comparator comp = new SortComparator();
+
+    int g_Pos;
     int c_Pos;
 	int m_Sel_id2;
 	long m_Sel_id;
@@ -123,15 +129,24 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
                  g_Pos = ExpandableListView.getPackedPositionGroup(packedPosition);
                  c_Pos = ExpandableListView.getPackedPositionChild(packedPosition);
 
-    			 if (c_Pos != -1) {
-					if (g_Pos == 0)
-						m_Sel_id = myMaps.mState1.get(c_Pos).id;
-					else
-						m_Sel_id = myMaps.mState2.get(c_Pos).id;
+				if (c_Pos < 0) {
+					if (g_Pos == 1 && myMaps.mState2.size() > 1) {  // 答案多于1个，且长按了答案分组项
+						if (my_Sort == 0) {    // 置推动优先
+							my_Sort = 1;
+						} else {               // 置移动优先
+							my_Sort = 0;
+						}
+						Collections.sort(myMaps.mState2, comp);
+						s_Adapter.notifyDataSetInvalidated();
+					}
+				} else {
+						if (g_Pos == 0)
+							m_Sel_id = myMaps.mState1.get(c_Pos).id;
+						else
+							m_Sel_id = myMaps.mState2.get(c_Pos).id;
 
-					s_expView.showContextMenu();
-				 }
-                 
+						s_expView.showContextMenu();
+				}
                  return true;  
             }             
         }); 
@@ -695,8 +710,8 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 				builder4.setTitle("提交").setView(view2).setNegativeButton("取消", null).setPositiveButton("确定", new DialogInterface.OnClickListener(){
 					@Override
 					public void onClick(DialogInterface arg0, int arg1) {
-						myMaps.nickname = m_id.getText().toString();
-						myMaps.email = m_email.getText().toString();
+						myMaps.nickname = m_id.getText().toString().trim();
+						myMaps.email = m_email.getText().toString().trim();
 						myMaps.country = m_menu[m_country.getSelectedItemPosition()][0];
 						myMaps.m_State = mySQLite.m_SQL.load_State(m_Sel_id);
 						new Thread(new MyThread()).start();
@@ -868,13 +883,13 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 			urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); // 设置内容类型
 			DataOutputStream out = new DataOutputStream(urlConn.getOutputStream()); // 获取输出流
 			String param = "nickname="
-					+ URLEncoder.encode(myMaps.nickname, "GB2312")  // 强制使用接受服务器的字符编码上传各个参数
+					+ URLEncoder.encode(myMaps.nickname, "GBK")  // 强制使用接受服务器的字符编码上传各个参数GB2312
 					+ "&country="
-					+ URLEncoder.encode(myMaps.country, "GB2312")
+					+ URLEncoder.encode(myMaps.country, "GBK")
 					+ "&email="
-					+ URLEncoder.encode(myMaps.email, "GB2312")
+					+ URLEncoder.encode(myMaps.email, "GBK")
 					+ "&lurd="
-					+ URLEncoder.encode(myMaps.m_State.ans, "GB2312");	//连接要提交的数据
+					+ URLEncoder.encode(myMaps.m_State.ans, "GBK");	//连接要提交的数据
 			out.writeBytes(param);//将要传递的数据写入数据输出流
 			out.flush();	//输出缓存
 			out.close();	//关闭数据输出流
@@ -981,7 +996,11 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 				convertView = getLayoutInflater().inflate(R.layout.s_groups, null);
 			}
 			TextView ts_group = (TextView) convertView.findViewById(R.id.s_expGroup);
-			ts_group.setText(s_groups[groupPosition]);
+			if (groupPosition == 1) {
+				ts_group.setText(s_groups[groupPosition] + s_sort[my_Sort]);
+			} else {
+				ts_group.setText(s_groups[groupPosition]);
+			}
 			return convertView;
 		}
 	
@@ -1387,3 +1406,17 @@ public class myStateBrow extends Activity implements myGifMakeFragment.GifMakeSt
 	}
 }
 
+class SortComparator implements Comparator {
+	@Override
+	public int compare(Object lhs, Object rhs) {
+		state_Node a = (state_Node) lhs;
+		state_Node b = (state_Node) rhs;
+		if (myStateBrow.my_Sort == 0) {
+			if (a.moves == b.moves) return (a.pushs - b.pushs);
+			else return (a.moves - b.moves);
+		} else {
+			if (a.pushs == b.pushs) return (a.moves - b.moves);
+			else return (a.pushs - b.pushs);
+		}
+	}
+}
