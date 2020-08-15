@@ -35,13 +35,14 @@ import java.util.ArrayList;
 public class mySubmitList extends Activity {
 
 	ArrayList<list_Node> mList1 = new ArrayList<list_Node>();  //主关提交列表
-	ArrayList<list_Node> mList2 = new ArrayList<list_Node>();  //主关提交列表
+	ArrayList<list_Node> mList2 = new ArrayList<list_Node>();  //副关提交列表
+	ArrayList<list_Node> mList3 = new ArrayList<list_Node>();  //副关2提交列表
 
-	String[] submit_groups = { "主关", "副关" };
-	int[] mTotal = {0, 0};  //参赛人数
+	String[] submit_groups = { "主关", "副关", "副关2" };
+	int[] mTotal = {0, 0, 0};  //参赛人数
     int g_Pos;  
     int c_Pos;
-    int min_Moves, min_Pushs, min_Moves2, min_Pushs2;
+    int min_Moves, min_Pushs, min_Moves2, min_Pushs2, min_Moves3, min_Pushs3;
 
 	ExpandableListView submit_expView;
 	MyExpandableListView submit_Adapter;
@@ -107,7 +108,7 @@ public class mySubmitList extends Activity {
 		public void handleMessage(Message msg) {
 			dialog.dismiss();
 
-			if (msg.what == 1 && (mList1.size() > 0 || mList2.size() > 0)) {
+			if (msg.what == 1 && (mList1.size() > 0 || mList2.size() > 0 || mList3.size() > 0)) {
 				// 列表下载成功，改变一下窗口的标题
 				if (!myMaps.mMatchNo.isEmpty() && !myMaps.mMatchDate2.isEmpty()) {
 					SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -123,11 +124,12 @@ public class mySubmitList extends Activity {
 				}
 				if (mList1.size() > 0) submit_expView.expandGroup(0);
 				if (mList2.size() > 0) submit_expView.expandGroup(1);
+				if (mList3.size() > 0) submit_expView.expandGroup(2);
 			} else {
 				AlertDialog.Builder builder = new AlertDialog.Builder(mySubmitList.this, AlertDialog.THEME_HOLO_DARK);
 				builder.setTitle("错误").setMessage(msg.obj.toString()).setPositiveButton("确定", null);
 				builder.setCancelable(false).create().show();
-			}
+		}
 			submit_Adapter.notifyDataSetChanged();
 		}
 	};
@@ -139,6 +141,7 @@ public class mySubmitList extends Activity {
 			HttpClient httpClient = new DefaultHttpClient();
 			HttpGet httpGet = new HttpGet(url);
 			HttpGet httpGet2 = new HttpGet(url + "?t=extra");
+			HttpGet httpGet3 = new HttpGet(url + "?t=extra2");
 			try {
 				String inf;
 				Message msg = Message.obtain();
@@ -176,6 +179,26 @@ public class mySubmitList extends Activity {
 						msg.obj = msg.obj + "\n" + inf;
 					}
 				}
+				httpResponse = httpClient.execute(httpGet3);
+				code = httpResponse.getStatusLine().getStatusCode();
+				if (code == 200) {
+					String temp = EntityUtils.toString(httpResponse.getEntity());
+					msg.what = 1;
+					inf = myJson(temp, 2);  //解析列表
+					if (msg.obj.equals("")) {
+						msg.obj = inf;
+					} else {
+						msg.obj = msg.obj + "\n" + inf;
+					}
+				} else {
+					msg.what = 0;
+					inf = "下载副关列表遇到网络错误：" + code;
+					if (msg.obj.equals("")) {
+						msg.obj = inf;
+					} else {
+						msg.obj = msg.obj + "\n" + inf;
+					}
+				}
 				handler.sendMessage(msg);
 			} catch (Exception e) {
 				Message msg = Message.obtain();
@@ -194,6 +217,7 @@ public class mySubmitList extends Activity {
 		JSONParser parser = new JSONParser();
 		try {
 			if (num == 1) mList = mList2;  //提交列表
+			else if (num == 2) mList = mList3;  //提交列表
 			mList.clear();
 
 			JSONObject obj = (JSONObject)parser.parse(str);
@@ -208,9 +232,12 @@ public class mySubmitList extends Activity {
 			if (num == 0) {
 				min_Moves = -1;
 				min_Pushs = -1;
-			} else {
+			} else if (num == 1) {
 				min_Moves2 = -1;
 				min_Pushs2 = -1;
+			} else {
+				min_Moves3 = -1;
+				min_Pushs3 = -1;
 			}
 			for (int k = 0; k < array.size(); k++) {
 				obj = (JSONObject) array.get(k);
@@ -227,13 +254,15 @@ public class mySubmitList extends Activity {
 					n1 = Integer.valueOf(nd.moves);
 					n3 = Integer.valueOf(nd.pushs);
 					if (num == 0) min_Moves = k+1;
-					else min_Moves2 = k+1;
+					else if (num == 1) min_Moves2 = k+1;
+					else min_Moves3 = k+1;
 				} else if (n1 == Integer.valueOf(nd.moves)) {
 					if (n3 > Integer.valueOf(nd.pushs)) {
 						n1 = Integer.valueOf(nd.moves);
 						n3 = Integer.valueOf(nd.pushs);
 						if (num == 0) min_Moves = k+1;
-						else min_Moves2 = k+1;
+						else if (num == 1) min_Moves2 = k+1;
+						else min_Moves3 = k+1;
 					}
 				}
 
@@ -241,13 +270,15 @@ public class mySubmitList extends Activity {
 					n2 = Integer.valueOf(nd.pushs);
 					n4 = Integer.valueOf(nd.moves);
 					if (num == 0) min_Pushs = k+1;
-					else min_Pushs2 = k+1;
+					else if (num == 1) min_Pushs2 = k+1;
+					else min_Pushs3 = k+1;
 				} else if (n2 == Integer.valueOf(nd.pushs)) {
 					if (n4 > Integer.valueOf(nd.moves)) {
 						n2 = Integer.valueOf(nd.pushs);
 						n4 = Integer.valueOf(nd.moves);
 						if (num == 0) min_Pushs = k+1;
-						else min_Pushs2 = k+1;
+						else if (num == 1) min_Pushs2 = k+1;
+						else min_Pushs3 = k+1;
 					}
 				}
 
@@ -286,8 +317,10 @@ public class mySubmitList extends Activity {
 		public int getChildrenCount(int groupPosition) {
 			if (groupPosition == 0)
 				return mList1.size();
-			else
+			else if (groupPosition == 1)
 				return mList2.size();
+			else
+				return mList3.size();
 		}
 	
 		//返回一级列表的单个item（返回的是对象）
@@ -301,8 +334,10 @@ public class mySubmitList extends Activity {
 		public Object getChild(int groupPosition, int childPosition) {
 			if (groupPosition == 0)
 				return mList1.get(childPosition);
-			else
+			else if (groupPosition == 1)
 				return mList2.get(childPosition);
+			else
+				return mList3.get(childPosition);
 		}
 	
 		@Override
@@ -359,7 +394,7 @@ public class mySubmitList extends Activity {
 				else ts_child5.setTextColor(0xffbbbbbb);
 				if (min_Pushs == mList1.get(childPosition).id) ts_child6.setTextColor(0xff0000ff);
 				else ts_child6.setTextColor(0xffbbbbbb);
-			} else {
+			} else if (groupPosition == 1) {
 				ts_child.setText(String.valueOf(mList2.get(childPosition).id));
 				ts_child2.setText(mList2.get(childPosition).date.substring(5, 11));
 				ts_child3.setText(mList2.get(childPosition).name);
@@ -370,8 +405,19 @@ public class mySubmitList extends Activity {
 				else ts_child5.setTextColor(0xffbbbbbb);
 				if (min_Pushs2 == mList2.get(childPosition).id) ts_child6.setTextColor(0xff0000ff);
 				else ts_child6.setTextColor(0xffbbbbbb);
+			} else {
+				ts_child.setText(String.valueOf(mList3.get(childPosition).id));
+				ts_child2.setText(mList3.get(childPosition).date.substring(5, 11));
+				ts_child3.setText(mList3.get(childPosition).name);
+				ts_child4.setText(mList3.get(childPosition).country);
+				ts_child5.setText(String.valueOf(mList3.get(childPosition).moves));
+				ts_child6.setText(String.valueOf(mList3.get(childPosition).pushs));
+				if (min_Moves3 == mList3.get(childPosition).id) ts_child5.setTextColor(0xff00ff00);
+				else ts_child5.setTextColor(0xffbbbbbb);
+				if (min_Pushs3 == mList3.get(childPosition).id) ts_child6.setTextColor(0xff0000ff);
+				else ts_child6.setTextColor(0xffbbbbbb);
 			}
-	
+
 			return convertView;
 		}
 	
@@ -398,6 +444,7 @@ public class mySubmitList extends Activity {
 		case R.id.submit_list_reload:  //刷新
 			mList1.clear();
 			mList2.clear();
+			mList3.clear();
 			dialog = new ProgressDialog(this);
 			dialog.setMessage("下载中...");
 			dialog.setCancelable(true);
