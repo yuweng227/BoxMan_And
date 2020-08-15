@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+	<item
+		android:id="@+id/edit_complete"
+		android:title="提交"/>
+
+	<item
+		android:id="@+id/edit_play"
+		android:title="试推"/>
+
+	<item
+		android:id="@+id/edit_rule"
+		android:title="标尺..."/>
+
+	<item
+		android:id="@+id/edit_setup"
+		android:title="设置..."/>
+
+	<item
+		android:id="@+id/edit_edpic"
+		android:title="关卡参照图..."/>
+
+	<item
+		android:id="@+id/edit_clear"
+		android:title="清空地图"/>
+
+	<item
+		android:id="@+id/edit_block_save"
+		android:title="区块另存为..."/>
+
+	<item
+		android:id="@+id/edit_export"
+		android:title="导出(XSB)"/>
+
+	<item
+		android:id="@+id/edit_import"
+		android:title="导入(XSB 或 Lurd)"/>
+
+	<item
+		android:id="@+id/edit_resize"
+		android:title="修改尺寸..."/>
+
+	<item
+		android:id="@+id/edit_normalize"
+		android:title="关卡标准化"/>
+
+	<item
+		android:id="@+id/edit_inf"
+		android:title="关卡资料"/>
+
+
+</menu>

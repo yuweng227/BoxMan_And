@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"  
+        android:layout_height="fill_parent"
+		android:keepScreenOn="true">
+        
+ 	<LinearLayout  
+        android:orientation="vertical" 
+   		android:layout_width="fill_parent"  
+   		android:layout_height="wrap_content">  
+    		
+    	<TextView
+	    	android:layout_width="fill_parent"
+	    	android:layout_height="wrap_content"
+	    	android:text="标题:"
+	    	android:textSize="16sp" 
+	    	android:padding="8dp"/>
+    	
+    	<EditText
+        	android:id="@+id/etTitle"
+	    	android:layout_width="wrap_content"
+	    	android:layout_height="wrap_content"
+	    	android:textSize="16sp"
+			android:typeface="monospace"
+	    	android:layout_marginLeft="20dp"
+	    	android:padding="8dp"/>
+    
+    	<TextView
+	    	android:layout_width="wrap_content"
+	    	android:layout_height="wrap_content"
+	    	android:text="作者:"
+	    	android:textSize="16sp" 
+	    	android:padding="8dp"/>
+    	
+   		<EditText
+        	android:id="@+id/etAuthor"
+	    	android:layout_width="fill_parent"
+	    	android:layout_height="wrap_content"
+	    	android:textSize="16sp"
+			android:typeface="monospace"
+	    	android:layout_marginLeft="20dp"
+	    	android:padding="8dp"/>
+    
+    	<TextView
+	    	android:layout_width="fill_parent"
+	    	android:layout_height="wrap_content"
+	    	android:text="说明:"
+	    	android:textSize="16sp" 
+	    	android:padding="8dp"/>
+    	
+   		<ScrollView  
+    		android:layout_width="fill_parent"  
+    		android:layout_height="wrap_content">  
+    
+    		<EditText
+	        	android:id="@+id/etComment"
+		    	android:layout_width="fill_parent"
+		    	android:layout_height="fill_parent"
+		    	android:textSize="16sp"
+				android:typeface="monospace"
+		    	android:layout_marginLeft="20dp"
+		    	android:padding="8dp"/>
+    
+		</ScrollView>
+		
+    	<TextView
+    	    android:id="@+id/tvCount"
+	    	android:layout_width="fill_parent"
+	    	android:layout_height="wrap_content"
+	    	android:textSize="16sp" 
+	    	android:padding="8dp"/>
+    	
+	 	<LinearLayout  
+	        android:orientation="horizontal" 
+	   		android:layout_width="fill_parent"  
+	   		android:layout_height="wrap_content">  
+    			<ImageView
+				    android:id="@+id/ivMap"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"/>
+    	
+				<ImageView
+				    android:id="@+id/ivMap2"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"/>
+		</LinearLayout>
+    	
+	</LinearLayout>
+</ScrollView>

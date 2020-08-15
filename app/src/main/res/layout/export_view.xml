@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:keepScreenOn="true">
+
+    <EditText
+        android:id="@+id/ex_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="350dp"
+        android:textSize="16sp"
+        android:gravity="top|left"
+        android:selectAllOnFocus="true"
+        android:background="#242424"
+        android:textColorHighlight="#000000"
+        android:padding="4dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636">
+    </View>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:padding="4dp"
+            android:text="导出选项："/>
+
+        <View
+            android:layout_width="16dp"
+            android:layout_height="match_parent"
+            android:background="#363636">
+        </View>
+
+        <CheckBox
+            android:id="@+id/cb_ex_xsb"
+            style="@style/CustomCheckboxTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:checked="false"
+            android:text="XSB"/>
+
+        <View
+            android:layout_width="16dp"
+            android:layout_height="match_parent"
+            android:background="#363636">
+        </View>
+
+        <CheckBox
+            android:id="@+id/cb_ex_lurd"
+            style="@style/CustomCheckboxTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:checked="false"
+            android:text="Lurd"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636">
+    </View>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_marginTop="8dp">
+
+        <CheckBox
+            android:id="@+id/cb_ex_Cur"
+            style="@style/CustomCheckboxTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:checked="false"
+            android:text="导出正推现场"/>
+
+        <View
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:background="#363636">
+        </View>
+
+        <CheckBox
+            android:id="@+id/cb_ex_Trun"
+            style="@style/CustomCheckboxTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:checked="false"
+            android:text="保持现场旋转"/>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#363636"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <CheckBox
+            android:id="@+id/cb_ex_File"
+            style="@style/CustomCheckboxTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:checked="false"
+            android:text="导出到文档"/>
+
+        <View
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:background="#363636">
+        </View>
+
+        <Button
+            android:id="@+id/bt_ex_OK"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:padding="2dp"
+            android:layout_margin="2dp"
+            android:text="导出" />
+
+    </LinearLayout>
+
+
+
+</LinearLayout>

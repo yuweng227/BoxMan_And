@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:keepScreenOn="true">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="#363636"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/del_begin"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:digits="0123456789"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:selectAllOnFocus="true"
+            android:background="#242424"
+            android:textColorHighlight="#000000"
+            android:padding="4dp"/>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:text=" -- "/>
+
+        <EditText
+            android:id="@+id/del_end"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:digits="0123456789"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:selectAllOnFocus="true"
+            android:background="#242424"
+            android:textColorHighlight="#000000"
+            android:padding="4dp"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:background="#363636">
+    </View>
+
+
+</LinearLayout>

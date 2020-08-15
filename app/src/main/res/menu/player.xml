@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+	<item
+	    android:id="@+id/player_Setup1"
+		android:title="场景设置..."/>
+
+	<item
+	    android:id="@+id/player_Setup2"
+		android:title="开关选项..."/>
+
+	<item
+		android:id="@+id/player_GoBack"
+		android:title="进度条..."/>
+
+	<item
+		android:id="@+id/player_ReStart"
+		android:title="重新开始"/>
+
+	<item
+	    android:id="@+id/player_Home"
+		android:title="退至首"/>
+
+	<item
+	    android:id="@+id/player_End"
+		android:title="进至尾"/>
+
+	<item
+		android:id="@+id/player_EX"
+		android:title="导出..."/>
+
+	<item
+        android:id="@+id/player_IN"
+        android:title="导入..."/>
+
+	<item
+		android:id="@+id/player_Yass_Solver"
+		android:title="YASS求解"/>
+
+	<item
+        android:id="@+id/player_load"
+        android:title="打开状态..."/>
+
+	<item
+        android:id="@+id/player_save"
+        android:title="保存状态"/>
+    
+	<item 
+		android:id="@+id/player_about"
+		android:title="关于"/>
+
+</menu>
