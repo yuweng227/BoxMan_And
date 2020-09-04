@@ -87,3 +87,8 @@ lint/tmp/
 /app/.project
 /app/.settings
 /app/release/output.json
+/app/src/main/java/my/boxman/jsoko/resourceHandling
+/app/src/main/java/my/boxman/jsoko/board
+/app/src/main/java/my/boxman/jsoko/boardpositions
+/app/src/main/java/my/boxman/jsoko/deadlockdetection
+/app/src/main/java/my/boxman/jsoko/pushesLowerBoundCalculation

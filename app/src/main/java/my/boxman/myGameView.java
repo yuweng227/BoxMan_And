@@ -21,6 +21,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -2708,6 +2709,9 @@ public class myGameView extends Activity {
                             s2.append(Move[t - 1]);
                         }
                     }
+                    if (TextUtils.isEmpty(myMaps.sActionEdit)) {
+                        myMaps.sActionEdit = myMaps.loadLURD(myMaps.loadClipper(), -1);
+                    }
                 }
             } else {  //正推
                 if (!m_lstMovUnDo.isEmpty()) {
@@ -2736,6 +2740,9 @@ public class myGameView extends Activity {
                             t = (Byte)myItr.next();
                             s2.append(Move[t - 1]);
                         }
+                    }
+                    if (TextUtils.isEmpty(myMaps.sActionEdit)) {  // 视情况，自动加载剪切板中的内容
+                        myMaps.sActionEdit = myMaps.loadLURD(myMaps.loadClipper(), 1);
                     }
                 }
             }

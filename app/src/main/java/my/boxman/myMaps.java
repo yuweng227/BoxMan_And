@@ -67,6 +67,7 @@ public class myMaps {
 			"/"                         // 自定义 3
 	};
 
+	static String sActionEdit = "";  //动作编辑框缓存
 	static String[] sAction;  //动作寄存器缓存
 	static boolean m_ActionIsRedy = false;  //状态是否准备就绪
 	static boolean m_ActionIsPos = true;  //是否从关卡的当前点执行动作
