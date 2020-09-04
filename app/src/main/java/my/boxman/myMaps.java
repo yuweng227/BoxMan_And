@@ -1,12 +1,14 @@
 package my.boxman;
 
 import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -216,13 +218,16 @@ public class myMaps {
 	//读入剪切板
 	static String loadClipper() {
 		try {
-			android.content.ClipboardManager cmb = (android.content.ClipboardManager) myMaps.ctxDealFile.getSystemService(Context.CLIPBOARD_SERVICE);
+			ClipboardManager cmb = (ClipboardManager) myMaps.ctxDealFile.getSystemService(Context.CLIPBOARD_SERVICE);
 			if (cmb.getPrimaryClipDescription().hasMimeType(android.content.ClipDescription.MIMETYPE_TEXT_PLAIN) ||
 					cmb.getPrimaryClipDescription().hasMimeType(android.content.ClipDescription.MIMETYPE_TEXT_HTML)) {
 				android.content.ClipData cd = cmb.getPrimaryClip();
 				android.content.ClipData.Item item = cd.getItemAt(0);
 				return item.getText().toString();
 			} else return "";
+//			if (cmb.hasPrimaryClip() && cmb.getPrimaryClip().getItemCount() > 0) {
+//				return cmb.getPrimaryClip().getItemAt(0).getText().toString();
+//			} else return "";
 		} catch(Exception e) {
 			return "";
 		}

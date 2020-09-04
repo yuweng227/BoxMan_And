@@ -271,7 +271,7 @@ public class myGifMakeFragment extends DialogFragment {
                 while (m_nStep < actArray.length) {
                     if (isCancelled()) return "放弃合成！";
                     if (m_Type) {      //仅关键帧
-                        gifEncoder.setDelay (0);  //前半帧延时
+                        gifEncoder.setDelay (1);  //前半帧延时
                         gifEncoder.addFrame (myDraw2(false), m_Left_Top[0], m_Left_Top[1]);  //移动前，先擦除原位置上的元素
                         do {
                             myMove2();

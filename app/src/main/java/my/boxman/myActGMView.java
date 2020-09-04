@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -96,9 +97,7 @@ public class myActGMView extends Activity {
 		if (myMaps.isRecording) {  //录制模式且录制有效
 			et_Action.setText(loadAct("act2"));
 			saveAct("act2", "");  //录制模式仅仅借助该寄存器，所以，用后要清空
-		 } else {  //非录制模式或录制被取消
-			et_Action.setText(myMaps.loadLURD(myMaps.loadClipper(), is_BK ? -1 : 1));  //加载“剪切板”
-		 }
+		}
 		flg = false;  //编辑框内容是否改动
 		myMaps.isRecording = false;  //关闭录制模式
 		myMaps.isMacroDebug = false;  //单步宏
@@ -591,6 +590,21 @@ public class myActGMView extends Activity {
 				}
 			}
 		}).setNegativeButton("取消", null).setCancelable(false).show();
+	}
+
+	@Override
+	protected void onResume() {
+		if (!myMaps.isRecording) {  //非录制模式或录制被取消
+			Handler handler = new Handler();
+			handler.postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					// 安卓10以上，需要延时一下才能获取剪切板内容
+					et_Action.setText(myMaps.loadLURD(myMaps.loadClipper(), is_BK ? -1 : 1));  //加载“剪切板”
+				}
+			}, 500);// 500毫秒后执行Runnable中的run方法
+		}
+		super.onResume();
 	}
 
 	@Override
